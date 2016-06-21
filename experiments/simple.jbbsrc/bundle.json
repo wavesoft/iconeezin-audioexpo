@@ -1,0 +1,19 @@
+{
+	"name": "simple",
+	"profile": [ "iconeezin", "three" ],
+	"exports": {
+
+		"Iconeezin.API.ExperimentFile": {
+			"main": ".build.js"
+		},
+
+		"Iconeezin.API.AudioFile": {
+			"sounds/noise": "assets/sounds/whitenoise.ogg"
+		},
+
+		"THREE.OBJLoader": {
+			"models/corridor": "assets/models/corridor.obj"
+		}
+
+	}
+}

@@ -1,0 +1,43 @@
+{
+  "name": "iconeezin-audioexpo",
+  "version": "1.0.0",
+  "description": "An audio experimentation VR world",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wavesoft/iconeezin-audioexpo.git"
+  },
+  "keywords": [
+    "iconeezin",
+    "vr",
+    "audio",
+    "experiment"
+  ],
+  "author": "Ioannis Charalampidis",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wavesoft/iconeezin-audioexpo/issues"
+  },
+  "homepage": "https://github.com/wavesoft/iconeezin-audioexpo#readme",
+  "devDependencies": {
+    "babel-core": "^6.9.1",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.5.0",
+    "gulp": "^3.9.1",
+    "gulp-jbb": "^0.1.0",
+    "gulp-less": "^3.1.0",
+    "gulp-util": "^3.0.7",
+    "iconeezin": "^0.1.0",
+    "json-loader": "^0.5.4",
+    "merge-stream": "^1.0.0",
+    "webpack-stream": "^3.2.0"
+  },
+  "dependencies": {
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0"
+  }
+}

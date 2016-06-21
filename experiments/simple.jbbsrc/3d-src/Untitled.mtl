@@ -1,0 +1,73 @@
+# FILE:Untitled.obj
+newmtl GDLM1_SHADOW_MATERIAL
+Ka 0.228885 0.228885 0.228885
+Kd 0.228885 0.228885 0.228885
+Ks 0 0 0
+illum 2
+Ns 0
+newmtl 00___DEFAULT_WALLS-INT
+Ka 0.875294 0.857647 0.829412
+Kd 0.836392 0.819529 0.792549
+Ks 0.08 0.08 0.08
+illum 2
+Ns 0.64
+newmtl 00___DEFAULT_WALLS-EXT
+Ka 0.882353 0.839216 0.733333
+Kd 0.741176 0.704941 0.616
+Ks 0.08 0.08 0.08
+illum 2
+Ns 4.2
+newmtl 04___B_RUNNING_BOND
+Ka 0.459804 0.236471 0.197059
+Kd 0.42549 0.218824 0.182353
+Ks 0.152 0.152 0.152
+illum 2
+Ns 0.56
+map_Ka Brick Running alpha.jpg
+map_Kd Brick Running alpha.jpg
+map_Ks Brick Running alpha.jpg
+newmtl 09___PAINT-02_WHITEWASH
+Ka 0.8 0.8 0.8
+Kd 0.81 0.81 0.81
+Ks 0.0891005 0.0891005 0.09
+illum 2
+Ns 2.2
+newmtl 06___W_PINE_H
+Ka 0.822902 0.694745 0.458667
+Kd 0.717647 0.605882 0.4
+Ks 0.5 0.5 0.5
+illum 2
+Ns 23
+map_Ka Wood Grain pine alpha.jpg
+map_Kd Wood Grain pine alpha.jpg
+map_Ks Wood Grain pine alpha.jpg
+newmtl 09___PAINT-09_RED
+Ka 0.527294 0 0
+Kd 0.732353 0 0
+Ks 0.1 0.08 0.08
+illum 2
+Ns 1
+newmtl 09___PAINT-12_YELLOW
+Ka 0.86 0.86 0
+Kd 0.81 0.81 0
+Ks 0.0891005 0.0891005 0.09
+illum 2
+Ns 2.2
+newmtl 09___PAINT-13_GREEN
+Ka 0.148392 0.455294 0.168627
+Kd 0.139765 0.428824 0.158824
+Ks 0.0891005 0.0891005 0.09
+illum 2
+Ns 2.2
+newmtl 09___PAINT-07_GRAY
+Ka 0.253373 0.253373 0.253373
+Kd 0.292627 0.292627 0.292627
+Ks 0.25098 0.25098 0.25098
+illum 2
+Ns 11
+newmtl 09___PAINT-16_BLUE
+Ka 0 0 0.86
+Kd 0 0 0.81
+Ks 0.0891005 0.0891005 0.09
+illum 2
+Ns 2.2

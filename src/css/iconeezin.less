@@ -1,0 +1,60 @@
+
+// Import mix-ins
+@import "parts/mixins.less";
+
+// ============================
+// Common Website Styling
+// ============================
+
+body {
+
+	font-family: Verdana;
+	overflow: hidden;
+
+	background: #000;
+
+}
+
+// ============================
+// Main Application Window
+// ============================
+
+#app {
+
+	// Make app fill parent
+	.fillparent();
+
+	// ============================
+	// Content container
+	// ============================
+
+	.icnz-conent {
+
+		// Make container fill parent
+		.fillparent();
+
+	}
+
+	// ============================
+	// Main application viewport
+	// ============================
+
+	.icnz-viewport {
+
+		// Make viewport fill parent
+		.fillparent();
+
+		//
+		// This is where the game goes 
+		//
+		.icnz-canvas {
+			.fillparent();
+		}
+
+	}
+
+	// Import parts
+	@import "parts/hade.less";
+	@import "parts/welcome.less";
+
+}

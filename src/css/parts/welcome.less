@@ -1,0 +1,99 @@
+// ============================
+// Welcome Panel
+// ============================
+
+// Configuration
+@welcome-width: 450px;
+@welcome-height: 240px;
+
+.icnz-welcome-host {
+	.fillparent();
+	.hideable( 0.25s );
+	background-color: rgba(0,0,0,0.5);
+
+	.icnz-welcome-panel {
+		// Position and size
+		position: absolute;
+		width: @welcome-width;
+		height: @welcome-height;
+		
+		// Center
+		left: 50%; top: 50%;
+		-webkit-transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
+		-moz-transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
+		-ms-transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
+		-o-transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
+		transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
+
+		// Styling
+		border-radius: 20px;
+		background-color: rgba(30,30,30,0.8);
+		
+		// Content
+		.icnz-welcome-body {
+			font-size: 16px;
+			text-align: center;
+			padding: 20px 10px;
+
+			// Content coloring
+			color: #666;
+			h1 {
+				color: #999;
+			}
+
+		}
+
+		// Buttons footer
+		.icnz-welcome-buttons {
+
+			// Positioning of te buttons frame
+			text-align: center;
+			position: absolute;
+			left: 0; right: 0; bottom: 0;
+			padding: 20px 10px;
+
+			// Button
+			button {
+
+				// Styling
+				padding: 10px;
+				border-radius: 5px;
+				border: solid 1px #333;
+				cursor: pointer;
+
+				// Animation
+				-webkit-transition: all 0.25s;
+				-moz-transition: all 0.25s;
+				-ms-transition: all 0.25s;
+				-o-transition: all 0.25s;
+				transition: all 0.25s;
+
+				// Coloring
+				background-color: #000;
+				color: #666;
+
+				// Fonts & Icon
+				font-size: 1em;
+				span {
+				    font-size: 1.8em;
+				    vertical-align: sub;
+					font-size: 1.4em;
+				}
+
+				// Interactive
+				&:hover {
+					background-color: #222;
+					color: #FFF;
+				}
+				&:active {
+					background-color: #666;
+					color: #000;
+				}
+
+			}
+
+		}
+
+	}
+
+}

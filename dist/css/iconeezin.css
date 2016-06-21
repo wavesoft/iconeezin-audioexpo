@@ -1,0 +1,226 @@
+.fillparent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+body {
+  font-family: Verdana;
+  overflow: hidden;
+  background: #000;
+}
+#app {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+#app .icnz-conent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+#app .icnz-viewport {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+#app .icnz-viewport .icnz-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+#app .icnz-hade {
+  -webkit-pointer-events: none;
+  -moz-pointer-events: none;
+  -ms-pointer-events: none;
+  -o-pointer-events: none;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-transition: opacity 2s;
+  -moz-transition: opacity 2s;
+  -ms-transition: opacity 2s;
+  -o-transition: opacity 2s;
+  transition: opacity 2s;
+}
+#app .icnz-hade.visible {
+  -webkit-pointer-events: auto;
+  -moz-pointer-events: auto;
+  -ms-pointer-events: auto;
+  -o-pointer-events: auto;
+  pointer-events: auto;
+  opacity: 1;
+}
+#app .icnz-hade,
+#app .icnz-hade .icnz-hade-left,
+#app .icnz-hade .icnz-hade-right {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 1.4em;
+  -webkit-transform-origin: 50% 0;
+  -moz-transform-origin: 50% 0;
+  -ms-transform-origin: 50% 0;
+  -o-transform-origin: 50% 0;
+  transform-origin: 50% 0;
+}
+#app .icnz-hade .icnz-hade-right {
+  display: none;
+}
+#app .icnz-hade.icnz-hade-hmd {
+  perspective-origin: 50% 50%;
+  perspective: 1000px;
+}
+#app .icnz-hade.icnz-hade-hmd .icnz-hade-left {
+  -webkit-transform: scaleX(0.7) rotateY(2deg) translateX(1%);
+  -moz-transform: scaleX(0.7) rotateY(2deg) translateX(1%);
+  -ms-transform: scaleX(0.7) rotateY(2deg) translateX(1%);
+  -o-transform: scaleX(0.7) rotateY(2deg) translateX(1%);
+  transform: scaleX(0.7) rotateY(2deg) translateX(1%);
+  left: -25%;
+}
+#app .icnz-hade.icnz-hade-hmd .icnz-hade-right {
+  -webkit-transform: scaleX(0.7) rotateY(-2deg) translateX(-1%);
+  -moz-transform: scaleX(0.7) rotateY(-2deg) translateX(-1%);
+  -ms-transform: scaleX(0.7) rotateY(-2deg) translateX(-1%);
+  -o-transform: scaleX(0.7) rotateY(-2deg) translateX(-1%);
+  transform: scaleX(0.7) rotateY(-2deg) translateX(-1%);
+  left: 25%;
+  display: block;
+}
+#app .icnz-hade .icnz-hade-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently*/
+}
+#app .icnz-hade .icnz-hade-content .icnz-hade-center-pane {
+  background-color: #fff;
+  position: absolute;
+  width: 500px;
+  height: 400px;
+  border-radius: 30px;
+  text-align: center;
+  font-size: 0.9em;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translateX(-250px) translateY(-200px);
+  -moz-transform: translateX(-250px) translateY(-200px);
+  -ms-transform: translateX(-250px) translateY(-200px);
+  -o-transform: translateX(-250px) translateY(-200px);
+  transform: translateX(-250px) translateY(-200px);
+}
+#app .icnz-hade.icnz-hade-type-error .icnz-hade-center-pane {
+  background-color: rgba(255, 0, 0, 0.6) !important;
+  color: #FFC0C0;
+}
+#app .icnz-hade.icnz-hade-type-message .icnz-hade-center-pane {
+  background-color: rgba(90, 90, 90, 0.5) !important;
+  color: #999;
+}
+#app .icnz-welcome-host {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-pointer-events: none;
+  -moz-pointer-events: none;
+  -ms-pointer-events: none;
+  -o-pointer-events: none;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-transition: opacity 0.25s;
+  -moz-transition: opacity 0.25s;
+  -ms-transition: opacity 0.25s;
+  -o-transition: opacity 0.25s;
+  transition: opacity 0.25s;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+#app .icnz-welcome-host.visible {
+  -webkit-pointer-events: auto;
+  -moz-pointer-events: auto;
+  -ms-pointer-events: auto;
+  -o-pointer-events: auto;
+  pointer-events: auto;
+  opacity: 1;
+}
+#app .icnz-welcome-host .icnz-welcome-panel {
+  position: absolute;
+  width: 450px;
+  height: 240px;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translateX(-225px) translateY(-120px);
+  -moz-transform: translateX(-225px) translateY(-120px);
+  -ms-transform: translateX(-225px) translateY(-120px);
+  -o-transform: translateX(-225px) translateY(-120px);
+  transform: translateX(-225px) translateY(-120px);
+  border-radius: 20px;
+  background-color: rgba(30, 30, 30, 0.8);
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-body {
+  font-size: 16px;
+  text-align: center;
+  padding: 20px 10px;
+  color: #666;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-body h1 {
+  color: #999;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px 10px;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button {
+  padding: 10px;
+  border-radius: 5px;
+  border: solid 1px #333;
+  cursor: pointer;
+  -webkit-transition: all 0.25s;
+  -moz-transition: all 0.25s;
+  -ms-transition: all 0.25s;
+  -o-transition: all 0.25s;
+  transition: all 0.25s;
+  background-color: #000;
+  color: #666;
+  font-size: 1em;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button span {
+  font-size: 1.8em;
+  vertical-align: sub;
+  font-size: 1.4em;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button:hover {
+  background-color: #222;
+  color: #FFF;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button:active {
+  background-color: #666;
+  color: #000;
+}

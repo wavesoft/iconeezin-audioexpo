@@ -1,0 +1,39 @@
+
+// ============================
+// Mix-ins
+// ============================
+
+.fillparent {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.hideable( @easing_time ) {
+
+	// Hide by default
+	-webkit-pointer-events: none;
+	-moz-pointer-events: none;
+	-ms-pointer-events: none;
+	-o-pointer-events: none;
+	pointer-events: none;
+	opacity: 0;
+	&.visible {
+		-webkit-pointer-events: auto;
+		-moz-pointer-events: auto;
+		-ms-pointer-events: auto;
+		-o-pointer-events: auto;
+		pointer-events: auto;
+		opacity: 1;
+	}
+
+	// Transition to show
+	-webkit-transition: opacity @easing_time;
+	-moz-transition: opacity @easing_time;
+	-ms-transition: opacity @easing_time;
+	-o-transition: opacity @easing_time;
+	transition: opacity @easing_time;
+
+}
