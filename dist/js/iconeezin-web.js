@@ -68,9 +68,8 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(38);
-	var Iconeezin = __webpack_require__(168);
 
-	var Viewport = __webpack_require__(169);
+	var Viewport = __webpack_require__(168);
 	var Welcome = __webpack_require__(172);
 
 	/**
@@ -139,9 +138,6 @@
 						vpDOM.msRequestFullscreen();
 					}
 				}
-
-				// Apply mute on audio runtime
-				Iconeezin.Runtime.Audio.setGlobalMute(this.state.paused);
 			}
 		},
 
@@ -152,10 +148,6 @@
 			this.setState({ 'paused': false, 'hmd': false });
 		},
 		handleStartHMD: function handleStartHMD() {
-			this.setState({ 'paused': false, 'hmd': true });
-		},
-		handleStart: function handleStart(hmd) {
-			alert('handling!');
 			this.setState({ 'paused': false, 'hmd': true });
 		},
 		handlePause: function handlePause() {
@@ -20484,12 +20476,6 @@
 
 /***/ },
 /* 168 */
-/***/ function(module, exports) {
-
-	module.exports = Iconeezin;
-
-/***/ },
-/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -20514,7 +20500,7 @@
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Iconeezin = __webpack_require__(168);
+	var Iconeezin = __webpack_require__(169);
 	var HADE = __webpack_require__(170);
 	var React = __webpack_require__(1);
 
@@ -20580,17 +20566,17 @@
 
 			// Apply 'hmd'
 			if (this.props.hmd != nextProps.hmd) {
-				Iconeezin.Runtime.Video.setHMD(nextProps.hmd);
+				Iconeezin.Runtime.setHMD(nextProps.hmd);
 			}
 
 			// Apply 'paused'
 			if (this.props.paused != nextProps.paused) {
-				Iconeezin.Runtime.Video.setPaused(nextProps.paused);
+				Iconeezin.Runtime.setPaused(nextProps.paused);
 			}
 
 			// Apply 'experiment' change
 			if (this.props.experiment != nextProps.experiment) {
-				Iconeezin.Runtime.Experiments.display(nextProps.experiment);
+				Iconeezin.Runtime.Experiments.showExperiment(nextProps.experiment);
 			}
 		},
 
@@ -20620,6 +20606,12 @@
 		}
 
 	});
+
+/***/ },
+/* 169 */
+/***/ function(module, exports) {
+
+	module.exports = Iconeezin;
 
 /***/ },
 /* 170 */

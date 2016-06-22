@@ -83,6 +83,16 @@ var CorridorLogic = function( corridor ) {
 	this.t = -Math.PI/2;
 	// this.i = 0;
 
+	var loop_animation = (function(v) {
+		if (v < 1.0) return;
+		Iconeezin.Runtime.Controls.followPath( this.splineLeft, {
+			'speed': 2, 
+			'callback': loop_animation
+		});
+	}).bind(this);
+
+	loop_animation(1.0);
+
 }
 
 // Subclass from Aniamted Object3D

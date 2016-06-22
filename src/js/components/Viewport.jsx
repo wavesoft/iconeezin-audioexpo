@@ -83,17 +83,17 @@ module.exports = React.createClass({
 
 		// Apply 'hmd'
 		if (this.props.hmd != nextProps.hmd) {
-			Iconeezin.Runtime.Video.setHMD( nextProps.hmd );
+			Iconeezin.Runtime.setHMD( nextProps.hmd );
 		}
 
 		// Apply 'paused'
 		if (this.props.paused != nextProps.paused) {
-			Iconeezin.Runtime.Video.setPaused( nextProps.paused );
+			Iconeezin.Runtime.setPaused( nextProps.paused );
 		}
 
 		// Apply 'experiment' change
 		if (this.props.experiment != nextProps.experiment) {
-			Iconeezin.Runtime.Experiments.display( nextProps.experiment );
+			Iconeezin.Runtime.Experiments.showExperiment( nextProps.experiment );
 		}
 
 	},

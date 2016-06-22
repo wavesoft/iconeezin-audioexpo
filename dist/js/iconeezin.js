@@ -76,13 +76,18 @@ var Iconeezin =
 	// Load components afterwards
 	var AudioCore = __webpack_require__(6);
 	var VideoCore = __webpack_require__(8);
-	var InputCore = __webpack_require__(14);
-	var ExperimentsCore = __webpack_require__(16);
+	var ControlsCore = __webpack_require__(14);
+	var ExperimentsCore = __webpack_require__(19);
 
 	/**
 	 * Expose useful parts of the runtime API
 	 */
 	module.exports = {
+
+		// Iconeezin Configuration
+		'Config': {
+			'up': new libTHREE.Vector3( 0,0,1 )
+		},
 
 		// Iconeezin API
 		'API': IconeezinAPI,
@@ -92,16 +97,50 @@ var Iconeezin =
 
 			'Audio': AudioCore,
 			'Video': VideoCore,
-			'Input': InputCore,
+			'Controls': ControlsCore,
 			'Experiments': ExperimentsCore,
 
 			// Initialize helper
 			'initialize': function( viewportDOM ) {
+
+				// Initialize core components
 				VideoCore.initialize( viewportDOM );
 				AudioCore.initialize(),
-				InputCore.initialize();
+				ControlsCore.initialize();
 				ExperimentsCore.initialize();
-			}
+
+				// Register for some critical DOM events
+				var handleFullScreenChange = function() {
+					var is_fullscreen = 
+						document.fullscreenElement ||
+						document.webkitFullscreenElement ||
+						document.mozFullScreenElement ||
+						document.msFullscreenElement;
+
+					// Forward this events to important components
+					ControlsCore.mouseControl.handleFullScreenChange(is_fullscreen);
+
+				};
+
+				// Register full screen handler
+				document.addEventListener("fullscreenchange", handleFullScreenChange);
+				document.addEventListener("webkitfullscreenchange", handleFullScreenChange);
+				document.addEventListener("mozfullscreenchange", handleFullScreenChange);
+				document.addEventListener("MSFullscreenChange", handleFullScreenChange);
+
+			},
+
+			// Enable/Disable HMD
+			'setHMD': function( enabled ) {
+				VideoCore.setHMD( enabled );
+				ControlsCore.setHMD( enabled );
+			},
+
+			// Enable/Disable paused state
+			'setPaused': function( enabled ) {
+				VideoCore.setPaused( enabled );
+				ControlsCore.setPaused( enabled );
+			},
 
 		},
 
@@ -43348,6 +43387,9 @@ var Iconeezin =
 	 */
 	VideoCore.initialize = function( rootDOM ) {
 
+		// Keep a reference to the root DOM
+		this.rootDOM = rootDOM;
+
 		// Create a new viewport instance
 		this.viewport = new Viewport( rootDOM, {} );
 
@@ -54285,31 +54327,245 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Video = __webpack_require__(8);
+	var VideoCore = __webpack_require__(8);
 
-	var Controls = __webpack_require__(15);
+	var PathFollower = __webpack_require__(15);
+	var MouseControl = __webpack_require__(17);
+	var VRControl = __webpack_require__(18);
 
 	/**
-	 * The InputCore singleton contains the
+	 * The ControlsCore singleton contains the
 	 * global user input management API.
 	 */
-	var InputCore = {};
+	var ControlsCore = {};
 
 	/**
 	 * Initialize the input core
 	 */
-	InputCore.initialize = function() {
+	ControlsCore.initialize = function() {
 
-		// Initialize controls
-		this.controls = new Controls( Video.viewport );
+		// Register render callback
+		VideoCore.viewport.addRenderListener( this.onUpdate.bind(this) );
+
+		// Base controls 
+		this.mouseControl = new MouseControl();
+		this.vrControl = new VRControl();
+
+		// Position-only controls
+		this.pathFollower = new PathFollower();
+
+		// Array of overall controls instances
+		this.controls = [
+			this.pathFollower,
+			this.mouseControl, 
+			this.vrControl
+		];
+
+		// Default propeties
+		this.paused = true;
+		this.hmd = false;
+
+		// Default location
+		this.zeroPosition = new THREE.Vector3(0,0,3);
+		this.zeroRotation = new THREE.Euler(Math.PI/2,0,0);
+
+	}
+
+	/**
+	 * Start/Stop video animation
+	 */
+	ControlsCore.setHMD = function( hmd ) {
+		if (this.hmd = hmd) {
+			// Enable VR Control
+			if (!this.paused) this.vrControl.enable();
+			this.mouseControl.disable();
+		} else {
+			// Enable Mouse Control
+			if (!this.paused) this.mouseControl.enable();
+			this.vrControl.disable();
+		}
+	}
+
+	/**
+	 * Pause/Unpause video grabbing
+	 */
+	ControlsCore.setPaused = function( paused ) {
+		// Disable everything
+		if (this.paused = paused) {
+			this.vrControl.disable();
+			this.mouseControl.disable();
+
+		// Enable appropriate component
+		} else {
+			if (this.hmd) {
+				this.vrControl.enable();
+			} else {
+				this.mouseControl.enable();
+			}
+		}
+	}
+
+	/**
+	 * Enable the path follower
+	 */
+	ControlsCore.followPath = function( curve, options ) {
+
+		// Setup and enable path follower
+		this.pathFollower.followPath( curve, options );
+		this.pathFollower.enable();
+
+	}
+
+	/**
+	 * Update all the camera controls
+	 */
+	ControlsCore.onUpdate = function( delta ) {
+
+		// Update everything
+		this.vrControl.triggerUpdate( delta );
+		this.mouseControl.triggerUpdate( delta );
+		this.pathFollower.triggerUpdate( delta );
+
+		// Reset position
+		var camera = VideoCore.viewport.camera;
+		camera.position.copy(this.zeroPosition);
+		camera.rotation.copy(this.zeroRotation);
+		camera.updateMatrix();
+
+		// Apply translation
+		for (var i=0, l=this.controls.length; i<l; ++i) {
+			if (!this.controls[i].enabled) continue;
+			camera.applyMatrix( this.controls[i].rotationMatrix );
+		}
+
+		// Apply rotation
+		for (var i=0, l=this.controls.length; i<l; ++i) {
+			if (!this.controls[i].enabled) continue;
+			camera.applyMatrix( this.controls[i].translationMatrix );
+		}
 
 	}
 
 	// Export
-	module.exports = InputCore;
+	module.exports = ControlsCore;
 
 /***/ },
 /* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var THREE = __webpack_require__(1);
+	var BaseControl = __webpack_require__(16);
+
+	/**
+	 * Camera path locks camera into a 3D curve
+	 */
+	var PathFollower = function( ) {
+		BaseControl.call( this );
+
+		// Path properties
+		this.path = undefined;
+		this.callback = undefined;
+		this.speed = 0.0;
+		this.matrix = new THREE.Matrix4();
+		this.j = 0;
+
+		// The up plane
+		this.plane = new THREE.Plane(
+				new THREE.Vector3(0,0,1),
+				new THREE.Vector3(-1,0,0)
+			);
+
+	}
+
+	/**
+	 * Subclass from base controls
+	 */
+	PathFollower.prototype = Object.create( BaseControl.prototype );
+
+	/**
+	 * Specify the path to follow
+	 */
+	BaseControl.prototype.followPath = function( path, options ) {
+
+		// Prepare options
+		var opt = options || {},
+			speed = opt.speed || 0.01;
+
+		// Calculate speed
+		var len = path.getLength();
+		this.speed = speed / len;
+
+		// Keep refernces
+		this.path = path;
+		this.callback = opt.callback;
+		if (opt.matrix) {
+			this.matrix.copy( opt.matrix );
+		} else {
+			this.matrix.identity();
+		}
+
+		// Start path
+		this.j = 0;
+
+	};
+
+	/**
+	 * Update 
+	 */
+	BaseControl.prototype.onUpdate = function( delta ) {
+
+		// Get point
+		var pt = this.path.getPointAt(this.j).applyMatrix4(this.matrix),
+			pa = this.path.getTangentAt(this.j).applyMatrix4(this.matrix).normalize();
+
+		// Create translation vector
+		console.log(pt);
+		this.translationMatrix.makeTranslation(pt.x, pt.y, pt.z);
+
+		// // Create a rotation matrix
+		// this.rotationMatrix.identity();
+		// this.rotationMatrix.lookAt( pt, npt, up );
+
+		// Move forward
+		this.j += this.speed * delta / 1000;
+		if (this.j > 1.0)
+			this.j = 1.0;
+
+		// Disable either through callback, or after we completed the animation
+		if (this.callback) this.callback(this.j);
+		if ((this.j >= 1) && (this.enabled))
+			this.disable();
+
+	};
+
+	// Export
+	module.exports = PathFollower;
+
+
+/***/ },
+/* 16 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54335,39 +54591,75 @@ var Iconeezin =
 	 */
 
 	/**
-	 * Unified controls interface
+	 * Base class for other camera controls
 	 */
-	var Controls = function( viewport ) {
+	var BaseControl = function( ) {
 
-		// Keep a reference to the viewport
-		this.viewport = viewport;
+		/**
+		 * If set to true this will enable this control component
+		 */
+		this.enabled = false;
 
-		// Create a cursor
-		this.cursor = new THREE.Mesh(
-			new THREE.RingGeometry( 0.02, 0.04, 32 ),
-			new THREE.MeshBasicMaterial( {
-				color: 0xffffff,
-				opacity: 0.5,
-				transparent: true
-			} )
-		);
-		this.cursor.position.z = - 2;
+		/**
+		 * Translation matrix
+		 */
+		this.translationMatrix = new THREE.Matrix4();
 
-		// Put it on the camera
-		this.viewport.camera.add( this.cursor );
-
-		// Create a raycaster
-		this.raycaster = new THREE.Raycaster();
+		/**
+		 * Quaternion
+		 */
+		this.rotationMatrix = new THREE.Matrix4();
 
 	}
 
+	/**
+	 * Disable control
+	 */
+	BaseControl.prototype.disable = function() {
+		this.enabled = false;
+	};
+
+	/**
+	 * Enable object controls
+	 */
+	BaseControl.prototype.enable = function() {
+		this.enabled = true;
+	};
+
+	/**
+	 * Trigger update
+	 */
+	BaseControl.prototype.triggerUpdate = function( delta ) {
+		if (!this.enabled) return;
+		this.onUpdate( delta );
+		this.onApplyPosition( delta );
+		this.onApplyQuaternion( delta );
+	};
+
+
+	/**
+	 * Function called when the controls must apply their
+	 * transformations to the object.
+	 */
+	BaseControl.prototype.onUpdate = function( delta ) {
+
+	};
+
+	BaseControl.prototype.onApplyPosition = function( delta ) {
+
+	};
+
+	BaseControl.prototype.onApplyQuaternion = function( delta ) {
+
+	};
+
 
 	// Export
-	module.exports = Controls;
+	module.exports = BaseControl;
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -54392,10 +54684,226 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Video = __webpack_require__(8);
+	var VideoCore = __webpack_require__(8);
+	var BaseControl = __webpack_require__(16);
 
-	var Experiments = __webpack_require__(17);
-	var Loaders = __webpack_require__(18);
+	/**
+	 * Camera path locks camera into a 3D curve
+	 */
+	var MouseControl = function( ) {
+		BaseControl.call( this );
+
+		// Hook for pointer lock events
+		document.addEventListener( 'pointerlockchange', this.handlePointerLockChange.bind(this), false );
+		document.addEventListener( 'mozpointerlockchange', this.handlePointerLockChange.bind(this), false );
+		document.addEventListener( 'webkitpointerlockchange', this.handlePointerLockChange.bind(this), false );
+
+		// Hook for pointer lock errors
+		document.addEventListener( 'pointerlockerror', this.handlePointerLockError.bind(this), false );
+		document.addEventListener( 'mozpointerlockerror', this.handlePointerLockError.bind(this), false );
+		document.addEventListener( 'webkitpointerlockerror', this.handlePointerLockError.bind(this), false );
+
+		// Register a mouse handler
+		document.addEventListener( 'mousemove', this.handleMouseMove.bind(this), false );
+
+		// Delta movement
+		this.zero = new THREE.Vector2(0,0);
+		this.delta = new THREE.Vector2(0,0);
+		this.m2 = new THREE.Matrix4();
+
+		// View reset mechanism
+		this.resetSpeed = 0.01;
+		this.resetActive = false;
+		this.resetTimeout = 2000;
+		this.resetTimer = 0;
+
+	}
+
+	/**
+	 * Subclass from base controls
+	 */
+	MouseControl.prototype = Object.create( BaseControl.prototype );
+
+	/**
+	 * 
+	 */
+	MouseControl.prototype.handlePointerLockChange = function( event ) {
+		if ( document.pointerLockElement === VideoCore.rootDOM 
+			|| document.mozPointerLockElement === VideoCore.rootDOM 
+			|| document.webkitPointerLockElement === VideoCore.rootDOM ) {
+
+			console.log("Grabbed!");
+
+		} else {
+
+			console.log("Released!");
+
+		}
+	}
+
+	/**
+	 * 
+	 */
+	MouseControl.prototype.handlePointerLockError = function( event ) {
+
+	}
+
+	/**
+	 * Continue with mouse grabbing only on full screen
+	 */
+	MouseControl.prototype.handleFullScreenChange = function( isFull ) {
+		if (this.enabled && isFull) {
+
+			// Ask the browser to lock the pointer
+			var elm = VideoCore.rootDOM;
+			elm.requestPointerLock = 
+				elm.requestPointerLock || 
+				elm.mozRequestPointerLock || 
+				elm.webkitRequestPointerLock;
+
+			// Lock pointer
+			elm.requestPointerLock();
+
+		}
+	}
+
+	/**
+	 * Handle mouse move event
+	 */
+	MouseControl.prototype.handleMouseMove = function( event ) {
+
+		// Get X/Y Movement
+		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+
+		// Set delta
+		this.delta.x -= movementX * 0.002;
+		this.delta.y -= movementY * 0.002;
+
+		// When the user moves the cursor, reset idle timer
+		this.resetTimer = 0;
+		this.resetActive = true;
+
+	}
+
+
+	/**
+	 * Set cooldown when used with path
+	 */
+	MouseControl.prototype.setResetTimeout = function( timeout, speed ) {
+		this.resetTimeout = timeout;
+		this.resetSpeed = speed || 0.01;
+	}
+
+	/**
+	 * Disable control
+	 */
+	MouseControl.prototype.onUpdate = function( delta ) {
+
+		// Apply horizontal rotation
+		this.rotationMatrix.makeRotationZ( this.delta.x );
+
+		// Apply vertical rotation
+		this.m2.makeRotationX( this.delta.y );
+		this.rotationMatrix.multiply( this.m2 );
+
+		// Handle rotation reset
+		this.resetTimer += delta;
+		if (this.resetActive && (this.resetTimeout > 0)) {
+			if (this.resetTimer > this.resetTimeout) {
+
+				// Apply lerp to self, creating a ease-out effect
+				var a = (this.resetTimer - this.resetTimeout) / 1000 * this.resetSpeed;
+				this.delta.lerp( this.zero, a );
+
+				// Stop when reached close to zero
+				if (this.delta.length() < 0.001) {
+					this.resetActive = false;
+				}
+
+			}
+		}
+
+	}
+
+	// Export
+	module.exports = MouseControl;
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var BaseControl = __webpack_require__(16);
+
+	/**
+	 * Camera path locks camera into a 3D curve
+	 */
+	var VRControls = function( ) {
+		BaseControl.call( this );
+	}
+
+	/**
+	 * Subclass from base controls
+	 */
+	VRControls.prototype = Object.create( BaseControl.prototype );
+
+	// Export
+	module.exports = VRControls;
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var VideoCore = __webpack_require__(8);
+
+	var Experiments = __webpack_require__(20);
+	var Loaders = __webpack_require__(21);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime 
@@ -54412,14 +54920,14 @@ var Iconeezin =
 	ExperimentsCore.initialize = function() {
 
 		// Video must ve initialized
-		if (Video.viewport === undefined)
+		if (VideoCore.viewport === undefined)
 			throw "Initialize video before Experiments";
 
 		// Initialize kernel
 		Loaders.initialize();
 
 		// Create an experiments renderer that uses the viewport
-		this.experiments = new Experiments( Video.viewport );
+		this.experiments = new Experiments( VideoCore.viewport );
 
 		// Dictionary of active experiments
 		this.loadedExperiments = {};
@@ -54449,7 +54957,7 @@ var Iconeezin =
 				if (err) {
 
 					console.error(err);
-					Video.showError( "Loading Error", "Experiment '"+fname+"' could not be loaded. " + err );
+					VideoCore.showError( "Loading Error", "Experiment '"+fname+"' could not be loaded. " + err );
 
 				} else {
 
@@ -54470,7 +54978,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 17 */
+/* 20 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54686,7 +55194,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 18 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -54711,11 +55219,11 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Config = __webpack_require__(19);
+	var Config = __webpack_require__(22);
 
-	var JBBLoader = __webpack_require__(20);
-	var JBBProfileThreeLoader = __webpack_require__(27);
-	var JBBProfileIconeezinLoader = __webpack_require__(29);
+	var JBBLoader = __webpack_require__(23);
+	var JBBProfileThreeLoader = __webpack_require__(30);
+	var JBBProfileIconeezinLoader = __webpack_require__(32);
 
 	/**
 	 * Loaders namespace contains all the different loading
@@ -54820,7 +55328,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54858,7 +55366,7 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -54882,10 +55390,10 @@ var Iconeezin =
 	 */
 
 	/* Imports */
-	var BinaryBundle = __webpack_require__(22);
-	var DecodeProfile = __webpack_require__(23);
-	var ProgressManager = __webpack_require__(24);
-	var Errors = __webpack_require__(25);
+	var BinaryBundle = __webpack_require__(25);
+	var DecodeProfile = __webpack_require__(26);
+	var ProgressManager = __webpack_require__(27);
+	var Errors = __webpack_require__(28);
 
 	/* Production optimisations and debug metadata flags */
 	if (typeof GULP_BUILD === "undefined") var GULP_BUILD = false;
@@ -54895,7 +55403,7 @@ var Iconeezin =
 
 	/* Additional includes on node builds */
 	if (IS_NODE) {
-		var fs = __webpack_require__(26);
+		var fs = __webpack_require__(29);
 	}
 
 	/* Size constants */
@@ -56184,10 +56692,10 @@ var Iconeezin =
 	// Export the binary loader
 	module.exports = BinaryLoader;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -56287,7 +56795,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -56647,7 +57155,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 23 */
+/* 26 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -56764,7 +57272,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 24 */
+/* 27 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -56939,7 +57447,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 25 */
+/* 28 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57038,13 +57546,13 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 26 */
+/* 29 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 27 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -57071,7 +57579,7 @@ var Iconeezin =
 	/* Generated source follows */
 
 	var THREE = __webpack_require__(1);
-	var MD2Character = __webpack_require__(28);
+	var MD2Character = __webpack_require__(31);
 
 	/**
 	 * Factory & Initializer of THREE.CubeTexture
@@ -58843,7 +59351,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 28 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -59107,7 +59615,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 29 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(2);

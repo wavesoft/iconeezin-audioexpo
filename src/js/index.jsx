@@ -22,7 +22,6 @@
 
 var React = require('react');
 var ReactDOM = require('react-dom');
-var Iconeezin = require("iconeezin");
 
 var Viewport = require('./components/Viewport');
 var Welcome = require('./components/Welcome');
@@ -95,9 +94,6 @@ var IconeezinRoot = React.createClass({
 
 			}
 
-			// Apply mute on audio runtime
-			Iconeezin.Runtime.Audio.setGlobalMute( this.state.paused );
-
 		}
 
 	},
@@ -109,10 +105,6 @@ var IconeezinRoot = React.createClass({
 		this.setState({ 'paused': false, 'hmd': false });
 	},
 	handleStartHMD: function() {
-		this.setState({ 'paused': false, 'hmd': true });
-	},
-	handleStart: function(hmd) {
-		alert('handling!');
 		this.setState({ 'paused': false, 'hmd': true });
 	},
 	handlePause: function() {
