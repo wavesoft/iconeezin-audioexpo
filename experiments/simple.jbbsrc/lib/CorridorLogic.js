@@ -35,7 +35,7 @@ var CorridorLogic = function( corridor ) {
 
 	// Create three different corridors
 	this.objects = [];
-	for (var i=0; i<4; i++) {
+	for (var i=0; i<5; i++) {
 
 		// Create a few invisible items
 		var obj = corridor.clone();
@@ -47,9 +47,8 @@ var CorridorLogic = function( corridor ) {
 
 	}
 
-	// 16.192392349243164, y: 0, z: 43.19241714477539
-	// -19.0919, 41.9914
-	// x=2.8996, y=1.201
+	// Zero matrix
+	this.zeroMatrix = this.objects[0].matrix.clone();
 
 	// Prepare transformation matrices
 	this.matLeft = new THREE.Matrix4();
@@ -69,26 +68,26 @@ var CorridorLogic = function( corridor ) {
 	this.leftInteraction.updateMatrix();
 	this.leftInteraction.material.visible = false;
 
-	// Clone to right
+	// Clone to right interaction box
 	this.rightInteraction = this.leftInteraction.clone();
 
 	// Prepare intersection box transformation matrices
 	var tboxMatrix = new THREE.Matrix4();
-	tboxMatrix.makeTranslation( -4.94975,27.8492, 0);
+	tboxMatrix.makeTranslation( -6.36396,29.2635, 0);
 	tboxMatrix.multiply( new THREE.Matrix4().makeRotationZ( Math.PI/4 ) );
 	this.leftInteraction.applyMatrix( tboxMatrix );
-	tboxMatrix.makeTranslation( 4.94975,27.8492, 0);
+	tboxMatrix.makeTranslation( 6.36396,29.2635, 0);
 	tboxMatrix.multiply( new THREE.Matrix4().makeRotationZ( -Math.PI/4 ) );
 	this.rightInteraction.applyMatrix( tboxMatrix );
 
-	// Left and right camera splines
-	this.splineLeft = new THREE.CubicBezierCurve3(
+	// Left and right camera paths
+	this.pathLeft = new THREE.CubicBezierCurve3(
 			new THREE.Vector3(   0.0000, 0.00000, 3 ),
 			new THREE.Vector3(   0.0000, 22.0000, 3 ),
 			new THREE.Vector3(   0.0000, 22.0000, 3 ),
 			new THREE.Vector3( -19.0919, 41.9914, 3 )
 		);
-	this.splineRight = new THREE.CubicBezierCurve3(
+	this.pathRight = new THREE.CubicBezierCurve3(
 			new THREE.Vector3(   0.0000, 0.00000, 3 ),
 			new THREE.Vector3(   0.0000, 22.0000, 3 ),
 			new THREE.Vector3(   0.0000, 22.0000, 3 ),
@@ -135,48 +134,72 @@ CorridorLogic.prototype = Object.create( THREE.Object3D.prototype );
  * Run experiment and callback when we have results and we can 
  * immediately chain another experiment
  */
-CorridorLogic.prototype.runExperiment = function( cb ) {
-
-	// Pick a random direction
-	var initial_direction = DIRECTION_LEFT;
-	if (Math.random() > 0.5) initial_direction = DIRECTION_RIGHT;
+CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cbComplete ) {
+	var calledFinal = false;
 
 	// Create a new corridor crossing
 	//
 	// It returns the [left,right] corridor objects
 	// to be used as our next reference object.
 	//
+	// console.log("----[ Reference ]----------------");
+	// console.log("uuid=",this.referenceObject.uuid);
+	// console.log("pos=",this.referenceObject.position);
+	// console.log("rot=",this.referenceObject.rotation);
+	// console.log("scl=",this.referenceObject.scale);
+	// console.log("---------------------------------");
 	var corridors = this.createCrossing( this.referenceObject );
 
 	// Reset properties
 	this.direction = DIRECTION_UNKNOWN;
 	this.canChangeDirection = true;
 
+	// Turn on interaction
+	this.leftInteraction.visible = true;
+	this.rightInteraction.visible = true;
+
 	// Start camera path on a random direction
 	Iconeezin.Runtime.Controls.followPath( 
-		[ this.splineLeft, this.splineRight ][initial_direction], {
-		'speed': 2, 
-		'matrix': this.referenceObject.matrix,
+		[ this.pathLeft, this.pathRight ][initial_direction], {
+		'speed': 4, 
+		'matrix': this.referenceObject.matrix.clone(),
 		'callback': (function(v) {
 			if (v == 1) {
 
 				// Pick final direction
 				var f_direction = this.direction;
-				if (f_direction == DIRECTION_UNKNOWN)
+				if (f_direction === DIRECTION_UNKNOWN)
 					f_direction = initial_direction;
 
 				// Chose appropriate reference object for next corridor building
 				this.referenceObject = corridors[ f_direction ];
 
 				// Callback when completed
-				if (cb) cb( this.direction );
+				cbComplete( this.direction );
 
 			} else if (v < 0.5) {
-				// Up to 60% of animation, we can change direction
+
+				// Up to 50% of animation, we can change direction
 				this.canChangeDirection = true;
+
 			} else {
-				// After that we cannot
+
+				// After that we cannot change direction any longer
 				this.canChangeDirection = false;
+
+				// Call final callback when user cannot turn any more
+				if (!calledFinal) {
+
+					// Call final
+					cbFinal( this.direction );
+					calledFinal = true;
+
+					// Turn off further interaction
+					this.leftInteraction.visible = false;
+					this.rightInteraction.visible = false;
+
+				}
+
 			}
 		}).bind(this)
 	});
@@ -191,12 +214,12 @@ CorridorLogic.prototype.setDirection = function( direction ) {
 
 		case DIRECTION_LEFT:
 			console.log("Switching to LEFT");
-			Iconeezin.Runtime.Controls.replaceFollowPath( this.splineLeft );
+			Iconeezin.Runtime.Controls.replaceFollowPath( this.pathLeft );
 			break;
 
 		case DIRECTION_RIGHT:
 			console.log("Switching to RIGHT");
-			Iconeezin.Runtime.Controls.replaceFollowPath( this.splineRight );
+			Iconeezin.Runtime.Controls.replaceFollowPath( this.pathRight );
 			break;
 
 	}
@@ -222,12 +245,14 @@ CorridorLogic.prototype.createCrossing = function( reference ) {
 	oR.visible = true;
 
 	// Copy matrices from the reference object
-	oL.matrix.copy( reference.matrix );
-	oR.matrix.copy( reference.matrix );
+	oL.matrix.copy( this.zeroMatrix );
+	oR.matrix.copy( this.zeroMatrix );
 
 	// Apply left + right matrices
 	oL.applyMatrix( this.matLeft );
+	oL.applyMatrix( reference.matrix );
 	oR.applyMatrix( this.matRight );
+	oR.applyMatrix( reference.matrix );
 
 	// Put interactions
 	reference.add( this.leftInteraction );
@@ -237,41 +262,6 @@ CorridorLogic.prototype.createCrossing = function( reference ) {
 	return [oL, oR];
 
 }
-
-/**
- * Handle update
- */
-CorridorLogic.prototype.onUpdate = function(delta) {
-
-	// this.t += delta / 1000;
-
-	// var prev = Iconeezin.Runtime.Video.viewport.camera.position.clone();
-
-	// // var axis = new THREE.Vector3();
-	// // var up = new THREE.Vector3(0, 1, 0);
-
-	// var i = (1 + Math.sin(this.t)) / 2.0
-	// var spline = this.splineRight;
-
-	// var p_point = spline.getPointAt( i );
-	// // var p_next = spline.getPointAt( i+0.01 );
-
-	// var p_next = p_point.clone()
-	// 				.sub( Iconeezin.Runtime.Video.viewport.camera.position )
-	// 				.add( p_point );
-
-	// Iconeezin.Runtime.Video.viewport.camera.position.copy( p_point );
-	// Iconeezin.Runtime.Video.viewport.camera.lookAt( p_next, new THREE.Vector3(0,1,0) );
-
-	// var p_tangent = spline.getTangentAt( i ).normalize();
-
- 	// axis.crossVectors( up, p_tangent ).normalize();
-    // var radians = Math.acos( up.dot( p_tangent ) );
-
-	// Iconeezin.Runtime.Video.viewport.camera.position.copy( p_point );
-    // Iconeezin.Runtime.Video.viewport.camera.quaternion.setFromAxisAngle( axis, radians );
-
-};
 
 /**
  * Implement the animation function

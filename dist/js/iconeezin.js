@@ -78,6 +78,7 @@ var Iconeezin =
 	var VideoCore = __webpack_require__(8);
 	var ControlsCore = __webpack_require__(14);
 	var ExperimentsCore = __webpack_require__(20);
+	var InteractionCore = __webpack_require__(34);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -99,6 +100,7 @@ var Iconeezin =
 			'Video': VideoCore,
 			'Controls': ControlsCore,
 			'Experiments': ExperimentsCore,
+			'Interaction': InteractionCore,
 
 			// Initialize helper
 			'initialize': function( viewportDOM ) {
@@ -108,6 +110,7 @@ var Iconeezin =
 				AudioCore.initialize(),
 				ControlsCore.initialize();
 				ExperimentsCore.initialize();
+				InteractionCore.initialize();
 
 				// Register for some critical DOM events
 				var handleFullScreenChange = function() {
@@ -55075,8 +55078,8 @@ var Iconeezin =
 	PathFollower.prototype.onUpdate = function( delta ) {
 
 		// Get point
-		var p_pos = this.path.getPointAt(this.j).applyMatrix4(this.opt.matrix),
-			p_dir = this.path.getTangentAt(this.j).applyMatrix4(this.opt.matrix).normalize();
+		var p_pos = this.path.getPointAt(this.j),
+			p_dir = this.path.getTangentAt(this.j).normalize();
 
 		// Update position
 		this.target.position.copy( p_pos );
@@ -55090,6 +55093,10 @@ var Iconeezin =
 		// Update direction
 		this.target.up = p_dir;
 		this.target.lookAt( p_pos.add( vec ) );
+
+		// Apply matrix
+		this.target.updateMatrix();
+		this.target.applyMatrix(this.opt.matrix);
 
 		// Ease-apply updates to gimbal
 		this.gimbal.up = p_dir;
@@ -60266,6 +60273,56 @@ var Iconeezin =
 				}
 			}
 	};
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	/**
+	 * Interaction core exposes all the user-computer interaction API
+	 */
+	var InteractionCore = { };
+
+	/**
+	 * Initialize interaction core
+	 */
+	InteractionCore.initialize = function() {
+		
+	}
+
+	/**
+	 * Say something to the user
+	 */
+	InteractionCore.say = function( phrase ) {
+		var msg = new SpeechSynthesisUtterance( phrase );
+	    window.speechSynthesis.speak(msg);
+	}
+
+	// Export regitry
+	module.exports = InteractionCore;
 
 
 /***/ }

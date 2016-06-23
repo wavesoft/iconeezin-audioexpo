@@ -1,6 +1,6 @@
 
 var THREE = require('three');
-var IconeezinAPI = require('iconeezin/api');
+var Iconeezin = require('iconeezin');
 
 var CorridorLogic = require('./lib/CorridorLogic');
 
@@ -8,13 +8,13 @@ var CorridorLogic = require('./lib/CorridorLogic');
  * Experiment logic
  */
 var Experiment = function( db ) {
-	IconeezinAPI.Experiment.call(this, db);
+	Iconeezin.API.Experiment.call(this, db);
 
 	// Camera enters from corridor entrance
 	this.anchor.position.set( 0, 0, 3 );
 	this.anchor.direction.set( 0, 1, 0 );
 
-	// Get corridor geometry & bring to proper coordinates
+	// Get corridor model from database
 	var geom = db['simple/models/corridor'];
 
 	// Replace materials with MeshNormal Material
@@ -24,55 +24,74 @@ var Experiment = function( db ) {
 		}
 	});
 
-	// Create corridors
+	// Create corridor logic that repeats the corridor objects
+	// and calculate the correct animation path for every experiment
 	this.corridors = new CorridorLogic( geom )
 	this.add( this.corridors );
 
 };
 
 /**
- * Subclass from IconeezinAPI.Experiment
+ * Subclass from Iconeezin.API.Experiment
  */
-Experiment.prototype = Object.create( IconeezinAPI.Experiment.prototype );
+Experiment.prototype = Object.create( Iconeezin.API.Experiment.prototype );
 
 /**
  * Start experiment when shown
  */
 Experiment.prototype.onShown = function() {
 
+	var phrase_ok = [ "πολύ ωραία!", "εξαιρετικά!", "σωστά!", "μπράβο!" ];
+	var phrase_err = [ "Δυστυχώς κάνατε λάθος. Ήταν το άλλο.", "Δεν πειράζει. Την επόμενη φορά!" ];
+
+	// Helper function to call on every iteration
 	var experimentIteration = (function() {
-		this.corridors.runExperiment( function(dir) {
 
-			// Loop
-			console.log("dir =",dir);
-			experimentIteration();
+		// Pick a random direction
+		var correct_direction = 0;
+		if (Math.random() > 0.5) correct_direction = 1;
 
-		});
+		// Say direction
+		var name = [ "αριστερά", "δεξιά" ][correct_direction];
+		Iconeezin.Runtime.Interaction.say("Στρίψτε "+name);
+
+		// Tell corridor logic to start running a new experiment
+		//
+		// when the user has selected a final corridor the callback
+		// will be fired, with the appropriate direction.
+		//
+		this.corridors.runExperiment(
+
+			// Start from opposite direction
+			(correct_direction == 0) ? 1 : 0,
+
+			// Handle user response
+			function(dir) {
+				// Process results
+				if (dir == correct_direction) {
+					Iconeezin.Runtime.Interaction.say( phrase_ok[Math.floor(Math.random()*phrase_ok.length)] );
+				} else {
+					Iconeezin.Runtime.Interaction.say( phrase_err[Math.floor(Math.random()*phrase_err.length)] );
+				}
+			},
+
+			// Re-schedule at completion
+			function(dir) {
+
+				// Schedule a new iteration
+				experimentIteration();
+
+			}
+		);
+
 	}).bind(this);
 
+	// Start first iteration
 	experimentIteration();
+
 }
 
 /**
- * Register a render update function
+ * Expose experiment entry point
  */
-Experiment.prototype.onUpdate = function(delta) {
-
-	// for (var i=0; i<this.cubes.length; i++) {
-	// 	this.cubes[i].rotation.z += delta / 1000;
-	// 	this.cubes[i].rotation.x += delta / 1000;
-	// }
-
-	// this.t += delta / 10000;
-	// // this.m.position.z = Math.sin(this.t) * 10;
-
-	// this.geom.rotation.z += delta / 1000;
-	// this.geom.rotation.x += delta / 1000;
-
-	// this.corridors.position.z = -((Math.sin(this.t)+1)/2.0) * 20;
-
-	// this.corridors.onUpdate( delta );
-
-}
-
 module.exports = Experiment;
