@@ -24,48 +24,9 @@ var Experiment = function( db ) {
 		}
 	});
 
+	// Create corridors
 	this.corridors = new CorridorLogic( geom )
 	this.add( this.corridors );
-
-	// this.add( geom );
-
-	// var geom = db['simple/geometry/corridor'];
-	// var mesh = new THREE.Mesh( geom, new THREE.MeshNormalMaterial() );
-	// this.add( mesh );
-
-	// Add a light
-	// this.add( new THREE.AmbientLight(0xffffff) );
-
-	// var geometry = new THREE.BoxGeometry( 10, 10, 10 );
-	// var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
-
-	// // Create a bunch of cubes
-	// this.cubes = [];
-	// for (var i=0; i<500; i++) {
-	// 	var cube = new THREE.Mesh( geometry, material );
-	// 	cube.position.set(
-	// 			Math.random() * 500 - 250,
-	// 			Math.random() * 500 - 250,
-	// 			Math.random() * 500 - 250
-	// 		);
-	// 	cube.rotation.set(
-	// 			Math.random() * 3,
-	// 			Math.random() * 3,
-	// 			Math.random() * 3
-	// 		);
-	// 	this.cubes.push(cube);
-
-	// 	// Put on scene
-	// 	this.add( cube );
-
-	// }
-
-	this.t = 0;
-
-	// // Create some point light 
-	// var light = new THREE.PointLight( 0xffffff, 1, 1000 );
-	// light.position.set( 50,50,50 );
-	// this.add( light );
 
 };
 
@@ -73,6 +34,24 @@ var Experiment = function( db ) {
  * Subclass from IconeezinAPI.Experiment
  */
 Experiment.prototype = Object.create( IconeezinAPI.Experiment.prototype );
+
+/**
+ * Start experiment when shown
+ */
+Experiment.prototype.onShown = function() {
+
+	var experimentIteration = (function() {
+		this.corridors.runExperiment( function(dir) {
+
+			// Loop
+			console.log("dir =",dir);
+			experimentIteration();
+
+		});
+	}).bind(this);
+
+	experimentIteration();
+}
 
 /**
  * Register a render update function

@@ -77,7 +77,7 @@ var Iconeezin =
 	var AudioCore = __webpack_require__(6);
 	var VideoCore = __webpack_require__(8);
 	var ControlsCore = __webpack_require__(14);
-	var ExperimentsCore = __webpack_require__(19);
+	var ExperimentsCore = __webpack_require__(20);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -41947,6 +41947,7 @@ var Iconeezin =
 		 */
 		'AnimatedObject3D': ThreeAPI.AnimatedObject3D,
 		'InteractiveObject3D': ThreeAPI.InteractiveObject3D,
+		'makeInteractive': ThreeAPI.makeInteractive,
 
 		/**
 		 * Experiments API
@@ -42186,6 +42187,12 @@ var Iconeezin =
 	 */
 	var InteractiveObject3D = function( url ) {
 		THREE.Object3D.call(this);
+
+		/**
+		 * If TRUE gaze interaction will be enabled for this object
+		 */
+		this.gaze = true;
+
 	};
 
 	/**
@@ -42194,11 +42201,75 @@ var Iconeezin =
 	InteractiveObject3D.prototype = Object.create( THREE.Object3D.prototype );
 
 	/**
-	 * An interaction occured with the interactive object
+	 * Handle mouse over event
 	 */
-	InteractiveObject3D.prototype.onInteract = function( action ) {
+	InteractiveObject3D.prototype.onMouseOver = function() {
 
 	};
+
+	/**
+	 * Handle mouse over event
+	 */
+	InteractiveObject3D.prototype.onMouseOut = function() {
+
+	};
+
+	/**
+	 * Handle mouse down
+	 */
+	InteractiveObject3D.prototype.onMouseDown = function( e ) {
+
+	};
+
+	/**
+	 * Handle mouse up event
+	 */
+	InteractiveObject3D.prototype.onMouseUp = function( e ) {
+
+	};
+
+	/**
+	 * Handle click event
+	 */
+	InteractiveObject3D.prototype.onClick = function( e ) {
+
+	};
+
+	/**
+	 * Interaction event
+	 */
+	InteractiveObject3D.prototype.onInteract = function( e ) {
+
+	};
+
+	/**
+	 * Helper function to expose only onInteract
+	 */
+	var makeInteractive = function( object, options ) {
+
+		// Prepare interaction options
+		var opt = {};
+		if (typeof(options) == 'object') {
+			opt.onMouseOver = options.onMouseOver;
+			opt.onMouseOut = options.onMouseOut;
+			opt.onMouseDown = options.onMouseDown;
+			opt.onMouseUp = options.onMouseUp;
+			opt.onClick = options.onClick;
+			opt.onInteract = options.onInteract;
+			opt.gaze = (options.gaze === undefined) ? true : options.gaze;
+		} else {
+			opt.onInteract = options;
+			opt.gaze = true;
+		}
+
+		// Define interact options
+		Object.defineProperty(
+			object, "__interact__", {
+				enumerable: false,
+				value: opt,
+			}
+		);
+	}
 
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -42210,6 +42281,7 @@ var Iconeezin =
 	module.exports = {
 		'AnimatedObject3D': AnimatedObject3D,
 		'InteractiveObject3D': InteractiveObject3D,
+		'makeInteractive': makeInteractive,
 	};
 
 
@@ -54329,9 +54401,11 @@ var Iconeezin =
 
 	var VideoCore = __webpack_require__(8);
 
-	var PathFollower = __webpack_require__(15);
-	var MouseControl = __webpack_require__(17);
-	var VRControl = __webpack_require__(18);
+	var SightInteraction = __webpack_require__(15);
+
+	var PathFollower = __webpack_require__(16);
+	var MouseControl = __webpack_require__(18);
+	var VRControl = __webpack_require__(19);
 
 	/**
 	 * The ControlsCore singleton contains the
@@ -54354,36 +54428,128 @@ var Iconeezin =
 		// Position-only controls
 		this.pathFollower = new PathFollower();
 
-		// Array of overall controls instances
-		this.controls = [
-			this.pathFollower,
-			this.mouseControl, 
-			this.vrControl
-		];
-
 		// Default propeties
 		this.paused = true;
-		this.hmd = false;
+		this.hmd = undefined;
 
 		// Default location
 		this.zeroPosition = new THREE.Vector3(0,0,3);
 		this.zeroRotation = new THREE.Euler(Math.PI/2,0,0);
 
+		// The currently active gimbal object
+		this.scene = VideoCore.viewport.scene;
+		this.gimbal = VideoCore.viewport.camera;
+		this.activeControl = null;
+
+		// Create sight interaction
+		this.interaction = new SightInteraction( VideoCore.viewport );
+
+		// Set defaults
+		this.setHMD( false );
+
+	}
+
+	/**
+	 * Update interactions when something is changed on the viewport
+	 */
+	ControlsCore.updateInteractions = function() {
+		this.interaction.updateFromScene();
 	}
 
 	/**
 	 * Start/Stop video animation
 	 */
 	ControlsCore.setHMD = function( hmd ) {
-		if (this.hmd = hmd) {
-			// Enable VR Control
-			if (!this.paused) this.vrControl.enable();
-			this.mouseControl.disable();
-		} else {
-			// Enable Mouse Control
-			if (!this.paused) this.mouseControl.enable();
-			this.vrControl.disable();
+		if (this.hmd != hmd) {
+
+			// Chain appropriate gimbal
+			if (hmd) {
+
+				// Disable VR Control
+				if (this.hmd === false) {
+					if (this.activeControl) {
+						this.gimbal = this.activeControl.unchainGimbal( this.gimbal );
+					}
+					this.gimbal = this.mouseControl.unchainGimbal();
+					this.mouseControl.disable();
+				}
+
+				// Enable VR Control
+				this.gimbal = this.vrControl.chainGimbal( this.gimbal );
+				this.vrControl.enable();
+
+				// Re-chain base control
+				if (this.activeControl) {
+					this.gimbal = this.activeControl.chainGimbal( this.gimbal );
+				}
+
+				// Add on scene on the correct order
+				this.scene.add( this.gimbal );
+
+			} else {
+
+				// Disable VR Control
+				if (this.hmd === true) {
+					if (this.activeControl) {
+						this.gimbal = this.activeControl.unchainGimbal( this.gimbal );
+					}
+					this.gimbal = this.vrControl.unchainGimbal();
+					this.vrControl.disable();
+				}
+
+				// Enable Mouse Control
+				this.gimbal = this.mouseControl.chainGimbal( this.gimbal );
+				this.mouseControl.enable();
+
+				// Re-chain base control
+				if (this.activeControl) {
+					this.gimbal = this.activeControl.chainGimbal( this.gimbal );
+				}
+
+				// Add on scene on the correct order
+				this.scene.add( this.gimbal );
+
+			}
+
+			// Set HMD
+			this.hmd = hmd;
+
 		}
+	}
+
+	/**
+	 * Activate a particular control
+	 */
+	ControlsCore.activateControl = function( control ) {
+
+		// Deactivate previous control
+		if (this.activeControl)
+			this.deactivateLastControl();
+
+		// Activate
+		this.gimbal = control.chainGimbal( this.gimbal );
+		this.activeControl = control;
+		this.activeControl.enable();
+
+		// Add on scene on the correct order
+		this.scene.add( this.gimbal );
+
+	}
+
+	/**
+	 * Deactivate last control
+	 */
+	ControlsCore.deactivateLastControl = function() {
+		if (!this.activeControl) return;
+
+		// Restore last control gimbal
+		this.gimbal = this.activeControl.unchainGimbal( this.gimbal );
+		this.activeControl.disable();
+		this.activeControl = undefined;
+
+		// Add on scene on the correct order
+		this.scene.add( this.gimbal );
+
 	}
 
 	/**
@@ -54392,16 +54558,29 @@ var Iconeezin =
 	ControlsCore.setPaused = function( paused ) {
 		// Disable everything
 		if (this.paused = paused) {
+			
+			// Disable all controls
 			this.vrControl.disable();
 			this.mouseControl.disable();
 
+			// Disable active control
+			if (this.activeControl)
+				this.activeControl.disable();
+
 		// Enable appropriate component
 		} else {
+
+			// Enable appropriate camera control
 			if (this.hmd) {
 				this.vrControl.enable();
 			} else {
 				this.mouseControl.enable();
 			}
+
+			// Enable active control
+			if (this.activeControl)
+				this.activeControl.enable();
+
 		}
 	}
 
@@ -54412,7 +54591,21 @@ var Iconeezin =
 
 		// Setup and enable path follower
 		this.pathFollower.followPath( curve, options );
-		this.pathFollower.enable();
+		this.activateControl( this.pathFollower );
+
+	}
+
+	/**
+	 * Replace an existing path follower
+	 */
+	ControlsCore.replaceFollowPath = function( curve ) {
+
+		// Setup and enable path follower
+		if (this.activeControl === this.pathFollower) {
+			this.pathFollower.replacePath( curve );
+		} else {
+			console.error("Replacing path on a path follower, but path follower is not active!");
+		}
 
 	}
 
@@ -54424,25 +54617,26 @@ var Iconeezin =
 		// Update everything
 		this.vrControl.triggerUpdate( delta );
 		this.mouseControl.triggerUpdate( delta );
-		this.pathFollower.triggerUpdate( delta );
+		if (this.activeControl)
+			this.activeControl.triggerUpdate( delta );
 
-		// Reset position
-		var camera = VideoCore.viewport.camera;
-		camera.position.copy(this.zeroPosition);
-		camera.rotation.copy(this.zeroRotation);
-		camera.updateMatrix();
+		// // Reset position
+		// var camera = VideoCore.viewport.camera;
+		// camera.position.copy(this.zeroPosition);
+		// camera.rotation.copy(this.zeroRotation);
+		// camera.updateMatrix();
 
-		// Apply translation
-		for (var i=0, l=this.controls.length; i<l; ++i) {
-			if (!this.controls[i].enabled) continue;
-			camera.applyMatrix( this.controls[i].rotationMatrix );
-		}
+		// // Apply translation
+		// for (var i=0, l=this.controls.length; i<l; ++i) {
+		// 	if (!this.controls[i].enabled) continue;
+		// 	camera.applyMatrix( this.controls[i].rotationMatrix );
+		// }
 
-		// Apply rotation
-		for (var i=0, l=this.controls.length; i<l; ++i) {
-			if (!this.controls[i].enabled) continue;
-			camera.applyMatrix( this.controls[i].translationMatrix );
-		}
+		// // Apply rotation
+		// for (var i=0, l=this.controls.length; i<l; ++i) {
+		// 	if (!this.controls[i].enabled) continue;
+		// 	camera.applyMatrix( this.controls[i].translationMatrix );
+		// }
 
 	}
 
@@ -54475,8 +54669,342 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
+	var ThreeAPI = __webpack_require__(5);
+
+	const C_DEFAULT = new THREE.Color( 0xffffff );
+	const C_SELECT = new THREE.Color( 0x0066ff );
+	const C_ERROR = new THREE.Color( 0xcc0000 );
+	const CENTER = new THREE.Vector2(0,0);
+
+	const SELECT_DURATION = 0.25;
+	const GAZE_DURATION = 0.75;
+
+	const ANIMATION_STEPS = 20;
+
+	/**
+	 * Sight interaction takes care of raycasting and intersecting
+	 * interesint objects.
+	 */
+	var SightInteraction = function( viewport ) {
+
+		// Keep a reference to the viewport
+		this.viewport = viewport;
+
+		// Compile a few geometries for animating the circle
+		this.animGeometries = [];
+		for (var i=0; i<ANIMATION_STEPS-1; i++) {
+			var ofs = Math.PI*2*(i/ANIMATION_STEPS);
+			this.animGeometries.push(
+				new THREE.RingGeometry( 0.02, 0.04, 20, 1, 
+					Math.PI/2-ofs ,ofs )
+			);
+		}
+		this.animGeometries.push( new THREE.RingGeometry( 0.02, 0.04, 20 ) );
+
+		// Create a cursor
+		this.cursor = new THREE.Mesh(
+			this.animGeometries[ANIMATION_STEPS-1],
+			new THREE.MeshBasicMaterial( {
+				color: C_DEFAULT,
+				opacity: 0.5,
+				transparent: true
+			} )
+		);
+		this.cursor.position.z = -2;
+
+		// Create an animation geometry
+		this.animCursor = new THREE.Mesh(
+			this.animGeometries[1],
+			new THREE.MeshBasicMaterial( {
+				color: C_SELECT
+			} )
+		);
+		this.animCursor.position.z = -1.9;
+		this.animCursor.visible = false;
+
+		// Create a confirmation cursor
+		this.confirmCursor = new THREE.Mesh(
+			new THREE.RingGeometry( 0.01, 0.06, 32 ),
+			new THREE.MeshBasicMaterial( {
+				color: C_DEFAULT,
+				opacity: 1.0,
+				transparent: true
+			} )
+		);
+		this.confirmCursor.position.z = -3;
+		this.confirmCursor.visible = false;
+
+		// Put it on the camera
+		this.viewport.camera.add( this.cursor );
+		this.viewport.camera.add( this.animCursor );
+		this.viewport.camera.add( this.confirmCursor );
+
+		// Confirmation animation
+		this.confirmAnimation = 1.0;
+
+		// Create a raycaster
+		this.raycaster = new THREE.Raycaster();
+		this.raycaster.setFromCamera( { x: 0, y: 0 }, viewport.camera );
+
+		// Interactive objects
+		this.interactiveObjects = [];
+		this.hoverObject = null;
+		this.gazeTimer = 0;
+
+		// Register render listener
+		viewport.addRenderListener( this.onRender.bind(this) );
+
+		// Register a few DOM events
+		document.addEventListener( 'mousedown', this.handleMouseDown.bind(this), false );
+		document.addEventListener( 'mouseup', this.handleMouseUp.bind(this), false );
+		document.addEventListener( 'click', this.handleClick.bind(this), false );
+
+	}
+
+	/**
+	 * Set progression animation
+	 */
+	SightInteraction.prototype.setProgressionAnimation = function(v) {
+
+		// Hide if v=0
+		if (v === 0) {
+			this.animCursor.visible = false;
+
+		// Pick appropriate geometry if v>1
+		} else {
+			
+			// Calculate animation step
+			var i = parseInt( Math.floor( v * ANIMATION_STEPS ) );
+			if (i >= ANIMATION_STEPS) i=ANIMATION_STEPS-1;
+
+			// Apply geometry
+			this.animCursor.visible = true;
+			this.animCursor.geometry = this.animGeometries[i];
+
+		}
+
+	}
+
+	/**
+	 * Change the highlight of the cursor
+	 */
+	SightInteraction.prototype.setHighlight = function( state ) {
+
+		if (state == 0) { /* Default */
+			this.cursor.material.color.copy( C_DEFAULT );
+			this.cursor.material.opacity = 0.5;
+			this.setProgressionAnimation( 0 );
+
+		} else if (state <= 1.0) { /* Fade to selection */
+
+			// Lerp to selection
+			this.animCursor.material.color.copy( C_SELECT );
+			this.setProgressionAnimation( state );
+
+		} else if (state <= 2.0) { /* Fade to error */
+
+			// Lerp to selection
+			this.animCursor.material.color.copy( C_ERROR );
+			this.setProgressionAnimation( state - 1.0 );
+
+		}
+
+	}
+
+	/**
+	 * Play confirmation animation
+	 */
+	SightInteraction.prototype.playConfirmation = function() {
+		this.confirmAnimation = 0.0;
+		this.confirmCursor.visible = true;
+	}
+
+	/**
+	 * Traverse scene and collect interesting objects
+	 */
+	SightInteraction.prototype.updateFromScene = function() {
+
+		// Mouse out of last intersecting
+		this.interactiveObjects = [];
+		this.viewport.scene.traverse((e) => {
+			if (e.__interact__ !== undefined) {
+				this.interactiveObjects.push(e);
+			}
+		});
+
+		console.log("Updated interactive objects:", this.interactiveObjects);
+
+	};
+
+	/**
+	 * Check interactions
+	 */
+	SightInteraction.prototype.handleMouseDown = function( event ) {
+		if (!this.hoverObject) return;
+		if (this.hoverObject.__interact__.onMouseDown)
+			this.hoverObject.__interact__.onMouseDown( event );
+	}
+	SightInteraction.prototype.handleMouseUp = function( event ) {
+		if (!this.hoverObject) return;
+		if (this.hoverObject.__interact__.onMouseUp)
+			this.hoverObject.__interact__.onMouseUp( event );
+	}
+	SightInteraction.prototype.handleClick = function( event ) {
+		if (!this.hoverObject) return;
+
+		// Trigger click event
+		if (this.hoverObject.__interact__.onClick)
+			this.hoverObject.__interact__.onClick();
+
+		// Trigger interact event
+		this.playConfirmation();
+		if (this.hoverObject.__interact__.onInteract)
+			this.hoverObject.__interact__.onInteract();
+
+	}
+
+	/**
+	 * Check interactions
+	 */
+	SightInteraction.prototype.onRender = function( delta ) {
+
+		// Intersect interactive objects
+		this.raycaster.setFromCamera( CENTER, this.viewport.camera );
+		var intersects = this.raycaster.intersectObjects( this.interactiveObjects, true );
+
+		// Trigger events
+		if ( intersects.length > 0 ) {
+			if (intersects[0].object !== this.hoverObject) {
+
+				// Deselect previous object
+				if (this.hoverObject) {
+
+					// Hadle mouse out
+					if (this.hoverObject.__interact__.onMouseOut)
+						this.hoverObject.__interact__.onMouseOut();
+
+					// Reset highlight
+					this.setHighlight(0);
+
+				}
+
+				// Focus new object
+				this.hoverObject = intersects[0].object;
+
+				// Handle mouse over
+				if (this.hoverObject.__interact__.onMouseOver)
+					this.hoverObject.__interact__.onMouseOver();
+
+				// Highlight if not gazing
+				if ( this.hoverObject.__interact__.gaze ) {
+
+					// Reset gaze state
+					this.gazeTimer = 0;
+
+				} else {
+
+					// Just highlight without gazing
+					this.gazeTimer = GAZE_DURATION;
+					this.setHighlight(1);
+
+				}
+
+
+			} else {
+
+				// User is gazing
+				if (this.gazeTimer < GAZE_DURATION) {
+					this.gazeTimer += delta / 1000;
+					var gazeV = this.gazeTimer / GAZE_DURATION;
+					if (gazeV > 1) gazeV = 1;
+
+					// Apply gaze as a color
+					this.setHighlight( gazeV );
+
+					// Interact when user gazes long enough
+					if (gazeV == 1) {
+						this.playConfirmation();
+
+						// Call interaction function
+						if (this.hoverObject.__interact__.onInteract)
+							this.hoverObject.__interact__.onInteract();
+
+					}
+
+				}
+
+			}
+		} else {
+			if (this.hoverObject) {
+
+				// Hadle mouse out
+				if (this.hoverObject.__interact__.onMouseOut)
+					this.hoverObject.__interact__.onMouseOut();
+				this.hoverObject = null;
+
+				// Reset gaze timer
+				this.gazeTimer = 0;
+				this.setHighlight(0);
+
+			}
+		}
+
+		// Update possible confirmation animation
+		if (this.confirmAnimation < 1.0) {
+
+			// Graduately zoom out while fading out
+			this.confirmCursor.scale.setScalar( 1.0 + 10.0 * this.confirmAnimation );
+			this.confirmCursor.material.opacity = 1.0 - this.confirmAnimation;
+
+			// Update animation (0.25 seconds)
+			this.confirmAnimation += (delta / 1000) / 0.25;
+			if (this.confirmAnimation > 1) {
+				this.confirmAnimation = 1.0;
+				this.confirmCursor.visible = false;
+			}
+
+		}
+
+	}
+
+	// Export
+	module.exports = SightInteraction;
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
 	var THREE = __webpack_require__(1);
-	var BaseControl = __webpack_require__(16);
+	var BaseControl = __webpack_require__(17);
+
+	var zero = new THREE.Vector3(0,0,0);
+	var norm = new THREE.Vector3();
+	var vec = new THREE.Vector3();
+	var mat = new THREE.Matrix4();
+	var up = new THREE.Vector3(0,0,1);
 
 	/**
 	 * Camera path locks camera into a 3D curve
@@ -54486,16 +55014,14 @@ var Iconeezin =
 
 		// Path properties
 		this.path = undefined;
-		this.callback = undefined;
-		this.speed = 0.0;
-		this.matrix = new THREE.Matrix4();
+		this.opt = {};
+
+		// Lerping details
+		this.j_speed = 0.0;
 		this.j = 0;
 
-		// The up plane
-		this.plane = new THREE.Plane(
-				new THREE.Vector3(0,0,1),
-				new THREE.Vector3(-1,0,0)
-			);
+		// Intermediate object were to apply changes
+		this.target = new THREE.Object3D();
 
 	}
 
@@ -54507,54 +55033,76 @@ var Iconeezin =
 	/**
 	 * Specify the path to follow
 	 */
-	BaseControl.prototype.followPath = function( path, options ) {
+	PathFollower.prototype.followPath = function( path, options ) {
 
 		// Prepare options
-		var opt = options || {},
-			speed = opt.speed || 0.01;
+		this.opt = options || {}
+		this.opt.speed = this.opt.speed || 0.01;
 
 		// Calculate speed
 		var len = path.getLength();
-		this.speed = speed / len;
+		this.j_speed = this.opt.speed / len;
 
 		// Keep refernces
 		this.path = path;
-		this.callback = opt.callback;
-		if (opt.matrix) {
-			this.matrix.copy( opt.matrix );
-		} else {
-			this.matrix.identity();
+		if (this.opt.matrix === undefined) {
+			this.opt.matrix = new THREE.Matrix4();
 		}
 
 		// Start path
 		this.j = 0;
+		this.firstTangent = true;
 
 	};
 
 	/**
+	 * Replace the path on a progressing animation
+	 */
+	PathFollower.prototype.replacePath = function( path ) {
+
+		// Replace path
+		this.path = path;
+
+		// Recalculate speed
+		var len = path.getLength();
+		this.j_speed = this.opt.speed / len;
+
+	}
+
+	/**
 	 * Update 
 	 */
-	BaseControl.prototype.onUpdate = function( delta ) {
+	PathFollower.prototype.onUpdate = function( delta ) {
 
 		// Get point
-		var pt = this.path.getPointAt(this.j).applyMatrix4(this.matrix),
-			pa = this.path.getTangentAt(this.j).applyMatrix4(this.matrix).normalize();
+		var p_pos = this.path.getPointAt(this.j).applyMatrix4(this.opt.matrix),
+			p_dir = this.path.getTangentAt(this.j).applyMatrix4(this.opt.matrix).normalize();
 
-		// Create translation vector
-		console.log(pt);
-		this.translationMatrix.makeTranslation(pt.x, pt.y, pt.z);
+		// Update position
+		this.target.position.copy( p_pos );
 
-		// // Create a rotation matrix
-		// this.rotationMatrix.identity();
-		// this.rotationMatrix.lookAt( pt, npt, up );
+		// Find the binormal vector
+		vec.crossVectors( p_dir, up );
+
+		// Find the up vector
+		vec.crossVectors( vec, p_dir );
+
+		// Update direction
+		this.target.up = p_dir;
+		this.target.lookAt( p_pos.add( vec ) );
+
+		// Ease-apply updates to gimbal
+		this.gimbal.up = p_dir;
+		this.gimbal.position.lerp( this.target.position, 0.1 );
+		this.gimbal.quaternion.slerp( this.target.quaternion, 0.1 );
 
 		// Move forward
-		this.j += this.speed * delta / 1000;
+		this.j += this.j_speed * delta / 1000;
 		if (this.j > 1.0)
 			this.j = 1.0;
 
 		// Disable either through callback, or after we completed the animation
-		if (this.callback) this.callback(this.j);
+		if (this.opt.callback) this.opt.callback(this.j);
 		if ((this.j >= 1) && (this.enabled))
 			this.disable();
 
@@ -54565,7 +55113,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54601,16 +55149,31 @@ var Iconeezin =
 		this.enabled = false;
 
 		/**
-		 * Translation matrix
+		 * Gimbal object
 		 */
-		this.translationMatrix = new THREE.Matrix4();
-
-		/**
-		 * Quaternion
-		 */
-		this.rotationMatrix = new THREE.Matrix4();
+		this.gimbal = new THREE.Object3D();
 
 	}
+
+	/**
+	 * Chain given object in our gimbal and return the object
+	 */
+	BaseControl.prototype.chainGimbal = function( gimbal ) {
+		this.gimbal.add( gimbal );
+		return this.gimbal;
+	};
+
+	/**
+	 * Unchained the gimbal object and return it
+	 */
+	BaseControl.prototype.unchainGimbal = function( gimbal ) {
+		if (gimbal !== this.gimbal)
+			throw "Trying to unchain a gimbal at wrong index!";
+
+		var child = this.gimbal.children[0];
+		this.gimbal.remove( child );
+		return child;
+	};
 
 	/**
 	 * Disable control
@@ -54659,7 +55222,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -54685,7 +55248,9 @@ var Iconeezin =
 	 */
 
 	var VideoCore = __webpack_require__(8);
-	var BaseControl = __webpack_require__(16);
+	var BaseControl = __webpack_require__(17);
+
+	const PI_2 = Math.PI / 2;
 
 	/**
 	 * Camera path locks camera into a 3D curve
@@ -54706,10 +55271,17 @@ var Iconeezin =
 		// Register a mouse handler
 		document.addEventListener( 'mousemove', this.handleMouseMove.bind(this), false );
 
+		// Prepare nexted Y/P objects
+		this.pitchObject = new THREE.Object3D();
+		this.yawObject = new THREE.Object3D();
+		this.yawObject.add( this.pitchObject );
+
+		// Why??
+		// this.yawObject.position.y = 10;
+
 		// Delta movement
 		this.zero = new THREE.Vector2(0,0);
 		this.delta = new THREE.Vector2(0,0);
-		this.m2 = new THREE.Matrix4();
 
 		// View reset mechanism
 		this.resetSpeed = 0.01;
@@ -54723,6 +55295,26 @@ var Iconeezin =
 	 * Subclass from base controls
 	 */
 	MouseControl.prototype = Object.create( BaseControl.prototype );
+
+	/**
+	 * Chain given object in our gimbal and return the object
+	 */
+	MouseControl.prototype.chainGimbal = function( gimbal ) {
+		this.pitchObject.add( gimbal );
+		return this.yawObject;
+	};
+
+	/**
+	 * Unchained the gimbal object and return it
+	 */
+	MouseControl.prototype.unchainGimbal = function( gimbal ) {
+		if (gimbal !== this.yawObject)
+			throw "Trying to unchain a gimbal at wrong index!";
+
+		var child = this.pitchObject.children[0];
+		this.pitchObject.remove( child );
+		return child;
+	};
 
 	/**
 	 * 
@@ -54800,12 +55392,10 @@ var Iconeezin =
 	 */
 	MouseControl.prototype.onUpdate = function( delta ) {
 
-		// Apply horizontal rotation
-		this.rotationMatrix.makeRotationZ( this.delta.x );
-
-		// Apply vertical rotation
-		this.m2.makeRotationX( this.delta.y );
-		this.rotationMatrix.multiply( this.m2 );
+		// Apply rotation to yaw/pitch
+		this.yawObject.rotation.z = this.delta.x;
+		this.pitchObject.rotation.x = this.delta.y;
+		this.pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, this.pitchObject.rotation.x ) );
 
 		// Handle rotation reset
 		this.resetTimer += delta;
@@ -54828,50 +55418,6 @@ var Iconeezin =
 
 	// Export
 	module.exports = MouseControl;
-
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	/**
-	 * Iconeez.in - A Web VR Platform for social experiments
-	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
-	 * This program is free software; you can redistribute it and/or modify
-	 * it under the terms of the GNU General Public License as published by
-	 * the Free Software Foundation; either version 2 of the License, or
-	 * (at your option) any later version.
-	 * 
-	 * This program is distributed in the hope that it will be useful,
-	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 * GNU General Public License for more details.
-	 * 
-	 * You should have received a copy of the GNU General Public License along
-	 * with this program; if not, write to the Free Software Foundation, Inc.,
-	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-	 *
-	 * @author Ioannis Charalampidis / https://github.com/wavesoft
-	 */
-
-	var BaseControl = __webpack_require__(16);
-
-	/**
-	 * Camera path locks camera into a 3D curve
-	 */
-	var VRControls = function( ) {
-		BaseControl.call( this );
-	}
-
-	/**
-	 * Subclass from base controls
-	 */
-	VRControls.prototype = Object.create( BaseControl.prototype );
-
-	// Export
-	module.exports = VRControls;
 
 
 /***/ },
@@ -54900,10 +55446,55 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(8);
+	var BaseControl = __webpack_require__(17);
 
-	var Experiments = __webpack_require__(20);
-	var Loaders = __webpack_require__(21);
+	/**
+	 * Camera path locks camera into a 3D curve
+	 */
+	var VRControls = function( ) {
+		BaseControl.call( this );
+	}
+
+	/**
+	 * Subclass from base controls
+	 */
+	VRControls.prototype = Object.create( BaseControl.prototype );
+
+	// Export
+	module.exports = VRControls;
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var VideoCore = __webpack_require__(8);
+	var ControlsCore = __webpack_require__(14);
+
+	var Experiments = __webpack_require__(21);
+	var Loaders = __webpack_require__(22);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime 
@@ -54942,11 +55533,16 @@ var Iconeezin =
 	 */
 	ExperimentsCore.showExperiment = function( experiment ) {
 
+		// Update interactions when the experiment is visible
+		var handleExperimentVisible = function() {
+			ControlsCore.updateInteractions();
+		}
+
 		// Check if this is already loaded
 		if (this.loadedExperiments[experiment] !== undefined) {
 
 			// Focus to the given experiment instance on the viewport
-			this.experiments.focusExperiment( this.loadedExperiments[experiment] );
+			this.experiments.focusExperiment( this.loadedExperiments[experiment], handleExperimentVisible );
 
 		} else {
 
@@ -54963,7 +55559,7 @@ var Iconeezin =
 
 					// Keep experiment reference and focus instance
 					this.loadedExperiments[experiment] = inst;
-					this.experiments.focusExperiment( inst );
+					this.experiments.focusExperiment( inst, handleExperimentVisible );
 
 				}
 
@@ -54978,7 +55574,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55020,6 +55616,9 @@ var Iconeezin =
 
 		// Previous event tracking function
 		this.previousTrackingFunction = null;
+
+		// Handle scene updates
+		this.onSceneUpdate = null;
 
 		// The interactive objects from the active experiments
 		this.interactiveObjects = [];
@@ -55118,7 +55717,7 @@ var Iconeezin =
 				lights[i].intensity = lightIntensity[i]*tweenProgress;
 			}
 
-		});
+		}, cb);
 
 	}
 
@@ -55144,7 +55743,7 @@ var Iconeezin =
 				lights[i].intensity = lightIntensity[i]*(1-tweenProgress);
 			}
 
-		})
+		}, cb)
 
 	}
 
@@ -55194,7 +55793,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -55219,11 +55818,11 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Config = __webpack_require__(22);
+	var Config = __webpack_require__(23);
 
-	var JBBLoader = __webpack_require__(23);
-	var JBBProfileThreeLoader = __webpack_require__(30);
-	var JBBProfileIconeezinLoader = __webpack_require__(32);
+	var JBBLoader = __webpack_require__(24);
+	var JBBProfileThreeLoader = __webpack_require__(31);
+	var JBBProfileIconeezinLoader = __webpack_require__(33);
 
 	/**
 	 * Loaders namespace contains all the different loading
@@ -55328,7 +55927,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55366,7 +55965,7 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -55390,10 +55989,10 @@ var Iconeezin =
 	 */
 
 	/* Imports */
-	var BinaryBundle = __webpack_require__(25);
-	var DecodeProfile = __webpack_require__(26);
-	var ProgressManager = __webpack_require__(27);
-	var Errors = __webpack_require__(28);
+	var BinaryBundle = __webpack_require__(26);
+	var DecodeProfile = __webpack_require__(27);
+	var ProgressManager = __webpack_require__(28);
+	var Errors = __webpack_require__(29);
 
 	/* Production optimisations and debug metadata flags */
 	if (typeof GULP_BUILD === "undefined") var GULP_BUILD = false;
@@ -55403,7 +56002,7 @@ var Iconeezin =
 
 	/* Additional includes on node builds */
 	if (IS_NODE) {
-		var fs = __webpack_require__(29);
+		var fs = __webpack_require__(30);
 	}
 
 	/* Size constants */
@@ -56692,10 +57291,10 @@ var Iconeezin =
 	// Export the binary loader
 	module.exports = BinaryLoader;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(24)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(25)))
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -56795,7 +57394,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57155,7 +57754,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57272,7 +57871,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57447,7 +58046,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57546,13 +58145,13 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -57579,7 +58178,7 @@ var Iconeezin =
 	/* Generated source follows */
 
 	var THREE = __webpack_require__(1);
-	var MD2Character = __webpack_require__(31);
+	var MD2Character = __webpack_require__(32);
 
 	/**
 	 * Factory & Initializer of THREE.CubeTexture
@@ -59351,7 +59950,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -59615,7 +60214,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(2);
