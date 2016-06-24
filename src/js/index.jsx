@@ -72,33 +72,6 @@ var IconeezinRoot = React.createClass({
 	},
 
 	/**
-	 * Handle state updates
-	 */
-	componentDidUpdate: function(prevProps, prevState) {
-
-		// Handle paused state switching
-		if (prevState.paused != this.state.paused) {
-			if (!this.state.paused) {
-
-				// Enable full-screen when switching state
-				var vpDOM = this.refs.content;
-				if (vpDOM.requestFullscreen) {
-					vpDOM.requestFullscreen();
-				} else if (vpDOM.webkitRequestFullscreen) {
-					vpDOM.webkitRequestFullscreen();
-				} else if (vpDOM.mozRequestFullScreen) {
-					vpDOM.mozRequestFullScreen();
-				} else if (vpDOM.msRequestFullscreen) {
-					vpDOM.msRequestFullscreen();
-				}
-
-			}
-
-		}
-
-	},
-
-	/**
 	 * Start/Stop
 	 */
 	handleStartDesktop: function() {

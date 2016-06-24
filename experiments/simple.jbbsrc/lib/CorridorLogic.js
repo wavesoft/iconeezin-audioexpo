@@ -111,15 +111,15 @@ var CorridorLogic = function( corridor ) {
 
 	// Make them interactive
 	Iconeezin.API.makeInteractive( this.leftInteraction, {
-		gaze: true,
-		onInteract: (function() {
+		gaze: false,
+		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_LEFT );
 		}).bind(this)
 	});
 	Iconeezin.API.makeInteractive( this.rightInteraction, {
-		gaze: true,
-		onInteract: (function() {
+		gaze: false,
+		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_RIGHT );
 		}).bind(this)
@@ -142,12 +142,6 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 	// It returns the [left,right] corridor objects
 	// to be used as our next reference object.
 	//
-	// console.log("----[ Reference ]----------------");
-	// console.log("uuid=",this.referenceObject.uuid);
-	// console.log("pos=",this.referenceObject.position);
-	// console.log("rot=",this.referenceObject.rotation);
-	// console.log("scl=",this.referenceObject.scale);
-	// console.log("---------------------------------");
 	var corridors = this.createCrossing( this.referenceObject );
 
 	// Reset properties
@@ -161,7 +155,7 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 	// Start camera path on a random direction
 	Iconeezin.Runtime.Controls.followPath( 
 		[ this.pathLeft, this.pathRight ][initial_direction], {
-		'speed': 4, 
+		'speed': 2, // m/sec 
 		'matrix': this.referenceObject.matrix.clone(),
 		'callback': (function(v) {
 			if (v == 1) {

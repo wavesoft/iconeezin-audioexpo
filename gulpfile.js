@@ -57,9 +57,9 @@ gulp.task('js/website', function() {
 			externals: IconeezinExternals,
 			plugins: [
 				new webpack.webpack.optimize.DedupePlugin(),
-				// new webpack.webpack.optimize.UglifyJsPlugin({
-				// 	minimize: true
-				// })
+				new webpack.webpack.optimize.UglifyJsPlugin({
+					minimize: true
+				})
 			],
 			resolve: {
 				extensions: ['', '.js', '.jsx'],
