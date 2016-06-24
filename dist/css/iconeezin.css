@@ -229,3 +229,29 @@ body {
   background-color: #666;
   color: #000;
 }
+#app .icnz-interaction-title {
+  position: absolute;
+  text-align: center;
+  left: 0;
+  width: 100%;
+  top: 50%;
+  height: 40px;
+  -webkit-transform: stranslateY(-20px);
+  -moz-transform: stranslateY(-20px);
+  -ms-transform: stranslateY(-20px);
+  -o-transform: stranslateY(-20px);
+  transform: stranslateY(-20px);
+  display: none;
+}
+#app .icnz-interaction-title.visible {
+  display: block;
+}
+#app .icnz-interaction-title > span {
+  position: relative;
+  top: -40px;
+  border: solid 1px #CCC;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #CCC;
+  padding: 6px;
+  font-size: 12px;
+}

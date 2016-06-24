@@ -61,7 +61,7 @@ var CorridorLogic = function( corridor ) {
 
 	// Prepare left intersecting box
 	this.leftInteraction = new THREE.Mesh(
-		new THREE.BoxGeometry( 14, 20, 12, 1, 1, 1 ),
+		new THREE.BoxGeometry( 14, 18, 12, 1, 1, 1 ),
 		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
 	);
 	this.leftInteraction.position.set( 0, 10, 6 );
@@ -112,6 +112,7 @@ var CorridorLogic = function( corridor ) {
 	// Make them interactive
 	Iconeezin.API.makeInteractive( this.leftInteraction, {
 		gaze: false,
+		title: "Turn Left",
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_LEFT );
@@ -119,6 +120,7 @@ var CorridorLogic = function( corridor ) {
 	});
 	Iconeezin.API.makeInteractive( this.rightInteraction, {
 		gaze: false,
+		title: "Turn Right",
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_RIGHT );
@@ -171,9 +173,9 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 				// Callback when completed
 				cbComplete( this.direction );
 
-			} else if (v < 0.5) {
+			} else if (v < 0.45) {
 
-				// Up to 50% of animation, we can change direction
+				// Up to 45% of animation, we can change direction
 				this.canChangeDirection = true;
 
 			} else {
@@ -183,6 +185,9 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 
 				// Call final callback when user cannot turn any more
 				if (!calledFinal) {
+
+					// Reorient views
+					Iconeezin.Runtime.Controls.reorientMouseView();
 
 					// Call final
 					cbFinal( this.direction );

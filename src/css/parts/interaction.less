@@ -1,0 +1,43 @@
+
+// ============================
+// Interaction Title
+// ============================
+
+// Configuration
+@interact-height: 40px;
+
+.icnz-interaction-title {
+	position: absolute;
+	text-align: center;
+	left: 0; width: 100%;
+	top: 50%; height: @interact-height;
+
+	-webkit-transform: stranslateY(-@interact-height/2);
+	-moz-transform: stranslateY(-@interact-height/2);
+	-ms-transform: stranslateY(-@interact-height/2);
+	-o-transform: stranslateY(-@interact-height/2);
+	transform: stranslateY(-@interact-height/2);
+	
+	// Visibility controls
+	display: none;
+	&.visible {
+		display: block;
+	}
+
+	// The internal label
+	> span {
+
+		// Add some spacing
+		position: relative;
+		top: -40px;
+	
+		// Mesage styling
+		border: solid 1px #CCC;
+		background-color: rgba(0,0,0,0.8);
+		color: #CCC;
+		padding: 6px;
+		font-size: 12px;
+
+	}
+
+}

@@ -141,7 +141,9 @@ gulp.task('exp/bundle', [ 'exp/build' ], function() {
  */
 gulp.task('live', ['default'], function() {
 	gulp.watch('node_modules/iconeezin/dist/iconeezin.js*', ['js/depends'], function(event) { })
-	gulp.watch('src/**', ['js/website'], function(event) { })
+	gulp.watch('src/js/**', ['js/website'], function(event) { })
+	gulp.watch('src/css/**', ['css/website'], function(event) { })
+	gulp.watch('src/html/**', ['html/website'], function(event) { })
 	gulp.watch('experiments/**/*.js', ['exp/bundle'], function(event) { })
 	gulp.watch('experiments/**/assets/**', ['exp/bundle'], function(event) { })
 });

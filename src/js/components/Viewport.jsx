@@ -34,10 +34,15 @@ module.exports = React.createClass({
 	 */
 	getInitialState: function() {
 		return {
+
 			'hade_visible': false,
 			'hade_title': 'Unknown experiment',
 			'hade_desc': 'Unknown body',
-			'hade_type': 'message'
+			'hade_type': 'message',
+
+			'title_visible': false,
+			'title_text': '',
+
 		};
 	},
 
@@ -46,8 +51,9 @@ module.exports = React.createClass({
 	 * the viewport component is mounted.
 	 */
 	componentDidMount: function() {
-		var dom = this.refs.canvas;
-		Iconeezin.Runtime.initialize( dom );
+
+		// Initialize iconeezin UI
+		Iconeezin.Runtime.initialize( this.refs.viewport, this.refs.canvas );
 
 		// Handle messages
 		Iconeezin.Runtime.Video.setMessageHandler((message) => {
@@ -61,6 +67,20 @@ module.exports = React.createClass({
 					'hade_title': message.title,
 					'hade_desc': message.body,
 					'hade_type': message.type,
+				})
+			}
+		});
+
+		// Handle title
+		Iconeezin.Runtime.Video.setInteractionHandle((message) => {
+			if (message === null) {
+				this.setState({
+					'title_visible': false
+				})
+			} else {
+				this.setState({
+					'title_visible': true,
+					'title_text': message
 				})
 			}
 		});
@@ -112,8 +132,11 @@ module.exports = React.createClass({
 	 */
 	render: function() {
 		return (
-			<div className="icnz-viewport">
+			<div className="icnz-viewport" ref="viewport">
 				<div className="icnz-canvas" ref="canvas" />
+				<div className={ "icnz-interaction-title" + (this.state.title_visible ? " visible" : "") }>
+					<span>{this.state.title_text}</span>
+				</div>
 				<HADE hmd={this.props.hmd} 
 					  title={this.state.hade_title} 
 					  body={this.state.hade_desc}

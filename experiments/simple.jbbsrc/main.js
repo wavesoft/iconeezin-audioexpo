@@ -41,8 +41,8 @@ Experiment.prototype = Object.create( Iconeezin.API.Experiment.prototype );
  */
 Experiment.prototype.onShown = function() {
 
-	var phrase_ok = [ "πολύ ωραία!", "εξαιρετικά!", "σωστά!", "μπράβο!" ];
-	var phrase_err = [ "Δυστυχώς κάνατε λάθος. Ήταν το άλλο.", "Δεν πειράζει. Την επόμενη φορά!" ];
+	var phrase_ok = [ "very good!", "excellent!", "perfect!", "great!" ];
+	var phrase_err = [ "Unfortunately that's the wrong corridor.", "Oops, that's the wrong corridor!" ];
 
 	// Helper function to call on every iteration
 	var experimentIteration = (function() {
@@ -52,8 +52,8 @@ Experiment.prototype.onShown = function() {
 		if (Math.random() > 0.5) correct_direction = 1;
 
 		// Say direction
-		var name = [ "αριστερά", "δεξιά" ][correct_direction];
-		Iconeezin.Runtime.Interaction.say("Στρίψτε "+name);
+		var name = [ "left", "right" ][correct_direction];
+		Iconeezin.Runtime.Interaction.say("Please turn "+name);
 
 		// Tell corridor logic to start running a new experiment
 		//
