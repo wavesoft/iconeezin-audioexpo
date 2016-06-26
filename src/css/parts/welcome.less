@@ -56,10 +56,12 @@
 			button {
 
 				// Styling
+			    width: 90%;
 				padding: 10px;
-				border-radius: 5px;
+			    border-radius: 12px;
 				border: solid 1px #333;
 				cursor: pointer;
+				display: none;
 
 				// Animation
 				-webkit-transition: all 0.25s;
@@ -73,11 +75,16 @@
 				color: #666;
 
 				// Fonts & Icon
-				font-size: 1em;
+				font-size: 1.3em;
 				span {
 				    font-size: 1.8em;
 				    vertical-align: sub;
 					font-size: 1.4em;
+				}
+	
+				// Image element
+				img {
+				    vertical-align: middle;
 				}
 
 				// Interactive
@@ -88,6 +95,9 @@
 				&:active {
 					background-color: #666;
 					color: #000;
+				}
+				&.visible {
+					display: inline;
 				}
 
 			}

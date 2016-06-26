@@ -87,6 +87,14 @@ gulp.task('html/website', function() {
 });
 
 /**
+ * Copy static files
+ */
+gulp.task('static/website', function() {
+	return gulp.src(['src/img/**'])
+		.pipe(gulp.dest('dist/img'));
+});
+
+/**
  * Build experiments
  */
 gulp.task('exp/build', function() {
@@ -144,6 +152,7 @@ gulp.task('live', ['default'], function() {
 	gulp.watch('src/js/**', ['js/website'], function(event) { })
 	gulp.watch('src/css/**', ['css/website'], function(event) { })
 	gulp.watch('src/html/**', ['html/website'], function(event) { })
+	gulp.watch('src/img/**', ['static/website'], function(event) { })
 	gulp.watch('experiments/**/*.js', ['exp/bundle'], function(event) { })
 	gulp.watch('experiments/**/assets/**', ['exp/bundle'], function(event) { })
 });
@@ -151,5 +160,5 @@ gulp.task('live', ['default'], function() {
 /**
  * Entry point
  */
-gulp.task('default', [ 'js/depends', 'js/website', 'css/website', 'html/website', 'exp/bundle' ], function() {
+gulp.task('default', [ 'js/depends', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundle' ], function() {
 });

@@ -203,10 +203,12 @@ body {
   padding: 20px 10px;
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button {
+  width: 90%;
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   border: solid 1px #333;
   cursor: pointer;
+  display: none;
   -webkit-transition: all 0.25s;
   -moz-transition: all 0.25s;
   -ms-transition: all 0.25s;
@@ -214,12 +216,15 @@ body {
   transition: all 0.25s;
   background-color: #000;
   color: #666;
-  font-size: 1em;
+  font-size: 1.3em;
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button span {
   font-size: 1.8em;
   vertical-align: sub;
   font-size: 1.4em;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button img {
+  vertical-align: middle;
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button:hover {
   background-color: #222;
@@ -228,6 +233,9 @@ body {
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button:active {
   background-color: #666;
   color: #000;
+}
+#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button.visible {
+  display: inline;
 }
 #app .icnz-interaction-title {
   position: absolute;

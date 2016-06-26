@@ -20,6 +20,8 @@
  * @author Ioannis Charalampidis / https://github.com/wavesoft
  */
 
+var Iconeezin = require("iconeezin");
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 
@@ -36,6 +38,7 @@ var IconeezinRoot = React.createClass({
 	 */
 	getInitialState: function() {
 		return {
+			'hasvr': Iconeezin.Runtime.Video.hasVR(),
 			'hmd': false,
 			'paused': true,
 			'experiment': null
@@ -104,7 +107,7 @@ var IconeezinRoot = React.createClass({
 		return (
 			<div ref="content" className="icnz-content">
 			  <Viewport experiment={this.state.experiment} paused={this.state.paused} hmd={this.state.hmd} />
-			  <Welcome visible={this.state.paused} onStartDesktop={this.handleStartDesktop} onStartHMD={this.handleStartHMD} />
+			  <Welcome hasvr={this.state.hasvr} visible={this.state.paused} onStartDesktop={this.handleStartDesktop} onStartHMD={this.handleStartHMD} />
 			</div>
 		);
 	}
