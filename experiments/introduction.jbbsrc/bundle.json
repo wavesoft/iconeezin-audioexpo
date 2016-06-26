@@ -1,0 +1,15 @@
+{
+	"name": "introduction",
+	"profile": [ "iconeezin", "three" ],
+	"exports": {
+
+		"Iconeezin.API.ExperimentFile": {
+			"main": ".build.js"
+		},
+
+		"Iconeezin.API.AudioFile": {
+			"sounds/intro": "assets/sounds/intro.ogg"
+		}
+		
+	}
+}

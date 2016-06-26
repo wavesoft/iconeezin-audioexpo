@@ -41,10 +41,10 @@ module.exports = React.createClass({
 					<div className="icnz-welcome-buttons">
 					
 						<button className={this.props.hasvr ? "" : "visible"} type="button" onClick={this.props.onStartDesktop}>
-							<img src="img/desktop.png" alt="VR" /> Start Desktop Experience
+							<img src="img/desktop.png" alt="VR" />&nbsp; Start Desktop Experience
 						</button>
 						<button className={this.props.hasvr ? "visible" : ""} type="button" onClick={this.props.onStartHMD}>
-							<img src="img/vr.png" alt="VR" /> Start VR Experience
+							<img src="img/vr.png" alt="VR" />&nbsp; Start VR Experience
 						</button>
 
 					</div>

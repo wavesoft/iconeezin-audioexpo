@@ -193,6 +193,7 @@ body {
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-body h1 {
   color: #999;
+  font-size: 1.8em;
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons {
   text-align: center;

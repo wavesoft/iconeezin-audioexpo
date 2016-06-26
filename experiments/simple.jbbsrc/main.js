@@ -44,6 +44,10 @@ Experiment.prototype.onShown = function() {
 	var phrase_ok = [ "very good!", "excellent!", "perfect!", "great!" ];
 	var phrase_err = [ "Unfortunately that's the wrong corridor.", "Oops, that's the wrong corridor!" ];
 
+	// Start noise
+	this.noise = this.database['simple/sounds/noise'].play( true );
+	this.noise.setVolume( 0.1 );
+
 	// Helper function to call on every iteration
 	var experimentIteration = (function() {
 

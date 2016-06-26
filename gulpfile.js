@@ -7,6 +7,11 @@ var merge 	= require('merge-stream');
 var webpack = require('webpack-stream');
 
 /**
+ * List of experiments to compile
+ */
+var experiments = [ "simple", "introduction" ];
+
+/**
  * Externals, as exposed by iconeezin run-time
  */
 var IconeezinExternals = {
@@ -99,7 +104,6 @@ gulp.task('static/website', function() {
  */
 gulp.task('exp/build', function() {
 
-	var experiments = [ "simple" ];
 	return merge(experiments.map(function(experiment) {
 		
 		return gulp
