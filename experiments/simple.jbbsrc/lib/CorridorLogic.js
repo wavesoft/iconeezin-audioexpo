@@ -113,6 +113,7 @@ var CorridorLogic = function( corridor ) {
 	Iconeezin.API.makeInteractive( this.leftInteraction, {
 		gaze: false,
 		title: "Turn Left",
+		trackID: 'corridor.left',
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_LEFT );
@@ -121,6 +122,7 @@ var CorridorLogic = function( corridor ) {
 	Iconeezin.API.makeInteractive( this.rightInteraction, {
 		gaze: false,
 		title: "Turn Right",
+		trackID: 'corridor.right',
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
 			this.setDirection( DIRECTION_RIGHT );

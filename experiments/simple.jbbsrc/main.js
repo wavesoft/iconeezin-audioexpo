@@ -59,34 +59,46 @@ Experiment.prototype.onShown = function() {
 		var name = [ "left", "right" ][correct_direction];
 		Iconeezin.Runtime.Interaction.say("Please turn "+name);
 
-		// Tell corridor logic to start running a new experiment
-		//
-		// when the user has selected a final corridor the callback
-		// will be fired, with the appropriate direction.
-		//
-		this.corridors.runExperiment(
+		// Track
+		Iconeezin.Runtime.Tracking.startTask( 'corridor', (function( meta ){
 
-			// Start from opposite direction
-			(correct_direction == 0) ? 1 : 0,
+			// Tell corridor logic to start running a new experiment
+			//
+			// when the user has selected a final corridor the callback
+			// will be fired, with the appropriate direction.
+			//
+			this.corridors.runExperiment(
 
-			// Handle user response
-			function(dir) {
-				// Process results
-				if (dir == correct_direction) {
-					Iconeezin.Runtime.Interaction.say( phrase_ok[Math.floor(Math.random()*phrase_ok.length)] );
-				} else {
-					Iconeezin.Runtime.Interaction.say( phrase_err[Math.floor(Math.random()*phrase_err.length)] );
+				// Start from opposite direction
+				(correct_direction == 0) ? 1 : 0,
+
+				// Handle user response
+				function(dir) {
+					// Process results
+					if (dir == correct_direction) {
+						Iconeezin.Runtime.Interaction.say( phrase_ok[Math.floor(Math.random()*phrase_ok.length)] );
+						Iconeezin.Runtime.Tracking.trackEvent('corridor.choice', { 'corridor': 'left' })
+					} else {
+						Iconeezin.Runtime.Interaction.say( phrase_err[Math.floor(Math.random()*phrase_err.length)] );
+						Iconeezin.Runtime.Tracking.trackEvent('corridor.choice', { 'corridor': 'right' })
+					}
+
+				},
+
+				// Re-schedule at completion
+				function(dir) {
+
+					// Mark completion of task
+					Iconeezin.Runtime.Tracking.completeTask();
+
+					// Schedule a new iteration
+					experimentIteration();
+
 				}
-			},
+			);
 
-			// Re-schedule at completion
-			function(dir) {
+		}).bind(this));
 
-				// Schedule a new iteration
-				experimentIteration();
-
-			}
-		);
 
 	}).bind(this);
 
