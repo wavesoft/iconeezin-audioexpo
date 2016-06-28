@@ -8,7 +8,18 @@
 		},
 
 		"Iconeezin.API.AudioFile": {
-			"sounds/intro": "assets/sounds/intro.ogg"
+			"sounds/intro": "assets/sounds/intro.ogg",
+			"sounds/very-good": "assets/sounds/very-good.ogg",
+			"sounds/guide-complete": "assets/sounds/guide-complete.ogg",
+			"sounds/guide-gaze": "assets/sounds/guide-gaze.ogg"
+		},
+
+		"THREE.OBJLoader": {
+			"models/lobby": "assets/models/lobby2.obj"
+		},
+
+		"THREE.ObjectLoader": {
+			"models/teapot": "assets/models/teapot-claraio.json"
 		}
 		
 	}

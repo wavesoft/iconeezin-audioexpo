@@ -82,16 +82,16 @@ var CorridorLogic = function( corridor ) {
 
 	// Left and right camera paths
 	this.pathLeft = new THREE.CubicBezierCurve3(
-			new THREE.Vector3(   0.0000, 0.00000, 3 ),
-			new THREE.Vector3(   0.0000, 22.0000, 3 ),
-			new THREE.Vector3(   0.0000, 22.0000, 3 ),
-			new THREE.Vector3( -19.0919, 41.9914, 3 )
+			new THREE.Vector3(   0.0000, 0.00000, 0 ),
+			new THREE.Vector3(   0.0000, 22.0000, 0 ),
+			new THREE.Vector3(   0.0000, 22.0000, 0 ),
+			new THREE.Vector3( -19.0919, 41.9914, 0 )
 		);
 	this.pathRight = new THREE.CubicBezierCurve3(
-			new THREE.Vector3(   0.0000, 0.00000, 3 ),
-			new THREE.Vector3(   0.0000, 22.0000, 3 ),
-			new THREE.Vector3(   0.0000, 22.0000, 3 ),
-			new THREE.Vector3(  19.0919, 41.9914, 3 )
+			new THREE.Vector3(   0.0000, 0.00000, 0 ),
+			new THREE.Vector3(   0.0000, 22.0000, 0 ),
+			new THREE.Vector3(   0.0000, 22.0000, 0 ),
+			new THREE.Vector3(  19.0919, 41.9914, 0 )
 		);
 
 	this.freeObject = 1;

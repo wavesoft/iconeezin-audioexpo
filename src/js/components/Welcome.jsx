@@ -36,7 +36,7 @@ module.exports = React.createClass({
 				<div className="icnz-welcome-panel">
 					<div className="icnz-welcome-body">
 						<h1>Virtual Audio Exhibition</h1>
-						<p>Please select one of the following modes to start your experience. It will open in full screen.</p>
+						<p>Please click the following button to start your experience. If your browser supports WebVR you have the option to start in Virtual Reality.</p>
 					</div>
 					<div className="icnz-welcome-buttons">
 					
