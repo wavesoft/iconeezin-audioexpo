@@ -50,6 +50,10 @@ Experiment.prototype.onWillShow = function( callback ) {
 	var choice_correct = 0;
 	var choice_wrong = 0;
 
+	var noise_level = 0;
+	var noise = this.database['simple/sounds/noise'].play( true );
+	noise.setVolume(0);
+
 	// Play intro
 	this.database['simple/sounds/introduction'].play();
 
@@ -108,6 +112,11 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 						choice_last_correct = true;
 						choice_correct++;
+
+						// Increatse noise level
+						noise_level += 0.1;
+						if (noise_level > 1) noise_level = 1;
+						noise.setVolume( noise_level );
 
 					} else {
 						this.database['simple/sounds/choice-wrong'].play();
