@@ -43,6 +43,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 	var phrase_ok = [ "very good!", "excellent!", "perfect!", "great!" ];
 	var phrase_err = [ "Unfortunately that's the wrong corridor.", "Oops, that's the wrong corridor!" ];
+	var is_correct = false;
 	var is_loaded = false;
 	var first_corridor = true;
 
@@ -50,9 +51,14 @@ Experiment.prototype.onWillShow = function( callback ) {
 	var choice_correct = 0;
 	var choice_wrong = 0;
 
-	var noise_level = 0;
+	var noise_level = 0, last_noise_level = 0;
 	var noise = this.database['simple/sounds/noise'].play( true );
+	var ambient = this.database['simple/sounds/ambient'].play( true );
+
+	var announced = false;
+
 	noise.setVolume(0);
+	ambient.setVolume(0.5);
 
 	// Play intro
 	this.database['simple/sounds/introduction'].play();
@@ -67,9 +73,9 @@ Experiment.prototype.onWillShow = function( callback ) {
 		// Skip first announcement
 		if (!first_corridor) {
 			if (correct_direction == 0) {
-				this.database['simple/sounds/turn-left'].play();
+				this.database['simple/sounds/turn-left'].play().setVolume(0.9);
 			} else if (correct_direction == 1) {
-				this.database['simple/sounds/turn-right'].play();
+				this.database['simple/sounds/turn-right'].play().setVolume(0.9);
 			}
 		}
 
@@ -105,6 +111,9 @@ Experiment.prototype.onWillShow = function( callback ) {
 						return;
 					}
 
+					// Keep last noise level
+					last_noise_level = noise_level;
+
 					// Process results
 					if (dir == correct_direction) {
 						this.database['simple/sounds/choice-correct'].play();
@@ -116,12 +125,12 @@ Experiment.prototype.onWillShow = function( callback ) {
 						// Increatse noise level
 						noise_level += 0.1;
 						if (noise_level > 1) noise_level = 1;
-						noise.setVolume( noise_level );
 
 					} else {
 						this.database['simple/sounds/choice-wrong'].play();
 						Iconeezin.Runtime.Tracking.trackEvent('corridor.choice', { 'corridor': 'right' })
 
+						choice_last_correct = false;
 						choice_wrong++;
 
 					}
@@ -129,15 +138,60 @@ Experiment.prototype.onWillShow = function( callback ) {
 				}).bind(this),
 
 				// Re-schedule at completion
-				function(dir) {
+				(function(dir) {
+
+					// Reset announced flag
+					announced = false;
 
 					// Mark completion of task
-					Iconeezin.Runtime.Tracking.completeTask();
+					Iconeezin.Runtime.Tracking.completeTask({
+						'level': last_noise_level,
+						'correct': choice_last_correct
+					});
 
 					// Schedule a new iteration
 					experimentIteration();
 
-				}
+				}).bind(this),
+
+				// Since noise is quite annoying we are fading the noise
+				// a few seconds before the noise.
+				(function(v) {
+
+					// Increase the spread (position were the fader starts)
+					// depending on the noise level. The louder, the earler
+					// it should start fading
+					var spread = 0.2 + (0.2 * noise_level);
+
+					// Apply fader
+					var fade = 0;
+					if (v >= (1.0-spread)) {
+						fade = (v-1.0+spread)/spread;
+						noise.setVolume( noise_level * fade );
+					} else if (v <= spread) {
+						fade = (spread-v)/spread;
+						noise.setVolume( noise_level * fade );
+					}
+
+					// Once when we pass the 20% of the passage
+					// announce the noise we are going to find
+					if (!announced && (v > 0.6)) {
+						announced = true;
+
+						// Announce depending on level
+						if (noise_level < 0.2) {
+							// Nothing here
+						} else if (noise_level < 0.4) {
+							this.database['simple/sounds/noisy-a'].play();
+						} else if (noise_level < 0.8) {
+							this.database['simple/sounds/noisy-b'].play();
+						} else {
+							this.database['simple/sounds/noisy-c'].play();
+						}
+					}
+
+				}).bind(this)
+
 			);
 
 		}).bind(this));

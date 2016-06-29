@@ -36,7 +36,7 @@ var Experiment = function( db ) {
 
 	// Align it
 	this.teapot.position.set( 2.5, 17, 2 );
-	this.teapot.rotation.x = Math.PI/2;
+	this.teapot.rotateX( Math.PI/2 );
 	this.add( this.teapot );
 
 	// Put a podium
@@ -47,10 +47,10 @@ var Experiment = function( db ) {
 
 	// Prepare left intersecting box
 	var interaction = new THREE.Mesh(
-		new THREE.BoxGeometry( 5, 5, 10, 1, 1, 1 ),
+		new THREE.BoxGeometry( 1, 1, 4, 1, 1, 1 ),
 		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
 	);
-	interaction.position.set( 2.5, 17, 0 );
+	interaction.position.set( 2.5, 17, 2 );
 	interaction.material.visible = false;
 	this.add( interaction );
 
@@ -84,7 +84,8 @@ Experiment.prototype.onShown = function() {
  */
 Experiment.prototype.onUpdate = function( delta ) {
 
-	this.teapot.rotation.y += 0.0025 * delta;
+	this.teapot.rotateY( 0.0025 * delta );
+	// this.teapot.rotation.y += 0.0025 * delta;
 
 }
 

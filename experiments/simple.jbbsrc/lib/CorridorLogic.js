@@ -138,7 +138,7 @@ CorridorLogic.prototype = Object.create( THREE.Object3D.prototype );
  * Run experiment and callback when we have results and we can 
  * immediately chain another experiment
  */
-CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cbComplete ) {
+CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cbComplete, cbAlways ) {
 	var calledFinal = false;
 
 	// Create a new corridor crossing
@@ -162,6 +162,7 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 		'speed': 2, // m/sec 
 		'matrix': this.referenceObject.matrix.clone(),
 		'callback': (function(v) {
+			if (cbAlways) cbAlways(v);
 			if (v == 1) {
 
 				// Pick final direction

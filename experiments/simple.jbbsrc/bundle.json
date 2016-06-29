@@ -16,7 +16,8 @@
 			"sounds/turn-right": "assets/sounds/turn-right.ogg",
 			"sounds/choice-wrong": "assets/sounds/choice-wrong.ogg",
 			"sounds/choice-correct": "assets/sounds/choice-correct.ogg",
-			"sounds/noise": "assets/sounds/whitenoise.ogg"
+			"sounds/noise": "assets/sounds/noise-natural.ogg",
+			"sounds/ambient": "assets/sounds/ambient.ogg"
 		},
 
 		"THREE.OBJLoader": {
