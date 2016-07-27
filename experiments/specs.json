@@ -8,8 +8,49 @@
 		},
 		{
 			"name": "delay",
-			"desc": "Delay in the I/O",
-			"tasks": []
+			"desc": "Delay in the speech",
+			"tasks": [
+				{
+					"scale": 1.0,
+					"delay": 5,
+					"message": [
+						"To be or not to be,",
+						"this is the question I see.",
+						"The question to always ask,",
+						"from dawn to dusk."
+					]
+				},
+				{
+					"scale": 2.0,
+					"delay": 20,
+					"message": [
+						"But if you feel that you are wronged,",
+						"if the people that help you are gone.",
+						"And the feeling is not the one,",
+						"to ask and learn for all."
+					]
+				},
+				{
+					"scale": 3.0,
+					"delay": 80,
+					"message": [
+						"And we are now getting closer,",
+						"to the last room to be gone.",
+						"And the room is getting bigger,",
+						"because they are filler."
+					]
+				},
+				{
+					"scale": 4.0,
+					"delay": 120,
+					"message": [
+						"Now the room is larger you wish,",
+						"and everyting is cooler to please.",
+						"I am running for more ideas,",
+						"for other poems and such."
+					]
+				}
+			]
 		},
 		{
 			"name": "threshold",

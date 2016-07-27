@@ -6,7 +6,8 @@ var MonumentRoom = function( geom ) {
 	THREE.Object3D.call(this);
 
 	this.kionokranoMesh = geom['delay/models/kionokrano'];
-	console.log(this.kionokranoMesh);
+	this.podiumObject = geom['delay/models/podium'];
+	this.length = 0;
 
 	// Prepare materials
 	this.wallsMaterial = new THREE.MeshNormalMaterial({ side: THREE.BackSide });
@@ -15,11 +16,58 @@ var MonumentRoom = function( geom ) {
 	this.pillarMaterial = new THREE.MeshNormalMaterial({ });
 	this.kionokranoMaterial = new THREE.MeshNormalMaterial({ });
 	this.frameMaterial = new THREE.MeshNormalMaterial({ });
+	this.podiumMaterial = new THREE.MeshNormalMaterial({ });
+
+	// Create a podium material
+	var canvas = document.createElement('canvas');
+	canvas.width = 2048;
+	canvas.height = 1024;
+
+	// Create texture & get context handler
+	this.podiumMessageCtx = canvas.getContext('2d');
+	this.podiumMessageTexture = new THREE.Texture(canvas);
+
+	// Create message material
+	this.podiummessageMaterial = new THREE.MeshBasicMaterial({
+	    map: this.podiumMessageTexture,
+	    transparent: false,
+	    color: 0xffffff
+	});
+
+	this.setPodiumMessage("This","is","a","test");
+
+	this.pathEnter = null;
+	this.pathLeave = null;
 
 };
 
 MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), {
 	constructor: MonumentRoom,
+
+	/**
+	 * Update the podium message
+	 */
+	'setPodiumMessage': function( line1, line2, line3, line4 ) {
+		var ctx = this.podiumMessageCtx;
+
+		ctx.clearRect(0, 0, 2048, 1024);
+		ctx.textAlign = "center"; 
+		ctx.font="110px bold Tahoma"; 
+		ctx.fillStyle = "#ffffff";
+		ctx.fillText( line1||"", 1024, 366 );
+		ctx.fillText( line2||"", 1024, 498 );
+		ctx.fillText( line3||"", 1024, 631 );
+		ctx.fillText( line4||"", 1024, 763 );
+
+		this.podiumMessageTexture.needsUpdate = true;
+	},
+
+	/**
+	 * Update podium message progress
+	 */
+	'setPodiumMessageProgress': function( progress ) {
+
+	},
 
 	/**
 	 * Rebuild monument room with the given scale
@@ -62,7 +110,31 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 
 		// Add junction frames
 		this.addJunctionFrames( innerLength, innerWidth, innerPadding, 
-								pillarHeight + frameHeight, frameHeight, scale )
+								pillarHeight + frameHeight, frameHeight, scale );
+
+		// Put a new podium in the middle
+		var podium = this.podiumObject.clone();
+		podium.position.set( 0,innerLength/2+innerPadding,0 );
+		podium.children[0].material = this.podiumMaterial;
+		podium.children[1].material = this.podiummessageMaterial;
+		this.add(podium);
+
+		// Prepare the enter and leave paths
+		this.pathEnter = new THREE.CubicBezierCurve3(
+			new THREE.Vector3( 0.0000, 1.00000, 0 ),
+			new THREE.Vector3( 0.0000, 2.00000, 0 ),
+			new THREE.Vector3( 0.0000, podium.position.y-3, 0.1 ),
+			new THREE.Vector3( 0.0000, podium.position.y-2, 0.2 )
+		);
+		this.pathLeave = new THREE.CubicBezierCurve3(
+			new THREE.Vector3( 0.0000, podium.position.y-2, 0.2 ),
+			new THREE.Vector3( -4.0, podium.position.y+length/5, 0.1 ),
+			new THREE.Vector3( 0.0000, length-7, 0.0 ),
+			new THREE.Vector3( 0.0000, length, 0.0 )
+		);
+
+		// Keep properties
+		this.length = length;
 
 	},
 

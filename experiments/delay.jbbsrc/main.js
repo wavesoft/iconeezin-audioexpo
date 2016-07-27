@@ -13,9 +13,16 @@ var Experiment = function( db ) {
 	this.anchor.position.set( 0, 1.2, 2 );
 	this.anchor.direction.set( 0, 1, 0 );
 
-	this.monument = new MonumentRoom( db );
-	this.monument.rebuild(1);
-	this.add(this.monument);
+	// The interchangable objects
+	this.activeMonument = -1;
+	this.monuments = [
+		new MonumentRoom( db ),
+		new MonumentRoom( db )
+	];
+	this.monuments[0].visible = false;
+	this.monuments[1].visible = false;
+	this.add(this.monuments[0]);
+	this.add(this.monuments[1]);
 
 	// // Create a sphere for equirectangular VR
 	// var geom = new THREE.SphereGeometry( 500, 60, 40 );
@@ -50,7 +57,120 @@ Experiment.prototype.switchTexture = function( image, cb ) {
 /**
  * Start experiment when shown
  */
+Experiment.prototype.boo = function( ) {
+
+	Iconeezin.Runtime.Controls.followPath( 
+		this.monument.pathLeave, {
+			'speed': 2
+		}
+	);
+
+}
+
+/**
+ * Start experiment when shown
+ */
+Experiment.prototype.executeRun = function( scale, lines, callback ) {
+
+	// Pick a monument and the last one to use as reference
+	var mid = (this.activeMonument == 0) ? 1 : 0, lid = 1-mid,
+		m_new = this.monuments[mid], m_last = this.monuments[lid];
+
+	// Prepare monument
+	m_new.visible = true;
+	m_new.rebuild( scale );
+	m_new.setPodiumMessage( lines[0], lines[1], lines[2], lines[3] );
+
+	// Calculate position
+	m_new.position.set( 0, m_last.position.y + m_last.length, 0 );
+
+	// Prepare walk-in & walk-out functions
+	var walk_in = function( cb ) {
+		Iconeezin.Runtime.Controls.followPath( 
+			m_new.pathEnter, {
+				'speed': 1.0,
+				'matrix': m_new.matrix.clone(),
+				'callback': function(v) {
+					if ((v == 1) && cb) cb();
+				}
+			}
+		);
+	};
+	var walk_out = function( cb ) {
+		Iconeezin.Runtime.Controls.followPath( 
+			m_last.pathLeave, {
+				'speed': 2.0,
+				'matrix': m_last.matrix.clone(),
+				'callback': function(v) {
+					if ((v == 1) && cb) cb();
+				}
+			}
+		);
+	};
+
+	// If we had a previous item, walk out of it first
+	if (this.activeMonument != -1) {
+		walk_out(function() {
+			walk_in(callback);
+		});
+	} else {
+		walk_in(callback);
+	}
+
+	// Keep the active monument ID
+	this.activeMonument = mid;
+
+}
+
+/**
+ * Start experiment when shown
+ */
 Experiment.prototype.onWillShow = function( callback ) {
+
+	// Reset
+	this.monuments[0].visible = false;
+	this.monuments[1].visible = false;
+	this.monuments[0].length = 0;
+	this.monuments[1].length = 0;
+
+	// Prepare next task function
+	var executeNextTask = (function() {
+
+		// Query runtime tracking for next task metadata
+		Iconeezin.Runtime.Tracking.startNextTask( { }, (function( meta, progress ){
+
+			// Start run
+			this.executeRun( meta['scale'], meta['message'], (function() {
+
+				// Enable voice delay at specified values
+				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
+
+				// Compile the message to expect
+				var message = meta['message'].join(" ");
+
+				// Fake reply
+				setTimeout( (function() {
+
+					// Mark completion of task
+					Iconeezin.Runtime.Tracking.completeTask({
+					});
+
+					// Check if we are completed
+					if (progress == 1.0) {
+						// This experiment is completed
+						Iconeezin.Runtime.Experiments.experimentCompleted();	
+					} else {
+						// Schedule a new iteration
+						executeNextTask();
+					}
+
+				}).bind(this), 5000);
+
+			}).bind(this) )
+
+		}).bind(this));
+
+	}).bind(this);
 
 	/*
 	// Set initial texture
@@ -80,8 +200,11 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.material.map = this.database['delay/pano/garden'];
 	*/
 
-	// Callback immediately
+	// Callback when ready
 	callback();
+
+	// And start first task
+	executeNextTask();
 
 }
 
