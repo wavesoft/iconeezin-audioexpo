@@ -9,7 +9,7 @@ var webpack = require('webpack-stream');
 /**
  * List of experiments to compile
  */
-var experiments = [ "delay", "threshold", "introduction" ];
+var experiments = [ "compression", "delay", "threshold", "introduction" ];
 
 /**
  * Externals, as exposed by iconeezin run-time

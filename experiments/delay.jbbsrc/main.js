@@ -193,6 +193,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 						// Check if completed
 						if (meta['completed']) {
 							if (meta['score'] < 0.8) {
+								Iconeezin.Runtime.Video.glitch(250);
 								setTimeout(tryDictation, 500);
 							} else {
 								completeTask();
