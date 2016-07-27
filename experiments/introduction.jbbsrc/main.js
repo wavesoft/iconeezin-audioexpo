@@ -59,7 +59,10 @@ var Experiment = function( db ) {
 		gaze: true,
 		title: "Start Experiment",
 		onInteract: (function() {
-			Iconeezin.Runtime.Experiments.showExperiment("simple");
+
+			// This experiment is completed
+			Iconeezin.Runtime.Experiments.experimentCompleted();
+
 		}).bind(this)
 	});
 

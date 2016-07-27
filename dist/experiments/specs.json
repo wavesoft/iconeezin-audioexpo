@@ -1,0 +1,33 @@
+{
+
+	"experiments": [
+		{
+			"name": "introduction",
+			"desc": "Introduction to the expo",
+			"tasks": []
+		},
+		{
+			"name": "delay",
+			"desc": "Delay in the I/O",
+			"tasks": []
+		},
+		{
+			"name": "threshold",
+			"desc": "Threshold experiment",
+			"tasks": [
+				{
+					"level": 0.25
+				},
+				{
+					"level": 0.60
+				},
+				{
+					"level": 0.70
+				},
+				{
+					"level": 1.0
+				}
+			]
+		}
+	]
+}

@@ -137,6 +137,7 @@ module.exports = React.createClass({
 				<div className={ "icnz-interaction-title" + (this.state.title_visible ? " visible" : "") }>
 					<span>{this.state.title_text}</span>
 				</div>
+				<div id="debug-window"></div>
 				<HADE hmd={this.props.hmd} 
 					  title={this.state.hade_title} 
 					  body={this.state.hade_desc}

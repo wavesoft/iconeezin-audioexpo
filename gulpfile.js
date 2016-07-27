@@ -9,7 +9,7 @@ var webpack = require('webpack-stream');
 /**
  * List of experiments to compile
  */
-var experiments = [ "simple", "introduction" ];
+var experiments = [ "delay", "threshold", "introduction" ];
 
 /**
  * Externals, as exposed by iconeezin run-time
@@ -19,6 +19,7 @@ var IconeezinExternals = {
 	// Iconeezin components
 	'iconeezin' 		: 'Iconeezin',
 	'iconeezin/api'		: 'Iconeezin.API',
+	'iconeezin/runtime' : 'Iconeezin.Runtime',
 
 	// Iconeezin exposed libraries in order to 
 	// include them only once
@@ -31,7 +32,23 @@ var IconeezinExternals = {
  * Compile and pack Javascript files
  */
 gulp.task('js/depends', function() {
-	return gulp.src(['node_modules/iconeezin/dist/iconeezin.js'])
+	return gulp.src(['node_modules/iconeezin/dist/*.js'])
+		.pipe(gulp.dest('dist/js'));
+});
+
+/**
+ * Compile and pack iconeezin resources
+ */
+gulp.task('img/depends', function() {
+	return gulp.src(['node_modules/iconeezin/dist/img/*.jpg'])
+		.pipe(gulp.dest('dist/img'));
+});
+
+/**
+ * Copy libraries
+ */
+gulp.task('js/lib', function() {
+	return gulp.src(['src/js/lib/**'])
 		.pipe(gulp.dest('dist/js'));
 });
 
@@ -100,6 +117,14 @@ gulp.task('static/website', function() {
 });
 
 /**
+ * Copy eperiment metadata
+ */
+gulp.task('exp/meta', function() {
+	return gulp.src(['experiments/specs.json'])
+		.pipe(gulp.dest('dist/experiments'));
+});
+
+/**
  * Build experiments
  */
 gulp.task('exp/build', function() {
@@ -152,11 +177,13 @@ gulp.task('exp/bundle', [ 'exp/build' ], function() {
  * Stay live
  */
 gulp.task('live', ['default'], function() {
-	gulp.watch('node_modules/iconeezin/dist/iconeezin.js*', ['js/depends'], function(event) { })
+	gulp.watch('node_modules/iconeezin/dist/*.js', ['js/depends'], function(event) { })
+	gulp.watch('node_modules/iconeezin/dist/*.jpg', ['img/depends'], function(event) { })
 	gulp.watch('src/js/**', ['js/website'], function(event) { })
 	gulp.watch('src/css/**', ['css/website'], function(event) { })
 	gulp.watch('src/html/**', ['html/website'], function(event) { })
 	gulp.watch('src/img/**', ['static/website'], function(event) { })
+	gulp.watch('experiments/specs.json', ['exp/meta'], function(event) { })
 	gulp.watch('experiments/**/*.js', ['exp/bundle'], function(event) { })
 	gulp.watch('experiments/**/assets/**', ['exp/bundle'], function(event) { })
 });
@@ -164,5 +191,5 @@ gulp.task('live', ['default'], function() {
 /**
  * Entry point
  */
-gulp.task('default', [ 'js/depends', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundle' ], function() {
+gulp.task('default', [ 'js/depends', 'img/depends', 'js/lib', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundle', 'exp/meta' ], function() {
 });

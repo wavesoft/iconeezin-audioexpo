@@ -1,0 +1,16 @@
+{
+	"name": "delay",
+	"profile": [ "iconeezin", "three" ],
+	"exports": {
+
+		"Iconeezin.API.ExperimentFile": {
+			"main": ".build.js"
+		},
+
+		"THREE.OBJLoader": {
+			"models/kionokrano": "assets/models/kionokrano.obj",
+			"models/podium": "assets/models/podium.obj"
+		}
+
+	}
+}

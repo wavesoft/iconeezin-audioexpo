@@ -38,7 +38,7 @@ var IconeezinRoot = React.createClass({
 	 */
 	getInitialState: function() {
 		return {
-			'hasvr': Iconeezin.Runtime.Video.hasVR(),
+			'hasvr': false,
 			'hmd': false,
 			'paused': true,
 			'experiment': null
@@ -59,6 +59,9 @@ var IconeezinRoot = React.createClass({
 		// Remove loading class from body
 		document.body.className = "";
 
+		// Listen for VR availability events
+		Iconeezin.Runtime.Browser.onVRSupportChange( this.handleVRChange );
+
 	},
 
 	/**
@@ -72,11 +75,17 @@ var IconeezinRoot = React.createClass({
 		document.removeEventListener("mozfullscreenchange", this.handleFullScreenChange);
 		document.removeEventListener("MSFullscreenChange", this.handleFullScreenChange);
 
+		// Unregoster from VR availability events
+		Iconeezin.Runtime.Browser.offVRSupportChange( this.handleVRChange );
+
 	},
 
 	/**
-	 * Start/Stop
+	 * Event handlers
 	 */
+	handleVRChange: function( isSupported, hmdDevice ) {
+		this.setState({ 'hasvr': isSupported });
+	},
 	handleStartDesktop: function() {
 		this.setState({ 'paused': false, 'hmd': false });
 	},

@@ -43,6 +43,18 @@ body {
   width: 100%;
   height: 100%;
 }
+#app .icnz-viewport #debug-window {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #FFF;
+  font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, monospace;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.8);
+}
 #app .icnz-hade {
   -webkit-pointer-events: none;
   -moz-pointer-events: none;
