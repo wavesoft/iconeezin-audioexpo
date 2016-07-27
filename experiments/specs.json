@@ -13,36 +13,40 @@
 				{
 					"scale": 1.0,
 					"delay": 5,
+					"lang": "el-GR",
 					"message": [
-						"To be or not to be,",
-						"this is the question I see.",
-						"The question to always ask,",
-						"from dawn to dusk."
+						"",
+						"Αυτή είναι μια δοκιμή,",
+						"για ένα κείμενο μικρό.",
+						""
 					]
 				},
 				{
 					"scale": 2.0,
 					"delay": 20,
+					"lang": "el-GR",
 					"message": [
-						"But if you feel that you are wronged,",
-						"if the people that help you are gone.",
-						"And the feeling is not the one,",
-						"to ask and learn for all."
+						"",
+						"Αυτή είναι μια πιό μεγάλη δοκιμή,",
+						"με ένα κείμενο ελαφρά μεγαλύτερο.",
+						""
 					]
 				},
 				{
 					"scale": 3.0,
 					"delay": 80,
+					"lang": "el-GR",
 					"message": [
-						"And we are now getting closer,",
-						"to the last room to be gone.",
-						"And the room is getting bigger,",
-						"because they are filler."
+						"",
+						"Και για να δούμε και αυτό,",
+						"είναι αρκετά καλύτερο;",
+						""
 					]
 				},
 				{
 					"scale": 4.0,
 					"delay": 120,
+					"lang": "el-GR",
 					"message": [
 						"Now the room is larger you wish,",
 						"and everyting is cooler to please.",

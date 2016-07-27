@@ -7,7 +7,6 @@ var MonumentRoom = function( geom ) {
 
 	this.kionokranoMesh = geom['delay/models/kionokrano'];
 	this.podiumObject = geom['delay/models/podium'];
-	this.length = 0;
 
 	// Prepare materials
 	this.wallsMaterial = new THREE.MeshNormalMaterial({ side: THREE.BackSide });
@@ -26,6 +25,8 @@ var MonumentRoom = function( geom ) {
 	// Create texture & get context handler
 	this.podiumMessageCtx = canvas.getContext('2d');
 	this.podiumMessageTexture = new THREE.Texture(canvas);
+	this.podiumMessageLines = [];
+	this.podiumMessageProgress = 0;
 
 	// Create message material
 	this.podiummessageMaterial = new THREE.MeshBasicMaterial({
@@ -34,10 +35,11 @@ var MonumentRoom = function( geom ) {
 	    color: 0xffffff
 	});
 
-	this.setPodiumMessage("This","is","a","test");
-
+	// Local properties
 	this.pathEnter = null;
 	this.pathLeave = null;
+	this.length = 0;
+
 
 };
 
@@ -45,28 +47,65 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 	constructor: MonumentRoom,
 
 	/**
-	 * Update the podium message
+	 * Redraw the podium message
 	 */
-	'setPodiumMessage': function( line1, line2, line3, line4 ) {
-		var ctx = this.podiumMessageCtx;
+	'redrawPodiumMessage': function() {
+		var ctx = this.podiumMessageCtx,
+			l1 = this.podiumMessageLines[0]||"",
+			l2 = this.podiumMessageLines[1]||"",
+			l3 = this.podiumMessageLines[2]||"",
+			l4 = this.podiumMessageLines[3]||"",
+			chars = l1.length + l2.length + l3.length + l4.length;
 
-		ctx.clearRect(0, 0, 2048, 1024);
+		ctx.fillStyle = "#000000";
+		ctx.fillRect(0, 0, 2048, 1024);
+		ctx.globalCompositeOperation = "source-over";
+
+		// Draw message
 		ctx.textAlign = "center"; 
-		ctx.font="110px bold Tahoma"; 
+		ctx.font="bold 110px Tahoma"; 
 		ctx.fillStyle = "#ffffff";
-		ctx.fillText( line1||"", 1024, 366 );
-		ctx.fillText( line2||"", 1024, 498 );
-		ctx.fillText( line3||"", 1024, 631 );
-		ctx.fillText( line4||"", 1024, 763 );
+		ctx.fillText( l1, 1024, 366 );
+		ctx.fillText( l2, 1024, 498 );
+		ctx.fillText( l3, 1024, 631 );
+		ctx.fillText( l4, 1024, 763 );
+
+		// Draw progress
+		ctx.globalCompositeOperation = "multiply";
+		ctx.fillStyle = "#ff0000";
+		var p_chars = Math.round(this.podiumMessageProgress * chars),
+			steps = [ [l1.length,ctx.measureText(l1).width,253],
+					  [l2.length,ctx.measureText(l2).width,385],
+					  [l3.length,ctx.measureText(l3).width,518],
+					  [l4.length,ctx.measureText(l4).width,650] ];
+		for (var i=0; i<4; i++) {
+			if (p_chars <= 0) break;
+			var c = steps[i][0], tW = steps[i][1], y = steps[i][2], w = tW;
+			if (p_chars < c) tW *= p_chars / c;
+			p_chars -= c;
+	
+			// Draw progress overlay
+			ctx.fillRect( 1024-w/2-5,y-5,tW+10,123 );
+		}
 
 		this.podiumMessageTexture.needsUpdate = true;
+	},
+
+	/**
+	 * Update the podium message
+	 */
+	'setPodiumMessage': function( lines ) {
+		this.podiumMessageLines = lines;
+		this.podiumMessageProgress = 0;
+		this.redrawPodiumMessage();
 	},
 
 	/**
 	 * Update podium message progress
 	 */
 	'setPodiumMessageProgress': function( progress ) {
-
+		this.podiumMessageProgress = progress;
+		this.redrawPodiumMessage();
 	},
 
 	/**
@@ -79,8 +118,8 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 			height = (pillarHeight + frameHeight) * scale,
 			length = 10 * scale,
 			width = 6 * scale,
-			innerLength = length - innerPadding,
-			innerWidth = width - innerPadding;
+			innerLength = length - innerPadding*2,
+			innerWidth = width - innerPadding*2;
 
 		// Reset
 		this.reset();

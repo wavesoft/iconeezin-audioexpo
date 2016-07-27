@@ -79,7 +79,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 	// Prepare monument
 	m_new.visible = true;
 	m_new.rebuild( scale );
-	m_new.setPodiumMessage( lines[0], lines[1], lines[2], lines[3] );
+	m_new.setPodiumMessage( lines );
 
 	// Calculate position
 	m_new.position.set( 0, m_last.position.y + m_last.length, 0 );
@@ -123,6 +123,14 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 }
 
 /**
+ * Cleanup when hiding
+ */
+Experiment.prototype.onWillHide = function( callback ) {
+	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
+	callback();
+}
+
+/**
  * Start experiment when shown
  */
 Experiment.prototype.onWillShow = function( callback ) {
@@ -132,6 +140,8 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.monuments[1].visible = false;
 	this.monuments[0].length = 0;
 	this.monuments[1].length = 0;
+
+	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
 
 	// Prepare next task function
 	var executeNextTask = (function() {
@@ -145,11 +155,8 @@ Experiment.prototype.onWillShow = function( callback ) {
 				// Enable voice delay at specified values
 				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
 
-				// Compile the message to expect
-				var message = meta['message'].join(" ");
-
-				// Fake reply
-				setTimeout( (function() {
+				// Continue helper
+				var completeTask = (function() {
 
 					// Mark completion of task
 					Iconeezin.Runtime.Tracking.completeTask({
@@ -164,7 +171,40 @@ Experiment.prototype.onWillShow = function( callback ) {
 						executeNextTask();
 					}
 
-				}).bind(this), 5000);
+				}).bind(this);
+
+				// Retry function
+				var tryDictation = (function() {
+
+					// Reset progress
+					this.monuments[this.activeMonument].setPodiumMessageProgress( 0 );
+
+					// Compile the message to expect
+					var message = meta['message'].join(" ");
+					message = message.replace(/[.,;:?]/g, "").trim();
+					console.log("Text: '"+message+"'");
+
+					Iconeezin.Runtime.Audio.voiceCommands.setLanguage( meta['lang'] );
+					Iconeezin.Runtime.Audio.voiceCommands.expectPhrase( message, (function(meta) {
+
+						// Update progress in the podium
+						this.monuments[this.activeMonument].setPodiumMessageProgress( meta['progress'] );
+
+						// Check if completed
+						if (meta['completed']) {
+							if (meta['score'] < 0.8) {
+								setTimeout(tryDictation, 500);
+							} else {
+								completeTask();
+							}
+						}
+
+					}).bind(this));
+
+				}).bind(this);
+
+				// First dictation attempt
+				tryDictation();
 
 			}).bind(this) )
 

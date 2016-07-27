@@ -43131,7 +43131,7 @@ var Iconeezin =
 		// }).bind(this);
 
 		// Configure
-		this.recognition.lang = 'el-GR';
+		// this.recognition.lang = 'el-GR';
 		this.recognition.continuous = false;
 		this.recognition.interimResults = true;
 
