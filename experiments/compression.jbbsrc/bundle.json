@@ -1,0 +1,11 @@
+{
+	"name": "compression",
+	"profile": [ "iconeezin", "three" ],
+	"exports": {
+
+		"Iconeezin.API.ExperimentFile": {
+			"main": ".build.js"
+		}
+
+	}
+}
