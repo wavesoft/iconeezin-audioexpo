@@ -9,13 +9,15 @@ var MonumentRoom = function( geom ) {
 	this.podiumObject = geom['delay/models/podium'];
 
 	// Prepare materials
-	this.wallsMaterial = new THREE.MeshNormalMaterial({ side: THREE.BackSide });
+	this.wallsMaterial = new THREE.MeshNormalMaterial({  side: THREE.BackSide });
 	this.ceilingMaterial = new THREE.MeshNormalMaterial({ });
 	this.floorMaterial = new THREE.MeshNormalMaterial({ });
 	this.pillarMaterial = new THREE.MeshNormalMaterial({ });
 	this.kionokranoMaterial = new THREE.MeshNormalMaterial({ });
 	this.frameMaterial = new THREE.MeshNormalMaterial({ });
 	this.podiumMaterial = new THREE.MeshNormalMaterial({ });
+	this.doorMaterial = new THREE.MeshNormalMaterial({ });
+	this.doorFrameMaterial = new THREE.MeshNormalMaterial({ });
 
 	// Create a podium material
 	var canvas = document.createElement('canvas');
@@ -50,7 +52,8 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 	 * Redraw the podium message
 	 */
 	'redrawPodiumMessage': function() {
-		var ctx = this.podiumMessageCtx,
+		var ovd = 25,
+			ctx = this.podiumMessageCtx,
 			l1 = this.podiumMessageLines[0]||"",
 			l2 = this.podiumMessageLines[1]||"",
 			l3 = this.podiumMessageLines[2]||"",
@@ -85,7 +88,7 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 			p_chars -= c;
 	
 			// Draw progress overlay
-			ctx.fillRect( 1024-w/2-5,y-5,tW+10,123 );
+			ctx.fillRect( 1024-w/2-ovd,y-ovd,tW+ovd*2,113+ovd*2 );
 		}
 
 		this.podiumMessageTexture.needsUpdate = true;
@@ -162,18 +165,23 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 		this.pathEnter = new THREE.CubicBezierCurve3(
 			new THREE.Vector3( 0.0000, 1.00000, 0 ),
 			new THREE.Vector3( 0.0000, 2.00000, 0 ),
-			new THREE.Vector3( 0.0000, podium.position.y-3, 0.1 ),
-			new THREE.Vector3( 0.0000, podium.position.y-2, 0.2 )
+			new THREE.Vector3( 0.0000, podium.position.y-3, 0.0 ),
+			new THREE.Vector3( 0.0000, podium.position.y-2, 0.0 )
 		);
 		this.pathLeave = new THREE.CubicBezierCurve3(
-			new THREE.Vector3( 0.0000, podium.position.y-2, 0.2 ),
-			new THREE.Vector3( -4.0, podium.position.y+length/5, 0.1 ),
+			new THREE.Vector3( 0.0000, podium.position.y-2, 0.0 ),
+			new THREE.Vector3( -4.0, podium.position.y+length/5, 0.0 ),
 			new THREE.Vector3( 0.0000, length-7, 0.0 ),
 			new THREE.Vector3( 0.0000, length, 0.0 )
 		);
 
 		// Keep properties
 		this.length = length;
+
+		// this.traverse(function(o) {
+		// 	o.castShadow = true;
+		// 	o.receiveShadow = true;
+		// });
 
 	},
 
@@ -195,14 +203,85 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 
 	'addWalls': function( length,width,height ) {
 
-		//
-		// Create a box that will render the walls
-		//
-		var boxGeom = new THREE.BoxGeometry( width,length,height+0.5,1,1,1 );
-		var boxMesh = new THREE.Mesh( boxGeom, this.wallsMaterial );
+		var doorWidth = 2,
+			doorHeight = 3,
+			doorFrame = 0.15;
 
-		boxMesh.position.set( 0, length/2, height/2 );
-		this.add(boxMesh);
+		//
+		// Create geometry for the doored walls
+		//
+		var doorWallGeom = new THREE.Geometry();
+		doorWallGeom.vertices.push(
+			new THREE.Vector3( -width/2, 0, height ),
+			new THREE.Vector3(  width/2, 0, height ),
+			new THREE.Vector3( -width/2, 0, 0 ),
+			new THREE.Vector3(  width/2, 0, 0 ),
+			new THREE.Vector3( -width/2, 0, doorHeight ),
+			new THREE.Vector3(  width/2, 0, doorHeight ),
+			new THREE.Vector3( -doorWidth/2, 0, doorHeight ),
+			new THREE.Vector3(  doorWidth/2, 0, doorHeight ),
+			new THREE.Vector3( -doorWidth/2, 0, 0 ),
+			new THREE.Vector3(  doorWidth/2, 0, 0 )
+		);
+		doorWallGeom.faces.push(
+			new THREE.Face3( 0, 4, 5 ), 
+			new THREE.Face3( 5, 1, 0 ), 
+			new THREE.Face3( 4, 2, 8 ), 
+			new THREE.Face3( 4, 8, 6 ), 
+			new THREE.Face3( 7, 9, 3 ), 
+			new THREE.Face3( 7, 3, 5 )
+		);
+
+		// Generate UVs
+		var dY = (1- (doorHeight / height)),
+			dX = (doorWidth / width),
+			uvs = [ // Vertex UVs
+				new THREE.Vector2( 0, 0 ), 
+				new THREE.Vector2( 1, 0 ), 
+				new THREE.Vector2( 0, 1 ), 
+				new THREE.Vector2( 1, 1 ), 
+				new THREE.Vector2( 0, dY ), 
+				new THREE.Vector2( 1, dY ), 
+				new THREE.Vector2( 0.5 - dX, dY ), 
+				new THREE.Vector2( 0.5 + dX, dY ), 
+				new THREE.Vector2( 0.5 - dX, 1 ), 
+				new THREE.Vector2( 0.5 + dX, 1 )
+			];
+		for (var i=0; i<doorWallGeom.faces.length; ++i) {
+			doorWallGeom.faceVertexUvs.push( uvs[ doorWallGeom.faces[i].a ] );
+			doorWallGeom.faceVertexUvs.push( uvs[ doorWallGeom.faces[i].b ] );
+			doorWallGeom.faceVertexUvs.push( uvs[ doorWallGeom.faces[i].c ] );
+		}
+
+		// Compute face normals
+		doorWallGeom.computeFaceNormals();
+
+		//
+		// Create side walls
+		//
+		var sideGeometry = new THREE.PlaneGeometry( width, length, 1, 1 );
+		var wallLeft = new THREE.Mesh( sideGeometry, this.wallsMaterial );
+		var wallRight = new THREE.Mesh( sideGeometry, this.wallsMaterial );
+
+		wallLeft.rotation.set( Math.PI/2, -Math.PI/2, Math.PI/2 );
+		wallLeft.position.set( -width/2, length/2, height/2 );
+		wallRight.rotation.set( Math.PI/2, Math.PI/2, Math.PI/2 );
+		wallRight.position.set( width/2, length/2, height/2 );
+
+		this.add(wallLeft);
+		this.add(wallRight);
+
+		//
+		// Create near and far walls
+		//
+		var wallNear = new THREE.Mesh( doorWallGeom, this.wallsMaterial );
+		var wallFar = new THREE.Mesh( doorWallGeom, this.wallsMaterial );
+
+		wallNear.position.set( 0, 0, 0 );
+		wallFar.position.set( 0, length, 0 );
+		wallFar.rotation.set( 0, 0, Math.PI );
+		this.add(wallNear);
+		this.add(wallFar);
 
 		//
 		// Create the top and bottom planes for rendering ceiling and floor
@@ -217,6 +296,49 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 
 		botPlaneMesh.position.set( 0, length/2, 0 );
 		this.add(botPlaneMesh);
+
+		//
+		// Create door hinges
+		//
+		this.doorLPivot = new THREE.Object3D();
+		this.doorRPivot = new THREE.Object3D();
+		this.doorLPivot.position.set( -doorWidth/2, length, 0 );
+		this.doorRPivot.position.set(  doorWidth/2, length, 0 );
+		this.add(this.doorLPivot);
+		this.add(this.doorRPivot);
+
+		this.doorLPivot.rotation.set( 0, 0, 0 );
+		this.doorRPivot.rotation.set( 0, 0, -Math.PI );
+
+		//
+		// Create door sides
+		//
+		var doorGeometry = new THREE.BoxGeometry( doorWidth/2, 0.1, doorHeight );
+		var doorL = new THREE.Mesh( doorGeometry, this.doorMaterial );
+		var doorR = new THREE.Mesh( doorGeometry, this.doorMaterial );
+
+		doorL.position.set( doorWidth/4, -0.05, doorHeight/2 );
+		doorR.position.set( doorWidth/4,  0.05, doorHeight/2 );
+
+		this.doorLPivot.add( doorL );
+		this.doorRPivot.add( doorR );
+
+		//
+		// Create door frames
+		//
+		var vFrameGeometry = new THREE.BoxGeometry( doorFrame, doorFrame, doorHeight+doorFrame );
+		var hFrameGeometry = new THREE.BoxGeometry( doorWidth+2*doorFrame, doorFrame, doorFrame );
+		var lFrame = new THREE.Mesh( vFrameGeometry, this.doorFrameMaterial );
+		var rFrame = new THREE.Mesh( vFrameGeometry, this.doorFrameMaterial );
+		var tFrame = new THREE.Mesh( hFrameGeometry, this.doorFrameMaterial );
+
+		lFrame.position.set( -doorWidth/2-doorFrame/2, length, doorHeight/2 );
+		rFrame.position.set(  doorWidth/2+doorFrame/2, length, doorHeight/2 );
+		tFrame.position.set(  0, length, doorHeight );
+
+		this.add( lFrame );
+		this.add( rFrame );
+		this.add( tFrame );
 
 	},
 
@@ -279,7 +401,16 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 		this.add( meshN );
 		this.add( meshF );
 
-	}
+	},
+
+	'openDoor': function( cb ) {
+		Iconeezin.Runtime.runTween((function(i) {
+
+			this.doorLPivot.rotation.set( 0, 0, (-Math.PI/2)*i );
+			this.doorRPivot.rotation.set( 0, 0, -Math.PI+(Math.PI/2)*i );
+
+		}).bind(this), 1000, cb);
+	},
 
 });
 

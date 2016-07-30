@@ -97,15 +97,17 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 		);
 	};
 	var walk_out = function( cb ) {
-		Iconeezin.Runtime.Controls.followPath( 
-			m_last.pathLeave, {
-				'speed': 2.0,
-				'matrix': m_last.matrix.clone(),
-				'callback': function(v) {
-					if ((v == 1) && cb) cb();
+		m_last.openDoor(function() {
+			Iconeezin.Runtime.Controls.followPath( 
+				m_last.pathLeave, {
+					'speed': 2.0,
+					'matrix': m_last.matrix.clone(),
+					'callback': function(v) {
+						if ((v == 1) && cb) cb();
+					}
 				}
-			}
-		);
+			);
+		});
 	};
 
 	// If we had a previous item, walk out of it first
@@ -173,6 +175,8 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 				}).bind(this);
 
+				window.spoken = completeTask;
+
 				// Retry function
 				var tryDictation = (function() {
 
@@ -194,7 +198,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 						if (meta['completed']) {
 							if (meta['score'] < 0.8) {
 								Iconeezin.Runtime.Video.glitch(250);
-								setTimeout(tryDictation, 500);
+								setTimeout(tryDictation, 250);
 							} else {
 								completeTask();
 							}
