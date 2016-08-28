@@ -73,6 +73,15 @@
 					"level": 1.0
 				}
 			]
+		},
+		{
+			"name": "compression",
+			"desc": "MP3 Compression Example",
+			"tasks": [
+				{
+					"name": "test"
+				}
+			]
 		}
 	]
 }

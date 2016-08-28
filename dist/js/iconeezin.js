@@ -83,10 +83,10 @@ var Iconeezin =
 	var VideoCore = __webpack_require__(29);
 	var ControlsCore = __webpack_require__(56);
 	var TrackingCore = __webpack_require__(58);
-	var ExperimentsCore = __webpack_require__(64);
+	var ExperimentsCore = __webpack_require__(65);
 	var InteractionCore = __webpack_require__(27);
 	var BrowserUtil = __webpack_require__(31);
-	var StopableTimers = __webpack_require__(80);
+	var StopableTimers = __webpack_require__(81);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -44944,17 +44944,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -45032,11 +45032,11 @@ var Iconeezin =
 				if (VideoCore.qualityFlags.hires) {
 					VideoCore.viewport.setSize( width, height, pixelAspectRatio, true );
 				} else {
-					VideoCore.viewport.setSize( viewportWidth, viewportHeight, 
+					VideoCore.viewport.setSize( viewportWidth, viewportHeight,
 						VideoCore.qualityFlags.hires ? window.devicePixelRatio : 1 );
 				}
 			} else {
-				VideoCore.viewport.setSize( viewportWidth, viewportHeight, 
+				VideoCore.viewport.setSize( viewportWidth, viewportHeight,
 					VideoCore.qualityFlags.hires ? window.devicePixelRatio : 1 );
 			}
 		});
@@ -45048,7 +45048,7 @@ var Iconeezin =
 			// the HMD display. So any resize event just updates the
 			// DOM element (the viewport) and not the canvas
 			if (!isPresenting) {
-				VideoCore.viewport.setSize( viewportWidth, viewportHeight, 
+				VideoCore.viewport.setSize( viewportWidth, viewportHeight,
 					VideoCore.qualityFlags.hires ? window.devicePixelRatio : 1 );
 			}
 
@@ -45237,9 +45237,9 @@ var Iconeezin =
 			VideoCore.viewport.setEffect( 0 );
 		}, duration);
 	}
-
 	// Export
 	module.exports = VideoCore;
+
 
 /***/ },
 /* 30 */
@@ -45249,17 +45249,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -45491,7 +45491,7 @@ var Iconeezin =
 
 		// Disable render pass if an effect i active
 		this.renderPass.renderToScreen = !(
-			this.glitchPass.enabled || 
+			this.glitchPass.enabled ||
 			this.bloomPass.enabled ||
 			this.filmPass.enabled
 		);
@@ -45585,13 +45585,14 @@ var Iconeezin =
 	Viewport.prototype.render = function() {
 
 		// Schedule next frame if not paused
-		if (!this.paused) requestAnimationFrame( this.render.bind(this) );
+		// if (!this.paused) requestAnimationFrame( this.render.bind(this) );
+		if (!this.paused) setTimeout( this.render.bind(this), 1000/10 );
 
 		// Get elapsed time to update animations
 		var t = Date.now(),
 			d = t - this.lastTimestamp;
 			this.lastTimestamp = t;
-			
+
 		// Perform scene updates only if not paused
 		//
 		// (Render events might still be triggered ex. when window
@@ -45612,7 +45613,7 @@ var Iconeezin =
 		}
 
 		// Render composer
-		this.renderer.clear(); 
+		this.renderer.clear();
 		this.effectComposer.render( d );
 
 	}
@@ -49709,17 +49710,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -49731,9 +49732,10 @@ var Iconeezin =
 
 	var SightInteraction = __webpack_require__(57);
 
-	var PathFollowerControl = __webpack_require__(59);
-	var MouseControl = __webpack_require__(61);
-	var VRControl = __webpack_require__(62);
+	var InfiniteControl = __webpack_require__(59);
+	var PathFollowerControl = __webpack_require__(61);
+	var MouseControl = __webpack_require__(62);
+	var VRControl = __webpack_require__(63);
 
 	/**
 	 * The ControlsCore singleton contains the
@@ -49755,7 +49757,7 @@ var Iconeezin =
 		// Register render callback
 		VideoCore.viewport.addRenderListener( this.onUpdate.bind(this) );
 
-		// Base controls 
+		// Base controls
 		mouseControl = new MouseControl();
 		vrControl = new VRControl();
 
@@ -49780,8 +49782,8 @@ var Iconeezin =
 
 		// Set defaults
 		this.setHMD( false );
-		this.setZero( 
-			new THREE.Vector3(0,0,3), 
+		this.setZero(
+			new THREE.Vector3(0,0,3),
 			new THREE.Vector3(0,1,0)
 		);
 
@@ -49897,6 +49899,7 @@ var Iconeezin =
 	 * Activate a particular control
 	 */
 	ControlsCore.activateControl = function( control ) {
+	  console.log('-activating(', control, ')');
 
 		// Deactivate previous control
 		if (activeControl)
@@ -49917,6 +49920,7 @@ var Iconeezin =
 	 */
 	ControlsCore.deactivateLastControl = function() {
 		if (!activeControl) return;
+	  console.log('-deactivating(', activeControl, ')');
 
 		// Restore last control gimbal
 		gimbal = activeControl.unchainGimbal( gimbal );
@@ -49934,7 +49938,7 @@ var Iconeezin =
 	ControlsCore.setPaused = function( paused ) {
 		// Disable everything
 		if (this.paused = paused) {
-			
+
 			// Disable all controls
 			vrControl.disable();
 			mouseControl.disable();
@@ -49993,6 +49997,13 @@ var Iconeezin =
 	}
 
 	/**
+	 * Start infinite controls using the specified control object
+	 */
+	ControlsCore.infiniteNavigationUsing = function( toController ) {
+		this.activateControl(new InfiniteControl(toController));
+	}
+
+	/**
 	 * Update all the camera controls
 	 */
 	ControlsCore.onUpdate = function( delta ) {
@@ -50007,6 +50018,7 @@ var Iconeezin =
 
 	// Export
 	module.exports = ControlsCore;
+
 
 /***/ },
 /* 57 */
@@ -50660,6 +50672,194 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 *
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 *
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var THREE = __webpack_require__(1);
+	var BaseControl = __webpack_require__(60);
+
+	/**
+	 * This control locks the camera in a single location and does not move it.
+	 *
+	 * Instead it passes the camera orientation to the specified 'control'
+	 * object in order to use it for procedural environment generation, giving
+	 * the illusion of motion.
+	 */
+	var InfiniteControl = function( controller ) {
+		BaseControl.call( this );
+	  this.controller = controller;
+	  this.camera = null;
+	}
+
+	/**
+	 * Subclass from base controls
+	 */
+	InfiniteControl.prototype = Object.create( BaseControl.prototype );
+
+	/**
+	 * Chain given object in our gimbal and return the object
+	 */
+	BaseControl.prototype.chainGimbal = function( gimbal ) {
+	  this.gimbal.add( gimbal );
+
+	  // Locate zero gimbal
+	  this.camera = null;
+	  gimbal.traverse((function(obj) {
+	    if (obj instanceof THREE.Camera) {
+	      this.camera = obj;
+	    }
+	  }).bind(this));
+
+	  return this.gimbal;
+	};
+
+	/**
+	 * Update
+	 */
+	InfiniteControl.prototype.onUpdate = function( delta ) {
+	  if (this.controller && this.camera) {
+	    this.controller.onOrientationChange(
+	      this.camera.getWorldQuaternion()
+	    );
+	  }
+	};
+
+	// Export
+	module.exports = InfiniteControl;
+
+
+/***/ },
+/* 60 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 * 
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 * 
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 * 
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	/**
+	 * Base class for other camera controls
+	 */
+	var BaseControl = function( ) {
+
+		/**
+		 * If set to true this will enable this control component
+		 */
+		this.enabled = false;
+
+		/**
+		 * Gimbal object
+		 */
+		this.gimbal = new THREE.Object3D();
+
+	}
+
+	/**
+	 * Chain given object in our gimbal and return the object
+	 */
+	BaseControl.prototype.chainGimbal = function( gimbal ) {
+		this.gimbal.add( gimbal );
+		return this.gimbal;
+	};
+
+	/**
+	 * Unchained the gimbal object and return it
+	 */
+	BaseControl.prototype.unchainGimbal = function( gimbal ) {
+		if (gimbal !== this.gimbal)
+			throw "Trying to unchain a gimbal at wrong index!";
+
+		var child = this.gimbal.children[0];
+		this.gimbal.remove( child );
+		return child;
+	};
+
+	/**
+	 * Disable control
+	 */
+	BaseControl.prototype.disable = function() {
+		this.enabled = false;
+	};
+
+	/**
+	 * Enable object controls
+	 */
+	BaseControl.prototype.enable = function() {
+		this.enabled = true;
+	};
+
+	/**
+	 * Trigger update
+	 */
+	BaseControl.prototype.triggerUpdate = function( delta ) {
+		if (!this.enabled) return;
+		this.onUpdate( delta );
+		this.onApplyPosition( delta );
+		this.onApplyQuaternion( delta );
+	};
+
+
+	/**
+	 * Function called when the controls must apply their
+	 * transformations to the object.
+	 */
+	BaseControl.prototype.onUpdate = function( delta ) {
+
+	};
+
+	BaseControl.prototype.onApplyPosition = function( delta ) {
+
+	};
+
+	BaseControl.prototype.onApplyQuaternion = function( delta ) {
+
+	};
+
+
+	// Export
+	module.exports = BaseControl;
+
+
+/***/ },
+/* 61 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
 	 * 
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
@@ -50798,116 +50998,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 60 */
-/***/ function(module, exports) {
-
-	"use strict";
-	/**
-	 * Iconeez.in - A Web VR Platform for social experiments
-	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
-	 * This program is free software; you can redistribute it and/or modify
-	 * it under the terms of the GNU General Public License as published by
-	 * the Free Software Foundation; either version 2 of the License, or
-	 * (at your option) any later version.
-	 * 
-	 * This program is distributed in the hope that it will be useful,
-	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 * GNU General Public License for more details.
-	 * 
-	 * You should have received a copy of the GNU General Public License along
-	 * with this program; if not, write to the Free Software Foundation, Inc.,
-	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-	 *
-	 * @author Ioannis Charalampidis / https://github.com/wavesoft
-	 */
-
-	/**
-	 * Base class for other camera controls
-	 */
-	var BaseControl = function( ) {
-
-		/**
-		 * If set to true this will enable this control component
-		 */
-		this.enabled = false;
-
-		/**
-		 * Gimbal object
-		 */
-		this.gimbal = new THREE.Object3D();
-
-	}
-
-	/**
-	 * Chain given object in our gimbal and return the object
-	 */
-	BaseControl.prototype.chainGimbal = function( gimbal ) {
-		this.gimbal.add( gimbal );
-		return this.gimbal;
-	};
-
-	/**
-	 * Unchained the gimbal object and return it
-	 */
-	BaseControl.prototype.unchainGimbal = function( gimbal ) {
-		if (gimbal !== this.gimbal)
-			throw "Trying to unchain a gimbal at wrong index!";
-
-		var child = this.gimbal.children[0];
-		this.gimbal.remove( child );
-		return child;
-	};
-
-	/**
-	 * Disable control
-	 */
-	BaseControl.prototype.disable = function() {
-		this.enabled = false;
-	};
-
-	/**
-	 * Enable object controls
-	 */
-	BaseControl.prototype.enable = function() {
-		this.enabled = true;
-	};
-
-	/**
-	 * Trigger update
-	 */
-	BaseControl.prototype.triggerUpdate = function( delta ) {
-		if (!this.enabled) return;
-		this.onUpdate( delta );
-		this.onApplyPosition( delta );
-		this.onApplyQuaternion( delta );
-	};
-
-
-	/**
-	 * Function called when the controls must apply their
-	 * transformations to the object.
-	 */
-	BaseControl.prototype.onUpdate = function( delta ) {
-
-	};
-
-	BaseControl.prototype.onApplyPosition = function( delta ) {
-
-	};
-
-	BaseControl.prototype.onApplyQuaternion = function( delta ) {
-
-	};
-
-
-	// Export
-	module.exports = BaseControl;
-
-
-/***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51126,7 +51217,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51153,7 +51244,7 @@ var Iconeezin =
 
 	var BaseControl = __webpack_require__(60);
 	var Browser = __webpack_require__(31);
-	__webpack_require__(63);
+	__webpack_require__(64);
 
 	var vec = new THREE.Vector3();
 
@@ -51200,7 +51291,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51360,7 +51451,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51390,13 +51481,13 @@ var Iconeezin =
 	var ControlsCore = __webpack_require__(56);
 	var TrackingCore = __webpack_require__(58);
 
-	var ResultsRoom = __webpack_require__(65);
-	var Experiments = __webpack_require__(68);
+	var ResultsRoom = __webpack_require__(66);
+	var Experiments = __webpack_require__(69);
 
 	var Config = __webpack_require__(28);
-	var Loaders = __webpack_require__(69);
+	var Loaders = __webpack_require__(70);
 
-	var StopableTimers = __webpack_require__(80);
+	var StopableTimers = __webpack_require__(81);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime 
@@ -51675,7 +51766,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51704,7 +51795,7 @@ var Iconeezin =
 	var ExperimentsAPI = __webpack_require__(25);
 	var InteractionCore = __webpack_require__(27);
 
-	var Label = __webpack_require__(66);
+	var Label = __webpack_require__(67);
 
 	/**
 	 * Paint function for block
@@ -51820,7 +51911,7 @@ var Iconeezin =
 
 		// Create a spinner sprite
 		var loader = new THREE.TextureLoader();
-		loader.load( __webpack_require__(67), (function( texture ) {
+		loader.load( __webpack_require__(68), (function( texture ) {
 
 			// Set material map
 			mat.map = texture;
@@ -52028,7 +52119,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52263,13 +52354,13 @@ var Iconeezin =
 	module.exports = Label;
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "img/results.jpg";
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -52486,7 +52577,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52513,9 +52604,9 @@ var Iconeezin =
 
 	var Config = __webpack_require__(28);
 
-	var JBBLoader = __webpack_require__(70);
-	var JBBProfileThreeLoader = __webpack_require__(77);
-	var JBBProfileIconeezinLoader = __webpack_require__(79);
+	var JBBLoader = __webpack_require__(71);
+	var JBBProfileThreeLoader = __webpack_require__(78);
+	var JBBProfileIconeezinLoader = __webpack_require__(80);
 
 	/**
 	 * Loaders namespace contains all the different loading
@@ -52625,7 +52716,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -52649,10 +52740,10 @@ var Iconeezin =
 	 */
 
 	/* Imports */
-	var BinaryBundle = __webpack_require__(72);
-	var DecodeProfile = __webpack_require__(73);
-	var ProgressManager = __webpack_require__(74);
-	var Errors = __webpack_require__(75);
+	var BinaryBundle = __webpack_require__(73);
+	var DecodeProfile = __webpack_require__(74);
+	var ProgressManager = __webpack_require__(75);
+	var Errors = __webpack_require__(76);
 
 	/* Production optimisations and debug metadata flags */
 	if (typeof GULP_BUILD === "undefined") var GULP_BUILD = false;
@@ -52662,7 +52753,7 @@ var Iconeezin =
 
 	/* Additional includes on node builds */
 	if (IS_NODE) {
-		var fs = __webpack_require__(76);
+		var fs = __webpack_require__(77);
 	}
 
 	/* Size constants */
@@ -53956,10 +54047,10 @@ var Iconeezin =
 	// Export the binary loader
 	module.exports = BinaryLoader;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(71)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(72)))
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -54059,7 +54150,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54419,7 +54510,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54536,7 +54627,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54711,7 +54802,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54810,13 +54901,13 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -54843,7 +54934,7 @@ var Iconeezin =
 	/* Generated source follows */
 
 	var THREE = __webpack_require__(1);
-	var MD2Character = __webpack_require__(78);
+	var MD2Character = __webpack_require__(79);
 
 	/**
 	 * Factory & Initializer of THREE.CubeTexture
@@ -56615,7 +56706,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -56879,7 +56970,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(2);
@@ -56934,7 +57025,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports) {
 
 	"use strict";

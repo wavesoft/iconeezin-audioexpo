@@ -86,6 +86,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 
 	// Prepare walk-in & walk-out functions
 	var walk_in = function( cb ) {
+		// Follow entering path
 		Iconeezin.Runtime.Controls.followPath( 
 			m_new.pathEnter, {
 				'speed': 1.0,
@@ -97,7 +98,9 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 		);
 	};
 	var walk_out = function( cb ) {
+		// First open doors
 		m_last.openDoor(function() {
+			// Then follow leaving path
 			Iconeezin.Runtime.Controls.followPath( 
 				m_last.pathLeave, {
 					'speed': 2.0,
