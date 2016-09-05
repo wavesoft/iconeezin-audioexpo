@@ -24,6 +24,9 @@ var Experiment = function( db ) {
 	this.add(this.monuments[0]);
 	this.add(this.monuments[1]);
 
+	this.sndFootsteps = db['delay/sounds/footsteps'].create();
+	this.sndDoor = db['delay/sounds/door'].create();
+
 	// // Create a sphere for equirectangular VR
 	// var geom = new THREE.SphereGeometry( 500, 60, 40 );
 	// geom.scale( -1, 1, 1 );
@@ -85,21 +88,29 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 	m_new.position.set( 0, m_last.position.y + m_last.length, 0 );
 
 	// Prepare walk-in & walk-out functions
-	var walk_in = function( cb ) {
+	var walk_in = (function( cb ) {
 		// Follow entering path
 		Iconeezin.Runtime.Controls.followPath(
 			m_new.pathEnter, {
 				'speed': 1.0,
 				'matrix': m_new.matrix.clone(),
-				'callback': function(v) {
-					if ((v == 1) && cb) cb();
-				}
+				'callback': (function(v) {
+					if ((v == 1) && cb) {
+						this.sndFootsteps.stop();
+						cb();
+					}
+				}).bind(this)
 			}
 		);
-	};
-	var walk_out = function( cb ) {
+	}).bind(this);
+	var walk_out = (function( cb ) {
+		// Start footsteps audio
+		this.sndDoor = this.database['delay/sounds/door'].create();
+		this.sndDoor.play();
 		// First open doors
-		m_last.openDoor(function() {
+		m_last.openDoor((function() {
+			this.sndFootsteps = this.database['delay/sounds/footsteps'].create();
+			this.sndFootsteps.play();
 			// Then follow leaving path
 			Iconeezin.Runtime.Controls.followPath(
 				m_last.pathLeave, {
@@ -110,8 +121,8 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 					}
 				}
 			);
-		});
-	};
+		}).bind(this));
+	}).bind(this);
 
 	// If we had a previous item, walk out of it first
 	if (this.activeMonument != -1) {
@@ -131,8 +142,16 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
  * Cleanup when hiding
  */
 Experiment.prototype.onWillHide = function( callback ) {
-	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
+	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
 	callback();
+}
+
+/**
+ * When shown, playback the welcome narration
+ */
+Experiment.prototype.onShown = function() {
+	this.database['delay/sounds/introduction'].play();
+	this.database['delay/sounds/ambient'].play(true);
 }
 
 /**
@@ -146,7 +165,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.monuments[0].length = 0;
 	this.monuments[1].length = 0;
 
-	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
+	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
 
 	// Prepare next task function
 	var executeNextTask = (function() {

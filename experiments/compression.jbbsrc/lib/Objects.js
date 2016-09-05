@@ -35,14 +35,21 @@ function createShadowMaterial(forTexture) {
   });
 }
 
+function textureFromImage(img) {
+  var tex = new THREE.Texture(img);
+  img.addEventListener('load', function() {
+    tex.needsUpdate = true;
+  });
+  return tex;
+}
+
 var Objects = function(db) {
 
   ////////////////////////////////////////////////
   // Plant 01
   ////////////////////////////////////////////////
 
-  var plant01_Texture = new THREE.Texture(db['compression/textures/grass_01']);
-  plant01_Texture.needsUpdate = true;
+  var plant01_Texture = new textureFromImage(db['compression/textures/grass_01']);
 
   var plant01_Material = new THREE.MeshLambertMaterial({
     map: plant01_Texture,
@@ -69,15 +76,11 @@ var Objects = function(db) {
   // Tree 01
   ////////////////////////////////////////////////
 
-  var birch01_leaf_map = new THREE.Texture(db['compression/textures/birch_01/leaves_map']);
-  birch01_leaf_map.needsUpdate = true;
-  var birch01_leaf_nrm = new THREE.Texture(db['compression/textures/birch_01/leaves_nrm']);
-  birch01_leaf_nrm.needsUpdate = true;
+  var birch01_leaf_map = new textureFromImage(db['compression/textures/birch_01/leaves_map']);
+  var birch01_leaf_nrm = new textureFromImage(db['compression/textures/birch_01/leaves_nrm']);
 
-  var birch01_bark_map = new THREE.Texture(db['compression/textures/birch_01/bark_map']);
-  birch01_bark_map.needsUpdate = true;
-  var birch01_bark_nrm = new THREE.Texture(db['compression/textures/birch_01/bark_nrm']);
-  birch01_bark_nrm.needsUpdate = true;
+  var birch01_bark_map = new textureFromImage(db['compression/textures/birch_01/bark_map']);
+  var birch01_bark_nrm = new textureFromImage(db['compression/textures/birch_01/bark_nrm']);
 
   birch01_bark_map.wrapS = birch01_bark_nrm.wrapS = THREE.RepeatWrapping;
   birch01_bark_map.wrapT = birch01_bark_nrm.wrapT = THREE.RepeatWrapping;
@@ -121,20 +124,14 @@ var Objects = function(db) {
   // Tree 02
   ////////////////////////////////////////////////
 
-  var tree02_board_map = new THREE.Texture(db['compression/textures/tree_02/board_map']);
-  tree02_board_map.needsUpdate = true;
-  var tree02_board_nrm = new THREE.Texture(db['compression/textures/tree_02/board_nrm']);
-  tree02_board_nrm.needsUpdate = true;
+  var tree02_board_map = new textureFromImage(db['compression/textures/tree_02/board_map']);
+  var tree02_board_nrm = new textureFromImage(db['compression/textures/tree_02/board_nrm']);
 
-  var tree02_con_map = new THREE.Texture(db['compression/textures/tree_02/con_map']);
-  tree02_con_map.needsUpdate = true;
-  var tree02_con_nrm = new THREE.Texture(db['compression/textures/tree_02/con_nrm']);
-  tree02_con_nrm.needsUpdate = true;
+  var tree02_con_map = new textureFromImage(db['compression/textures/tree_02/con_map']);
+  var tree02_con_nrm = new textureFromImage(db['compression/textures/tree_02/con_nrm']);
 
-  var tree02_bark_map = new THREE.Texture(db['compression/textures/tree_02/bark_map']);
-  tree02_bark_map.needsUpdate = true;
-  var tree02_bark_nrm = new THREE.Texture(db['compression/textures/tree_02/bark_nrm']);
-  tree02_bark_nrm.needsUpdate = true;
+  var tree02_bark_map = new textureFromImage(db['compression/textures/tree_02/bark_map']);
+  var tree02_bark_nrm = new textureFromImage(db['compression/textures/tree_02/bark_nrm']);
 
   tree02_bark_map.wrapS = tree02_bark_nrm.wrapS = THREE.RepeatWrapping;
   tree02_bark_map.wrapT = tree02_bark_nrm.wrapT = THREE.RepeatWrapping;

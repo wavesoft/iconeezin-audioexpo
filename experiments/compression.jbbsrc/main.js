@@ -22,7 +22,6 @@ var Experiment = function( db ) {
 
   this.fog = new THREE.FogExp2(0xbcc9d0, 0.02);
 
-
   var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
   keyLight.position.set( 1, 1, -1 );
   this.add(keyLight);

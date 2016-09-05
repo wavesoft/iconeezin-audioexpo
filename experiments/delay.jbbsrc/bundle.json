@@ -10,6 +10,13 @@
 		"THREE.OBJLoader": {
 			"models/kionokrano": "assets/models/kionokrano.obj",
 			"models/podium": "assets/models/podium.obj"
+		},
+
+		"Iconeezin.API.AudioFile": {
+			"sounds/ambient": "assets/sounds/ambient.ogg",
+			"sounds/door": "assets/sounds/door.ogg",
+			"sounds/footsteps": "assets/sounds/footsteps.ogg",
+			"sounds/introduction": "assets/sounds/introduction.ogg"
 		}
 
 	}
