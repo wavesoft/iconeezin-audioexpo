@@ -5,7 +5,32 @@
 
 		"Iconeezin.API.ExperimentFile": {
 			"main": ".build.js"
-		}
+		},
+
+    "THREE.OBJLoader": {
+      "geometries/grass_01": "assets/plants/FieldGrass01.obj",
+      "geometries/birch_01": "assets/plants/Birch01.obj",
+      "geometries/tree_02": "assets/plants/Confier04Tall.obj"
+    },
+
+    "THREE.ImageLoader": {
+      "textures/grass_01": "assets/plants/FieldGrass01.png",
+
+      "textures/birch_01/leaves_map": "assets/plants/birchleaf01a.png",
+      "textures/birch_01/leaves_nrm": "assets/plants/BirchLeaf01a_NRM.png",
+      "textures/birch_01/bark_map": "assets/plants/birch_final.jpg",
+      "textures/birch_01/bark_nrm": "assets/plants/Birch_Final2_NRM.png",
+
+      "textures/tree_02/bark_map": "assets/plants/BarkConifer004.jpg",
+      "textures/tree_02/bark_nrm": "assets/plants/BarkConifer004_NRM.png",
+      "textures/tree_02/board_map": "assets/plants/BroadPine1.png",
+      "textures/tree_02/board_nrm": "assets/plants/BroadPine1_NRM.png",
+      "textures/tree_02/con_map": "assets/plants/ConBare01.png",
+      "textures/tree_02/con_nrm": "assets/plants/ConBare01_NRM.png",
+
+      "textures/ground/grass_map": "assets/textures/GrassandStone.jpg",
+      "textures/ground/grass_nrm": "assets/textures/GrassandStone_NRM.png"
+    }
 
 	}
 }

@@ -1,5 +1,4 @@
 {
-
 	"experiments": [
 		{
 			"name": "introduction",
@@ -9,52 +8,52 @@
 		{
 			"name": "delay",
 			"desc": "Delay in the speech",
-			"tasks": [
-				{
-					"scale": 1.0,
-					"delay": 5,
-					"lang": "el-GR",
-					"message": [
-						"",
-						"Αυτή είναι μια δοκιμή,",
-						"για ένα κείμενο μικρό.",
-						""
-					]
-				},
-				{
-					"scale": 2.0,
-					"delay": 20,
-					"lang": "el-GR",
-					"message": [
-						"",
-						"Αυτή είναι μια πιό μεγάλη δοκιμή,",
-						"με ένα κείμενο ελαφρά μεγαλύτερο.",
-						""
-					]
-				},
-				{
-					"scale": 3.0,
-					"delay": 80,
-					"lang": "el-GR",
-					"message": [
-						"",
-						"Και για να δούμε και αυτό,",
-						"είναι αρκετά καλύτερο;",
-						""
-					]
-				},
-				{
-					"scale": 4.0,
-					"delay": 120,
-					"lang": "el-GR",
-					"message": [
-						"Now the room is larger you wish,",
-						"and everyting is cooler to please.",
-						"I am running for more ideas,",
-						"for other poems and such."
-					]
-				}
-			]
+		  "tasks": [
+		    {
+		      "scale": 1.0,
+		      "delay": 5,
+		      "lang": "el-GR",
+		      "message": [
+		        "",
+		        "Για όλα υπάρχει μια αρχή,",
+		        "καί για τα απλά και για τα δυσκολα.",
+		        ""
+		      ]
+		    },
+		    {
+		      "scale": 2.0,
+		      "delay": 20,
+		      "lang": "el-GR",
+		      "message": [
+		        "",
+		        "Όμως τα δύσκολα δυσκολεύουν,",
+		        "και η ένταση δυναμώνει.",
+		        ""
+		      ]
+		    },
+		    {
+		      "scale": 3.0,
+		      "delay": 80,
+		      "lang": "el-GR",
+		      "message": [
+		        "",
+		        "Αλλά αυτοί που είναι έτοιμοι,",
+		        "δε διστάζουν σε κανένα εμπόδιο.",
+		        ""
+		      ]
+		    },
+		    {
+		      "scale": 4.0,
+		      "delay": 120,
+		      "lang": "el-GR",
+		      "message": [
+		        "",
+		        "Και καταλήγουν στο τέλος νικητές,",
+		        "έτοιμοι για μιά ακόμη περιπέτεια.",
+		        ""
+		      ]
+		    }
+		  ]
 		},
 		{
 			"name": "threshold",
@@ -83,5 +82,9 @@
 				}
 			]
 		}
-	]
+	],
+	"tracking": {
+		"id": "UA-50303550-3",
+		"engine": "GA"
+	}
 }

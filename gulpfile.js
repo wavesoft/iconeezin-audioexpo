@@ -21,7 +21,7 @@ var IconeezinExternals = {
 	'iconeezin/api'		: 'Iconeezin.API',
 	'iconeezin/runtime' : 'Iconeezin.Runtime',
 
-	// Iconeezin exposed libraries in order to 
+	// Iconeezin exposed libraries in order to
 	// include them only once
 	'three': 'Iconeezin.Libraries.three',
 	'jquery': 'Iconeezin.Libraries.jquery',
@@ -127,10 +127,12 @@ gulp.task('exp/meta', function() {
 /**
  * Build experiments
  */
-gulp.task('exp/build', function() {
+experiments.forEach(function(experiment) {
 
-	return merge(experiments.map(function(experiment) {
-		
+	//
+	// Build javascript
+	//
+	gulp.task('exp/'+experiment+'/build', function() {
 		return gulp
 			.src([ 'experiments/'+experiment+'.jbbsrc/main.js' ])
 	        .on('end', function(){ gutil.log("Compiling experiment", gutil.colors.green(experiment)); })
@@ -158,25 +160,44 @@ gulp.task('exp/build', function() {
 				}
 			}))
 			.pipe(gulp.dest('experiments/'+experiment+'.jbbsrc'));
+	});
 
-	}));
-})
+	//
+	// Build bundle
+	//
+	gulp.task('exp/'+experiment+'/bundle', [ 'exp/'+experiment+'/build' ], function() {
+		return gulp
+			.src([ 'experiments/'+experiment+'.jbbsrc' ])
+	        .on('end', function(){ gutil.log("Creating experiment bundles"); })
+			.pipe(jbb({ }))
+			.pipe(gulp.dest('dist/experiments'));
+	});
+
+	//
+	// Live watch
+	//
+	gulp.task('exp/'+experiment+'/live', [ 'exp/'+experiment+'/bundle' ], function() {
+		gulp.watch('experiments/'+experiment+'.jbbsrc/**/*.js', ['exp/'+experiment+'/bundle'], function(event) { })
+		gulp.watch('experiments/'+experiment+'.jbbsrc/assets/**', ['exp/'+experiment+'/bundle'], function(event) { })
+		gulp.watch('experiments/'+experiment+'.jbbsrc/bundle.json', ['exp/'+experiment+'/bundle'], function(event) { })
+	});
+
+});
 
 /**
- * Compile experiments
+ * Shorthands for all experiments
  */
-gulp.task('exp/bundle', [ 'exp/build' ], function() {
-	return gulp
-		.src([ 'experiments/*.jbbsrc' ])
-        .on('end', function(){ gutil.log("Creating experiment bundles"); })
-		.pipe(jbb({ }))
-		.pipe(gulp.dest('dist/experiments'));
-});
+gulp.task('exp/bundles', experiments.map(function(experiment) {
+	return 'exp/' + experiment + '/bundle';
+}));
+gulp.task('exp/live', experiments.map(function(experiment) {
+	return 'exp/' + experiment + '/live';
+}));
 
 /**
  * Stay live
  */
-gulp.task('live', ['default'], function() {
+gulp.task('live', ['default', 'exp/live'], function() {
 	gulp.watch('node_modules/iconeezin/dist/*.js', ['js/depends'], function(event) { })
 	gulp.watch('node_modules/iconeezin/dist/*.jpg', ['img/depends'], function(event) { })
 	gulp.watch('src/js/**', ['js/website'], function(event) { })
@@ -184,12 +205,10 @@ gulp.task('live', ['default'], function() {
 	gulp.watch('src/html/**', ['html/website'], function(event) { })
 	gulp.watch('src/img/**', ['static/website'], function(event) { })
 	gulp.watch('experiments/specs.json', ['exp/meta'], function(event) { })
-	gulp.watch('experiments/**/*.js', ['exp/bundle'], function(event) { })
-	gulp.watch('experiments/**/assets/**', ['exp/bundle'], function(event) { })
 });
 
 /**
  * Entry point
  */
-gulp.task('default', [ 'js/depends', 'img/depends', 'js/lib', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundle', 'exp/meta' ], function() {
+gulp.task('default', [ 'js/depends', 'img/depends', 'js/lib', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundles', 'exp/meta' ], function() {
 });

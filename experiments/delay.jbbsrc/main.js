@@ -59,7 +59,7 @@ Experiment.prototype.switchTexture = function( image, cb ) {
  */
 Experiment.prototype.boo = function( ) {
 
-	Iconeezin.Runtime.Controls.followPath( 
+	Iconeezin.Runtime.Controls.followPath(
 		this.monument.pathLeave, {
 			'speed': 2
 		}
@@ -87,7 +87,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 	// Prepare walk-in & walk-out functions
 	var walk_in = function( cb ) {
 		// Follow entering path
-		Iconeezin.Runtime.Controls.followPath( 
+		Iconeezin.Runtime.Controls.followPath(
 			m_new.pathEnter, {
 				'speed': 1.0,
 				'matrix': m_new.matrix.clone(),
@@ -101,7 +101,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 		// First open doors
 		m_last.openDoor(function() {
 			// Then follow leaving path
-			Iconeezin.Runtime.Controls.followPath( 
+			Iconeezin.Runtime.Controls.followPath(
 				m_last.pathLeave, {
 					'speed': 2.0,
 					'matrix': m_last.matrix.clone(),
@@ -158,6 +158,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 			this.executeRun( meta['scale'], meta['message'], (function() {
 
 				// Enable voice delay at specified values
+				console.log('--deay=', meta['delay']);
 				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
 
 				// Continue helper
@@ -170,7 +171,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 					// Check if we are completed
 					if (progress == 1.0) {
 						// This experiment is completed
-						Iconeezin.Runtime.Experiments.experimentCompleted();	
+						Iconeezin.Runtime.Experiments.experimentCompleted();
 					} else {
 						// Schedule a new iteration
 						executeNextTask();

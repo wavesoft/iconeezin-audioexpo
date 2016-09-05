@@ -42278,17 +42278,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42325,13 +42325,13 @@ var Iconeezin =
 
 		/**
 		 * API to voice commands
-		 * @property 
+		 * @property
 		 */
 		this.voiceCommands = new VoiceCommands();
 
 		/**
 		 * API to voice effects
-		 * @property 
+		 * @property
 		 */
 		this.voiceEffects = new VoiceEffects( this.listener );
 
@@ -42455,6 +42455,13 @@ var Iconeezin =
 				}).bind(this))
 				.start();
 		}
+
+	}
+
+	/**
+	 * Set the value of global reverberation
+	 */
+	AudioCore.setReverb = function( value ) {
 
 	}
 
@@ -42628,17 +42635,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42698,7 +42705,7 @@ var Iconeezin =
 
 	/**
 	 * Helper function to set/unset line in delay
-	 * @param {int} delay - The reverberation delay
+	 * @param {int} delay - The reverberation delay (ms)
 	 */
 	VoiceEffects.prototype.setDelay = function( delay ) {
 		if (!delay || (delay < 0)) {
@@ -42718,7 +42725,7 @@ var Iconeezin =
 			}
 
 			// Update delay
-			this.lineInDelay.delayTime.value = delay;
+			this.lineInDelay.delayTime.value = delay / 1000;
 
 		}
 	}
@@ -44485,17 +44492,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -44543,13 +44550,11 @@ var Iconeezin =
 		// Flag that denotes if the experiment is active
 		this.isActive = false;
 
-		// Experiment features 
+		// Experiment features
 		this.features = {
-
 			render: {
 				glow_pass: false		/* Set to TRUE to enable glow pass */
-			},
-			
+			}
 		};
 
 	}
@@ -45326,6 +45331,11 @@ var Iconeezin =
 		 */
 		this.tweenFunctions = [];
 
+		/**
+		 * Objects re-injected on every scene
+		 */
+		this.sceneObjects = [];
+
 		/////////////////////////////////////////////////////////////
 		// Constructor
 		/////////////////////////////////////////////////////////////
@@ -45347,9 +45357,10 @@ var Iconeezin =
 
 		// Initialize a THREE scene
 		this.scene = new THREE.Scene();
+		this.scene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
 
 		// Initialize a camera (with dummy ratio)
-		this.camera = new THREE.PerspectiveCamera( 75, 1.0, 0.1, 1000000 );
+		this.camera = new THREE.PerspectiveCamera( 75, 1.0, 0.1, 45000 );
 
 		// Camera looks towards +Y with Z up
 		this.camera.up.set( 0.0, 0.0, 1.0 );
@@ -45372,6 +45383,7 @@ var Iconeezin =
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
 		this.renderer.autoClear = false;
 		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		this.renderer.setPixelRatio( 1 );
 		this.viewportDOM.appendChild( this.renderer.domElement );
 
@@ -45396,7 +45408,7 @@ var Iconeezin =
 		this.bloomPass.enabled = false;
 		this.effectComposer.addPass( this.bloomPass );
 
-		// Bloom pass
+		// Fillm effect pass
 		this.filmPass = new THREE.FilmPass();
 		this.filmPass.renderToScreen = true;
 		this.filmPass.enabled = false;
@@ -45422,8 +45434,37 @@ var Iconeezin =
 		this.sky.uniforms.mieCoefficient.value = 0.005;
 		this.sky.uniforms.mieDirectionalG.value = 0.8;
 		this.sky.uniforms.luminance.value = 0.9;
+		this.sky.mesh.scale.set(45000, 45000, 45000);
+		this.addSceneObject( this.sky.mesh );
+
+		// // Add ambient light for shadows
+	  // this.ambientLight = new THREE.AmbientLight( 0xffffff, 0.25 );
+	  // this.addSceneObject(this.ambientLight);
+
+		// Add sky light
+	  this.skyLight = new THREE.DirectionalLight( 0xffffff );
+	  this.skyLight.position.set( 0, 1, 1 );
+	  this.skyLight.castShadow = true;
+	  this.addSceneObject(this.skyLight);
+
+	  // Hemisphere light for fill-in
+		this.hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+		this.hemiLight.color.setHSL( 0.6, 1, 0.6 );
+		this.hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+		this.hemiLight.position.set( 0, 500, 0 );
+		this.addSceneObject( this.hemiLight );
+
+	  // Adjust shadow map for current scenarios
+	  this.skyLight.shadow.camera.left = -30;
+	  this.skyLight.shadow.camera.right = 30;
+	  this.skyLight.shadow.camera.top = 30;
+	  this.skyLight.shadow.camera.bottom = -30;
+	  this.skyLight.shadow.mapSize.set(2048, 2048);
+
 		this.setSunPosition(0.20, 0.25);
-		this.scene.add( this.sky.mesh );
+
+		this.addSceneObject(new THREE.CameraHelper(this.skyLight.shadow.camera));
+
 
 		/////////////////////////////////////////////////////////////
 		// Helpers
@@ -45431,7 +45472,7 @@ var Iconeezin =
 
 		// Add axis on 0,0,0
 		var axisHelper = new THREE.AxisHelper( 5 );
-		this.scene.add( axisHelper );
+		this.addSceneObject( axisHelper );
 
 		// Initialize the sizes (apply actual size)
 		this.setSize( this.viewportDOM.offsetWidth, this.viewportDOM.offsetHeight );
@@ -45526,6 +45567,8 @@ var Iconeezin =
 		position.y = distance * Math.sin( phi ) * Math.cos( theta );
 
 		this.sky.uniforms.sunPosition.value.copy( position );
+		this.skyLight.position.copy( position );
+		this.skyLight.shadow.camera.far = distance + 1000;
 
 	}
 
@@ -45586,7 +45629,7 @@ var Iconeezin =
 
 		// Schedule next frame if not paused
 		// if (!this.paused) requestAnimationFrame( this.render.bind(this) );
-		if (!this.paused) setTimeout( this.render.bind(this), 1000/10 );
+		if (!this.paused) setTimeout( this.render.bind(this), 1000/12 );
 
 		// Get elapsed time to update animations
 		var t = Date.now(),
@@ -45636,6 +45679,32 @@ var Iconeezin =
 		// Enable stereo effect on HUD
 		this.hud.setStereo( enabled );
 
+	}
+
+	/**
+	 * Set global viewport fog
+	 */
+	Viewport.prototype.setFog = function( fog ) {
+		var fogFar = 1000000;
+		// if (fog && fog.far) fogFar = fog.far;
+
+		// Bring camera's max distance to fog's edge
+		this.camera.far = fogFar + 10;
+		this.camera.updateProjectionMatrix();
+
+		// Adapt skydone
+		this.sky.mesh.scale.set(
+			fogFar / 2,
+			fogFar / 2,
+			fogFar / 2
+		);
+
+		// if (fog) {
+		// 	this.sky.mesh.visible = false;
+		// 	this.renderer.setClearColor(fog.color, 1.0);
+		// } else {
+		// 	this.sky.mesh.visible = true;
+		// }
 	}
 
 	/**
@@ -45697,6 +45766,33 @@ var Iconeezin =
 		this.addRenderListener( tweenFunction );
 		this.tweenFunctions.push( tweenFunction );
 
+	}
+
+	/**
+	 * Add a persistent object on every scene
+	 */
+	Viewport.prototype.addSceneObject = function( sceneObject ) {
+		this.sceneObjects.push(sceneObject);
+		this.scene.add( sceneObject );
+	}
+
+	/**
+	 * Replace scene (with an active experiment usually)
+	 */
+	Viewport.prototype.setScene = function( scene ) {
+		this.sceneObjects.forEach((obj) => {
+			this.scene.remove(obj);
+		});
+
+		this.scene = scene;
+		this.renderPass.scene = scene;
+
+		// Update shadow map
+		this.renderer.shadowMap.needsUpdate = true;
+
+		this.sceneObjects.forEach((obj) => {
+			this.scene.add(obj);
+		});
 	}
 
 	/**
@@ -46924,7 +47020,7 @@ var Iconeezin =
 			side: THREE.BackSide
 		} );
 
-		var skyGeo = new THREE.SphereBufferGeometry( 450000, 32, 15 );
+		var skyGeo = new THREE.SphereBufferGeometry( 1, 32, 15 );
 		var skyMesh = new THREE.Mesh( skyGeo, skyMat );
 
 
@@ -49775,7 +49871,7 @@ var Iconeezin =
 		// The zero gimbal that holds the reference position
 		zeroGimbal = new THREE.Object3D();
 		zeroGimbal.up.set( 0,0,1 );
-		VideoCore.viewport.scene.add( zeroGimbal );
+		VideoCore.viewport.addSceneObject( zeroGimbal );
 
 		// Create sight interaction
 		interaction = new SightInteraction( VideoCore.cursor, VideoCore.viewport );
@@ -50284,17 +50380,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -50330,6 +50426,65 @@ var Iconeezin =
 		this.activeTaskName = "";
 		this.activeTaskID = -1;
 
+		// Event tracking
+		this.events = [];
+		this.tracking = false;
+
+	}
+
+	/**
+	 * Set-up tracking configuration
+	 */
+	TrackingCore.setup = function( trackingConfig ) {
+		if (trackingConfig.engine === 'GA') {
+
+			// Google analytics bootstrap
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			// Start tracker
+			ga('create', trackingConfig.id, 'auto');
+		  ga('send', 'pageview');
+			this.tracking = true;
+
+			// Feed pending events
+			this.events.forEach((event) => {
+				this.feedEvent(event);
+			});
+			this.events = [];
+		}
+	}
+
+	/**
+	 * Feed event to the tracker
+	 */
+	TrackingCore.feedEvent = function( event ) {
+		var i;
+		var uid = 'anonymous';
+		var path = '/';
+		var keys = Object.keys(event.properties);
+
+		// Remove useful properies from the keys and handle
+		// them earlier, in order to populate category and action
+		if (i = keys.indexOf('experiment') >= 0) {
+			path = '/' + event.properties.experiment;
+			keys.splice(i,1);
+		}
+		if (i = keys.indexOf('uid') >= 0) {
+			uid = 'U-' + event.properties.uid;
+			keys.splice(i,1);
+		}
+
+		// Feed each property as a separate GA event
+		Object.keys(event.properties).forEach((key) => {
+			ga('send', 'event',
+				uid,
+				event.name,
+				key+':'+event.properties[key]
+			);
+		});
 	}
 
 	/**
@@ -50376,6 +50531,11 @@ var Iconeezin =
 		console.log("Event:", name, eventProperties);
 		//////////////////////////////////////////
 
+		if (this.tracking) {
+			this.feedEvent({ name: name, properties: properties });
+		} else {
+			this.events.push({ name: name, properties: properties });
+		}
 	}
 
 	/**
@@ -50388,7 +50548,7 @@ var Iconeezin =
 	// 	//////////////////////////////////////////
 
 	// 	// Keep downloaded experiment metadata
-	// 	this.activeExperimentMeta = 
+	// 	this.activeExperimentMeta =
 	// 		{
 	// 			'tasks': { }
 	// 		};
@@ -50586,8 +50746,8 @@ var Iconeezin =
 		if (!this.activeExperimentName) return;
 
 		// Track event
-		this.trackEvent("experiment.completed", { 
-			'experiment': this.activeExperimentName, 'duration': this.stopTimer("internal.experiment") 
+		this.trackEvent("experiment.completed", {
+			'experiment': this.activeExperimentName, 'duration': this.stopTimer("internal.experiment")
 		});
 
 		// Reset active experiment name
@@ -50654,7 +50814,7 @@ var Iconeezin =
 	TrackingCore.completeTask = function( results ) {
 
 		// Track event completion
-		this.trackEvent("experiment.task.completed", Object.assign({ 
+		this.trackEvent("experiment.task.completed", Object.assign({
 			'task': this.activeTaskName, 'duration': this.stopTimer("internal.task") }, results
 		));
 
@@ -51458,17 +51618,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -51490,7 +51650,7 @@ var Iconeezin =
 	var StopableTimers = __webpack_require__(81);
 
 	/**
-	 * Kernel core is the main logic that steers the runtime 
+	 * Kernel core is the main logic that steers the runtime
 	 */
 	var ExperimentsCore = { };
 
@@ -51543,6 +51703,9 @@ var Iconeezin =
 				return;
 			}
 
+			// Initialize tracking
+			TrackingCore.setup(this.meta.tracking || {});
+
 			// Load default experiment if hash missing
 			var hash = String(window.location.hash).substr(1);
 			if (!hash) {
@@ -51566,7 +51729,7 @@ var Iconeezin =
 		// Wait until the bundle is loaded
 		req.addEventListener('readystatechange', (function () {
 			if (req.readyState !== 4) return;
-			if (req.status === 200) {  
+			if (req.status === 200) {
 				try {
 					this.meta = JSON.parse(req.responseText);
 					callback( null );
@@ -51609,7 +51772,7 @@ var Iconeezin =
 		StopableTimers.reset();
 
 		// Focus to results room
-		this.experiments.focusExperiment( this.resultsRoom, 
+		this.experiments.focusExperiment( this.resultsRoom,
 			function() {
 				// Update interactions
 				ControlsCore.updateInteractions();
@@ -51714,7 +51877,7 @@ var Iconeezin =
 					// Ask TrackingCore to prepare for the experiment
 					TrackingCore.startExperiment( experiment, meta, (function() {
 						this.experiments.focusExperiment( inst, handleExperimentVisible, function() {
-							
+
 							// Reset controls core only when it's not visible
 							ControlsCore.reset();
 							VideoCore.reset();
@@ -52367,17 +52530,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -52419,7 +52582,7 @@ var Iconeezin =
 		// Don't do anything if this is already the active experiment
 		if (this.activeExperiment === experiment)
 			return;
-		
+
 		var do_fadein = (function() {
 			// Will show active
 			this.activeExperiment.onWillShow((function() {
@@ -52440,14 +52603,17 @@ var Iconeezin =
 			}).bind(this));
 		}).bind(this);
 
-		var do_align = (function() {
+		var do_setup = (function() {
 
 			// Add experiment on scene
 			console.log("Adding", this.activeExperiment);
-			this.viewport.scene.add( this.activeExperiment );
+			this.viewport.setScene( this.activeExperiment );
 			// Algn experiment
 			this.alignExperiment( this.activeExperiment );
-			
+
+			// Enable scene fog
+			this.viewport.setFog(this.activeExperiment.fog);
+
 			// Trigger transition callback
 			if (cb_transition) cb_transition();
 
@@ -52465,13 +52631,12 @@ var Iconeezin =
 
 					// Remove previous experiment from scene
 					console.log("Removing", this.previousExperiment);
-					this.viewport.scene.remove( this.previousExperiment );
 
 					// We are hidden
 					this.previousExperiment.onHidden();
 					this.previousExperiment = null;
-					do_align();
-					
+					do_setup();
+
 				}).bind(this));
 			}).bind(this));
 		}).bind(this);
@@ -52484,7 +52649,7 @@ var Iconeezin =
 		if (this.previousExperiment) {
 			do_fadeout();
 		} else {
-			do_align();
+			do_setup();
 		}
 
 	}
@@ -52495,8 +52660,8 @@ var Iconeezin =
 	Experiments.prototype.alignExperiment = function( experiment ) {
 
 		// Set zero
-		this.controls.setZero( 
-			experiment.anchor.position, 
+		this.controls.setZero(
+			experiment.anchor.position,
 			experiment.anchor.direction
 		);
 

@@ -1,22 +1,31 @@
 
 var THREE = require('three');
 var Iconeezin = require('iconeezin');
-var InfiniteSea = require('./lib/InfiniteSea');
+var InfiniteGround = require('./lib/InfiniteGround');
+var Objects = require('./lib/Objects');
 
 /**
  * Experiment logic
  */
 var Experiment = function( db ) {
 	Iconeezin.API.Experiment.call(this, db);
+  this.objects = new Objects(db);
 
 	// Camera enters from corridor entrance
 	this.anchor.position.set( 0, 0, 0 );
 	this.anchor.direction.set( 0, 1, 0 );
 
-  this.add(this.sea = new InfiniteSea());
-  this.sea.position.set(0,0,-2);
+  this.add(this.sea = new InfiniteGround({objects: this.objects, db: db}));
+  this.sea.position.set(0, 0, -2);
 
-  this.direction = new THREE.Vector3(0,0,0);
+  this.direction = new THREE.Vector3(0, 0, 0);
+
+  this.fog = new THREE.FogExp2(0xbcc9d0, 0.02);
+
+
+  var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
+  keyLight.position.set( 1, 1, -1 );
+  this.add(keyLight);
 
 };
 
