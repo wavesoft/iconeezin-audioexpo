@@ -5,11 +5,12 @@ var less 	= require('gulp-less');
 var jbb 	= require('gulp-jbb');
 var merge 	= require('merge-stream');
 var webpack = require('webpack-stream');
+var notify = require('gulp-notify');
 
 /**
  * List of experiments to compile
  */
-var experiments = [ "compression", "delay", "threshold", "introduction" ];
+var experiments = [ "masking", "delay", "threshold", "introduction" ];
 
 /**
  * Externals, as exposed by iconeezin run-time
@@ -159,7 +160,14 @@ experiments.forEach(function(experiment) {
 				resolve: {
 				}
 			}))
-			.pipe(gulp.dest('experiments/'+experiment+'.jbbsrc'));
+      .on("error", notify.onError({
+        message: 'Error: <%= error.message %>',
+        sound: false // deactivate sound?
+      }))
+      .on("error", function (err) {
+        console.log("Error:", err);
+      })
+			.pipe(gulp.dest('experiments/'+experiment+'.jbbsrc'))
 	});
 
 	//
@@ -170,6 +178,7 @@ experiments.forEach(function(experiment) {
 			.src([ 'experiments/'+experiment+'.jbbsrc' ])
 	        .on('end', function(){ gutil.log("Creating experiment bundles"); })
 			.pipe(jbb({ }))
+			.pipe(notify('Bundle '+experiment+'.jbb completed'))
 			.pipe(gulp.dest('dist/experiments'));
 	});
 
