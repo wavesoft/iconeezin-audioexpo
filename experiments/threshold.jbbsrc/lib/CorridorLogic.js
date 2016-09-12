@@ -2,17 +2,17 @@
 /**
  * Iconeez.in - A Web VR Platform for social AnimatedObject3Ds
  * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -95,6 +95,7 @@ var CorridorLogic = function( corridor ) {
 		);
 
 	this.freeObject = 1;
+	this.crowd = [];
 
 	////////////////////////////////////////////////////////
 	// Interaction Logic
@@ -135,7 +136,7 @@ var CorridorLogic = function( corridor ) {
 CorridorLogic.prototype = Object.create( THREE.Object3D.prototype );
 
 /**
- * Run experiment and callback when we have results and we can 
+ * Run experiment and callback when we have results and we can
  * immediately chain another experiment
  */
 CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cbComplete, cbAlways ) {
@@ -147,6 +148,8 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 	// to be used as our next reference object.
 	//
 	var corridors = this.createCrossing( this.referenceObject );
+	this.leftObject = corridors[0];
+	this.rightObject = corridors[1];
 
 	// Reset properties
 	this.direction = DIRECTION_UNKNOWN;
@@ -157,9 +160,9 @@ CorridorLogic.prototype.runExperiment = function( initial_direction, cbFinal, cb
 	this.rightInteraction.visible = true;
 
 	// Start camera path on a random direction
-	Iconeezin.Runtime.Controls.followPath( 
+	Iconeezin.Runtime.Controls.followPath(
 		[ this.pathLeft, this.pathRight ][initial_direction], {
-		'speed': 2, // m/sec 
+		'speed': 2, // m/sec
 		'matrix': this.referenceObject.matrix.clone(),
 		'callback': (function(v) {
 			if (cbAlways) cbAlways(v);
@@ -229,6 +232,61 @@ CorridorLogic.prototype.setDirection = function( direction ) {
 	// Update direction
 	this.direction = direction;
 }
+
+/**
+ * Remove all people from scene
+ */
+CorridorLogic.prototype.hideCrowd = function() {
+	this.crowd.forEach(function(item) {
+		item.parent.remove(item);
+	});
+	this.crowd = [];
+}
+
+/**
+ * Show a crowd
+ */
+CorridorLogic.prototype.showCrowd = function(people, side) {
+	this.hideCrowd();
+
+	// Pick the correct reference object's matrix
+	var matrix = side ? this.rightObject.matrix : this.leftObject.matrix;
+	console.warn('>> Showing', people, 'people on side', side, 'using matrix', matrix);
+
+	// Calculate the spawning bounding box
+	var boxes = [
+		new THREE.Box3(
+			new THREE.Vector3(-3.47,  7.27, 0),
+			new THREE.Vector3(-1.80, -7.27, 0)
+		),
+		new THREE.Box3(
+			new THREE.Vector3( 1.80,  7.27, 0),
+			new THREE.Vector3( 3.47, -7.27, 0)
+		)
+	];
+
+	var map = new THREE.TextureLoader().load( "/experiments/threshold.jbbsrc/assets/textures/crowd-01.png", function() {
+		map.needsUpdate = true;
+	});
+
+	// Spawn people
+	for (var i=0; i<people; i++) {
+		var sprite = new THREE.Sprite( new THREE.SpriteMaterial({map: map}) );
+		// var sprite = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshNormalMaterial());
+		sprite.scale.set(512, 512, 512);
+
+		var box = (Math.random() > 0.5) ? boxes[0] : boxes[1];
+		var pos = box.getParameter( new THREE.Vector3( Math.random(), Math.random(), 1 ) );
+		pos.z = 2;
+
+		pos.applyMatrix4(matrix);
+		sprite.position.copy(pos);
+		console.log('>> Adding person at at', sprite.position);
+
+		this.crowd.push(sprite);
+		this.add(sprite);
+	}
+};
 
 /**
  * Build the tree path for the given object

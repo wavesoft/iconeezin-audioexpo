@@ -1,0 +1,40 @@
+# Blender MTL File: 'corridor-island-3.blend'
+# Material Count: 4
+
+newmtl Balustrade
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Facade
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd /Users/icharala/Develop/iconeezin-audioexpo/experiments/threshold.jbbsrc/assets/textures/city-ao-street.png
+
+newmtl Floor
+Ns 194.117647
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd /Users/icharala/Develop/iconeezin-audioexpo/experiments/threshold.jbbsrc/assets/textures/city-ao-street.png
+
+newmtl Stucco
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2

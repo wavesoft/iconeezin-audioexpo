@@ -22,7 +22,17 @@
 
 		"THREE.OBJLoader": {
 			"models/corridor": "assets/models/corridor.obj"
-		}
+		},
+
+    "THREE.ImageLoader": {
+      "textures/facade/diffuse": "assets/textures/facade-diffuse.jpg",
+      "textures/facade/ao": "assets/textures/facade-ao.jpg",
+      "textures/facade/normal": "assets/textures/facade-normal.png",
+      "textures/street/diffuse": "assets/textures/street-diffuse.jpg",
+      "textures/street/ao": "assets/textures/street-ao.jpg",
+      "textures/street/normal": "assets/textures/street-normal.png",
+      "icons/sound": "assets/icons/sound-64.png"
+    }
 
 	}
 }
