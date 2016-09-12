@@ -59,23 +59,31 @@
 			"name": "threshold",
 			"desc": "Threshold experiment",
 			"tasks": [
-				{
-					"level": 0.25
-				},
-				{
-					"level": 0.60
-				},
-				{
-					"level": 0.70
-				},
-				{
-					"level": 1.0
-				}
+		    {
+		      "level": 0.25,
+		      "crowd": 2,
+		      "vnoise": 0.01
+		    },
+		    {
+		      "level": 0.60,
+		      "crowd": 8,
+		      "vnoise": 0.1
+		    },
+		    {
+		      "level": 0.70,
+		      "crowd": 15,
+		      "vnoise": 0.4
+		    },
+		    {
+		      "level": 1.0,
+		      "crowd": 25,
+		      "vnoise": 0.8
+		    }
 			]
 		},
 		{
-			"name": "compression",
-			"desc": "MP3 Compression Example",
+			"name": "masking",
+			"desc": "Audio Masking Example",
 			"tasks": [
 				{
 					"name": "test"
