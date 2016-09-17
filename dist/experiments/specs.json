@@ -6,6 +6,32 @@
 			"tasks": []
 		},
 		{
+			"name": "threshold",
+			"desc": "Threshold experiment",
+			"tasks": [
+		    {
+		      "level": 0.25,
+		      "crowd": 4,
+		      "vnoise": 0.01
+		    },
+		    {
+		      "level": 0.60,
+		      "crowd": 8,
+		      "vnoise": 0.1
+		    },
+		    {
+		      "level": 0.70,
+		      "crowd": 15,
+		      "vnoise": 0.4
+		    },
+		    {
+		      "level": 1.0,
+		      "crowd": 25,
+		      "vnoise": 0.8
+		    }
+			]
+		},
+		{
 			"name": "delay",
 			"desc": "Delay in the speech",
 		  "tasks": [
@@ -54,32 +80,6 @@
 		      ]
 		    }
 		  ]
-		},
-		{
-			"name": "threshold",
-			"desc": "Threshold experiment",
-			"tasks": [
-		    {
-		      "level": 0.25,
-		      "crowd": 2,
-		      "vnoise": 0.01
-		    },
-		    {
-		      "level": 0.60,
-		      "crowd": 8,
-		      "vnoise": 0.1
-		    },
-		    {
-		      "level": 0.70,
-		      "crowd": 15,
-		      "vnoise": 0.4
-		    },
-		    {
-		      "level": 1.0,
-		      "crowd": 25,
-		      "vnoise": 0.8
-		    }
-			]
 		},
 		{
 			"name": "masking",
