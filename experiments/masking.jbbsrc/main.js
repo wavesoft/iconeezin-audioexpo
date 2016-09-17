@@ -3,6 +3,8 @@ var THREE = require('three');
 var Iconeezin = require('iconeezin');
 var InfiniteGround = require('./lib/InfiniteGround');
 var Objects = require('./lib/Objects');
+var BirdPath = require('./lib/BirdPath');
+var BirdSong = require('./lib/BirdSongs');
 
 /**
  * Experiment logic
@@ -26,6 +28,17 @@ var Experiment = function( db ) {
   keyLight.position.set( 1, 1, -1 );
   this.add(keyLight);
 
+  this.birds = [
+    new BirdPath( this.objects.createSparrow(), Math.PI/2 ),
+    new BirdPath( this.objects.createSparrow(), Math.PI/4 ),
+    new BirdPath( this.objects.createSparrow(), 3*Math.PI/4 )
+  ];
+
+  this.birdSong = new BirdSong();
+  this.birdSong.add( db['masking/sounds/bird-1'], this.birds[0].target );
+  this.birdSong.add( db['masking/sounds/bird-2'], this.birds[1].target );
+  this.birdSong.add( db['masking/sounds/bird-3'], this.birds[2].target );
+
 };
 
 /**
@@ -40,6 +53,28 @@ Experiment.prototype.onShown = function() {
 
   Iconeezin.Runtime.Controls.infiniteNavigationUsing( this );
 
+  this.birds.forEach((function (bird) {
+
+    bird.enter();
+    this.add(bird.target);
+
+  }).bind(this));
+
+  var a = true;
+  setInterval((function() {
+
+    this.birds.forEach(function (bird) {
+      if (a) {
+        bird.leave();
+      } else {
+        bird.enter();
+      }
+    });
+
+    a = !a;
+
+  }).bind(this), 5000);
+
 }
 
 /**
@@ -48,6 +83,11 @@ Experiment.prototype.onShown = function() {
 Experiment.prototype.onUpdate = function( delta ) {
 
   this.sea.update( delta, this.direction );
+  this.birdSong.update( delta );
+
+  this.birds.forEach((function (bird) {
+    bird.update( delta );
+  }).bind(this));
 
 }
 

@@ -1,39 +1,5 @@
 var THREE = require('three');
-
-var ShadowShader = {
-
-  fragment: [
-    '#include <packing>',
-    'uniform sampler2D texture;',
-    'varying vec2 vUV;',
-    'void main() {',
-      'vec4 pixel = texture2D( texture, vUV );',
-      'if ( pixel.a < 0.5 ) discard;',
-      'gl_FragData[ 0 ] = packDepthToRGBA( gl_FragCoord.z );',
-    '}'
-  ].join('\n'),
-
-  vertex: [
-    'varying vec2 vUV;',
-    'void main() {',
-      'vUV = 0.75 * uv;',
-      'vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
-      'gl_Position = projectionMatrix * mvPosition;',
-    '}'
-  ].join('\n')
-
-};
-
-function createShadowMaterial(forTexture) {
-  return new THREE.ShaderMaterial( {
-    uniforms: {
-      texture:  { value: forTexture }
-    },
-    vertexShader: ShadowShader.vertex,
-    fragmentShader: ShadowShader.fragment,
-    side: THREE.DoubleSide
-  });
-}
+var Iconeezin = require('iconeezin');
 
 var Objects = function(db) {
 
@@ -51,7 +17,7 @@ var Objects = function(db) {
     // depthTest: false
   });
 
-  var plant01_DepthMaterial = createShadowMaterial(plant01_Texture);
+  var plant01_DepthMaterial = Iconeezin.Util.createShadowMaterial(plant01_Texture);
 
   this.createPlant01 = function() {
     var obj = db['masking/geometries/grass_01'].children[0].clone();
@@ -88,11 +54,10 @@ var Objects = function(db) {
     normalMap: birch01_bark_nrm,
   });
 
-  var birch01_depth_leaf = createShadowMaterial(birch01_leaf_map);
+  var birch01_depth_leaf = Iconeezin.Util.createShadowMaterial(birch01_leaf_map);
 
   this.createTree01 = function() {
     var obj = db['masking/geometries/birch_01'].clone();
-    console.log(obj);
 
     obj.children[0].material = birch01_leaf;
     obj.children[0].customDepthMaterial = birch01_depth_leaf;
@@ -145,12 +110,11 @@ var Objects = function(db) {
     normalMap: tree02_bark_nrm,
   });
 
-  var tree02_depth_board = createShadowMaterial(tree02_board_map);
-  var tree02_depth_con = createShadowMaterial(tree02_con_map);
+  var tree02_depth_board = Iconeezin.Util.createShadowMaterial(tree02_board_map);
+  var tree02_depth_con = Iconeezin.Util.createShadowMaterial(tree02_con_map);
 
   this.createTree02 = function() {
     var obj = db['masking/geometries/tree_02'].clone();
-    console.log(obj);
 
     obj.children[0].material = tree02_board;
     obj.children[0].customDepthMaterial = tree02_depth_board;
@@ -168,6 +132,29 @@ var Objects = function(db) {
 
     obj.scale.x = obj.scale.y = obj.scale.z = 0.5 + Math.random()*1.0;
     obj.rotation.z = Math.random() * Math.PI;
+
+    return obj;
+  }
+
+  ////////////////////////////////////////////////
+  // Sparrow
+  ////////////////////////////////////////////////
+
+  var sparrow_map = new Iconeezin.Util.createTexture(db['masking/textures/sparrow']);
+  var sparrow = new THREE.MeshBasicMaterial({
+    map: sparrow_map,
+    transparent: true
+  });
+
+  var sparrow_depth = Iconeezin.Util.createShadowMaterial(sparrow);
+
+  this.createSparrow = function() {
+    var obj = db['masking/geometries/sparrow'].clone();
+
+    obj.children[0].material = sparrow.clone();
+    obj.children[0].castShadow = true;
+
+    obj.children[0].scale.multiplyScalar( 0.45 );
 
     return obj;
   }

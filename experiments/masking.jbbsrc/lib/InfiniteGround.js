@@ -70,7 +70,7 @@ var InfiniteGround = function(config) {
 
   this.logic = new GroundLogic(fogDistance, 2.0, 1/fogDistance );
 
-  for (var i=0; i<50; i++) {
+  for (var i=0; i<100; i++) {
     var p = Math.random() >= 0.5 ? this.objects.createTree02() : this.objects.createTree01();
     var z = Math.random() >= 0.5 ? 1 : 0;
 
@@ -99,7 +99,6 @@ var InfiniteGround = function(config) {
     this.logic.add(p);
     this.static.add(p);
   }
-
 
 };
 
@@ -136,11 +135,11 @@ InfiniteGround.prototype.update = function(delta, eyeDirection) {
 
   // Wrap dynamic objects
   this.dynamic.children.forEach((function(child) {
+    child.position.add(displaceVector);
     if (child.position.y + this.dynamic.position.y > this.planeSize) {
       child.position.y -= this.planeSize;
     }
   }).bind(this));
-
 
 };
 

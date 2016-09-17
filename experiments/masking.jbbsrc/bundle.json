@@ -7,10 +7,18 @@
 			"main": ".build.js"
 		},
 
+    "Iconeezin.API.AudioFile": {
+      "sounds/bird-1": "assets/sounds/bird_3000.ogg",
+      "sounds/bird-2": "assets/sounds/bird_3080.ogg",
+      "sounds/bird-3": "assets/sounds/bird_3500.ogg",
+      "sounds/bird-4": "assets/sounds/bird_4000.ogg"
+    },
+
     "THREE.OBJLoader": {
       "geometries/grass_01": "assets/plants/FieldGrass01.obj",
       "geometries/birch_01": "assets/plants/Birch01.obj",
-      "geometries/tree_02": "assets/plants/Confier04Tall.obj"
+      "geometries/tree_02": "assets/plants/Confier04Tall.obj",
+      "geometries/sparrow": "assets/models/sparrow.obj"
     },
 
     "THREE.ImageLoader": {
@@ -29,7 +37,9 @@
       "textures/tree_02/con_nrm": "assets/plants/ConBare01_NRM.png",
 
       "textures/ground/grass_map": "assets/textures/GrassandStone.jpg",
-      "textures/ground/grass_nrm": "assets/textures/GrassandStone_NRM.png"
+      "textures/ground/grass_nrm": "assets/textures/GrassandStone_NRM.png",
+
+      "textures/sparrow": "assets/models/vorona_256.jpg"
     }
 
 	}
