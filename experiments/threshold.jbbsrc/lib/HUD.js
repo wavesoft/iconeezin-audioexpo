@@ -21,26 +21,22 @@
  */
 
 var THREE = require("three");
-var IconeezinAPI = require("iconeezin/api");
+var Iconeezin = require("iconeezin");
 
 /**
  * HUD Status component
  */
 var HUDStatus = function(icon) {
-  IconeezinAPI.HUDLayer.call(this, 256, 256, 'br');
-
-  icon.addEventListener('load', (function() {
-    this.redraw();
-  }).bind(this));
+  Iconeezin.API.HUDLayer.call(this, 256, 256, 'br');
 
   this.text = "Χωρίς θόρυβο";
   this.opacity = 0;
-  this.icon = icon;
+  this.icon = Iconeezin.Util.redrawWhenLoaded(this, icon);
 
 };
 
 // Subclass from sprite
-HUDStatus.prototype = Object.assign( Object.create( IconeezinAPI.HUDLayer.prototype ), {
+HUDStatus.prototype = Object.assign( Object.create( Iconeezin.API.HUDLayer.prototype ), {
 
   constructor: HUDStatus,
 
@@ -50,29 +46,18 @@ HUDStatus.prototype = Object.assign( Object.create( IconeezinAPI.HUDLayer.protot
     this.redraw();
   },
 
-  paintRect: function(ctx,x,y,w,h,r) {
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.lineTo(x+w-r, y);
-    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-    ctx.lineTo(x+w, y+h-r);
-    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-    ctx.lineTo(x+r, y+h);
-    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-    ctx.lineTo(x, y+r, x+r, y);
-    ctx.quadraticCurveTo(x, y, x+r, y);
-  },
-
   setNoise: function(level) {
-    var noisePercent = level * 100;
-    this.text = "Θόρυβος στο "+noisePercent.toFixed(1)+" %";
+    // var noisePercent = level * 100;
+    var dB = 20 * Math.log10(level)
+
+    this.text = "Θόρυβος στο "+dB.toFixed(0)+" dB";
     this.opacity = Math.min( level / 0.1, 1.0 );
     this.redraw();
   },
 
   onPaint: function( ctx, width, height ) {
 
-    var centerY = height/2;
+    var centerY = height/2 + 64;
     var padding = 5;
     var indent = 10;
     var radius = 24;
@@ -80,7 +65,7 @@ HUDStatus.prototype = Object.assign( Object.create( IconeezinAPI.HUDLayer.protot
     var imgSize = 64;
 
     ctx.globalAlpha = 0.8 * this.opacity;
-    this.paintRect(ctx, padding, centerY - rectHeight/2, width - padding, rectHeight, radius);
+    Iconeezin.Util.roundedRect(ctx, padding, centerY - rectHeight/2, width - padding, rectHeight, radius);
     ctx.fill();
     ctx.fillStyle = "#000000";
     ctx.globalAlpha = 1.0 * this.opacity;

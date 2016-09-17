@@ -27,10 +27,26 @@ const DIRECTION_UNKNOWN = -1;
 const DIRECTION_LEFT = 0;
 const DIRECTION_RIGHT = 1;
 
+THREE.Box3.prototype.fromParameter = function ( point, optionalTarget ) {
+
+	// This calculates the inverse of getParameter: Given a normalized
+	// value between 0.00 ~ 1.00 it returns a coordinate from the box
+
+	var result = optionalTarget || new THREE.Vector3();
+
+	return result.set(
+		this.min.x + (this.max.x - this.min.x) * point.x,
+		this.min.y + (this.max.y - this.min.y) * point.y,
+		this.min.z + (this.max.z - this.min.z) * point.z
+	);
+
+};
+
+
 /**
  * Corridor logic object
  */
-var CorridorLogic = function( corridor ) {
+var CorridorLogic = function( corridor, peopleSprites ) {
 	THREE.Object3D.call(this);
 
 	// Create three different corridors
@@ -46,6 +62,12 @@ var CorridorLogic = function( corridor ) {
 		this.add(obj);
 
 	}
+
+	// Create people textures
+	this.peopleTextures = (peopleSprites || []).map(function(image) {
+		return Iconeezin.Util.createTexture(image, {
+		});
+	});
 
 	// Zero matrix
 	this.zeroMatrix = this.objects[0].matrix.clone();
@@ -265,27 +287,47 @@ CorridorLogic.prototype.showCrowd = function(people, side) {
 		)
 	];
 
-	var map = new THREE.TextureLoader().load( "/experiments/threshold.jbbsrc/assets/textures/crowd-01.png", function() {
-		map.needsUpdate = true;
-	});
+	// Create a grid of non-overlapping items, from which
+	// we will pick randm points for generating the crowd
+	var grid = [[], []];
+	for (var x=0; x<=3; x++) {
+		for (var y=0; y<=5; y++) {
+			grid[0].push([x/3, y/5]);
+			grid[1].push([x/3, y/5]);
+		}
+	}
 
 	// Spawn people
+	var i_shift = Math.floor(Math.random() * this.peopleTextures.length);
 	for (var i=0; i<people; i++) {
-		var sprite = new THREE.Sprite( new THREE.SpriteMaterial({map: map}) );
-		// var sprite = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshNormalMaterial());
-		sprite.scale.set(512, 512, 512);
+		var side = i % 2;
+		var map = this.peopleTextures[ (i + i_shift) % this.peopleTextures.length ];
+		var bildboard = Iconeezin.Util.createBildboard(3, 3, map, true);
 
-		var box = (Math.random() > 0.5) ? boxes[0] : boxes[1];
-		var pos = box.getParameter( new THREE.Vector3( Math.random(), Math.random(), 1 ) );
-		pos.z = 2;
+		var pt_i = Math.floor(Math.random()*grid[side].length);
+		var pt = grid[side].splice(pt_i, 1)[0];
+		var box = boxes[side];
+
+		var pos = box.fromParameter( new THREE.Vector3( pt[0], pt[1], 1 ) );
+		pos.z = 1.5;
+
+		console.log('Parameter at', pt[0], pt[1], 'is', pos);
 
 		pos.applyMatrix4(matrix);
-		sprite.position.copy(pos);
-		console.log('>> Adding person at at', sprite.position);
+		bildboard.position.copy(pos);
+		console.log('>> Adding person at at', bildboard.position);
 
-		this.crowd.push(sprite);
-		this.add(sprite);
+		this.crowd.push(bildboard);
+		this.add(bildboard);
 	}
+
+	// Fade-in crowd
+	Iconeezin.Runtime.Video.runTween(500, (function(opacity) {
+		this.crowd.forEach(function(plane) {
+			plane.material.opacity = opacity;
+		});
+	}).bind(this));
+
 };
 
 /**

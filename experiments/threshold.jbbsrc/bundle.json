@@ -1,28 +1,28 @@
 {
-	"name": "threshold",
-	"profile": [ "iconeezin", "three" ],
-	"exports": {
+  "name": "threshold",
+  "profile": [ "iconeezin", "three" ],
+  "exports": {
 
-		"Iconeezin.API.ExperimentFile": {
-			"main": ".build.js"
-		},
+  	"Iconeezin.API.ExperimentFile": {
+  		"main": ".build.js"
+  	},
 
-		"Iconeezin.API.AudioFile": {
-			"sounds/introduction": "assets/sounds/introduction.ogg",
-			"sounds/noisy-a": "assets/sounds/noisy-a.ogg",
-			"sounds/noisy-b": "assets/sounds/noisy-b.ogg",
-			"sounds/noisy-c": "assets/sounds/noisy-c.ogg",
-			"sounds/turn-left": "assets/sounds/turn-left-lowpass.ogg",
-			"sounds/turn-right": "assets/sounds/turn-right-lowpass.ogg",
-			"sounds/choice-wrong": "assets/sounds/choice-wrong.ogg",
-			"sounds/choice-correct": "assets/sounds/choice-correct.ogg",
-			"sounds/noise": "assets/sounds/noise-natural.ogg",
-			"sounds/ambient": "assets/sounds/ambient.ogg"
-		},
+  	"Iconeezin.API.AudioFile": {
+  		"sounds/introduction": "assets/sounds/introduction.ogg",
+  		"sounds/noisy-a": "assets/sounds/noisy-a.ogg",
+  		"sounds/noisy-b": "assets/sounds/noisy-b.ogg",
+  		"sounds/noisy-c": "assets/sounds/noisy-c.ogg",
+  		"sounds/turn-left": "assets/sounds/turn-left-lowpass.ogg",
+  		"sounds/turn-right": "assets/sounds/turn-right-lowpass.ogg",
+  		"sounds/choice-wrong": "assets/sounds/choice-wrong.ogg",
+  		"sounds/choice-correct": "assets/sounds/choice-correct.ogg",
+  		"sounds/noise": "assets/sounds/noise-natural.ogg",
+  		"sounds/ambient": "assets/sounds/ambient.ogg"
+  	},
 
-		"THREE.OBJLoader": {
-			"models/corridor": "assets/models/corridor.obj"
-		},
+  	"THREE.OBJLoader": {
+  		"models/corridor": "assets/models/corridor.obj"
+  	},
 
     "THREE.ImageLoader": {
       "textures/facade/diffuse": "assets/textures/facade-diffuse.jpg",
@@ -31,8 +31,24 @@
       "textures/street/diffuse": "assets/textures/street-diffuse.jpg",
       "textures/street/ao": "assets/textures/street-ao.jpg",
       "textures/street/normal": "assets/textures/street-normal.png",
+      "textures/balustrade": "assets/textures/balustrade.png",
+      "textures/crowd-1": "assets/textures/crowd-02.png",
+      "textures/crowd-2": "assets/textures/crowd-03.png",
+      "textures/crowd-3": "assets/textures/crowd-04.png",
+      "textures/crowd-4": "assets/textures/crowd-05.png",
+      "textures/crowd-5": "assets/textures/crowd-06.png",
+      "textures/crowd-6": "assets/textures/crowd-07.png",
+      "textures/crowd-7": "assets/textures/crowd-08.png",
+      "textures/crowd-8": "assets/textures/crowd-09.png",
+      "textures/crowd-9": "assets/textures/crowd-10.png",
+      "textures/crowd-10": "assets/textures/crowd-11.png",
+      "textures/crowd-11": "assets/textures/crowd-12.png",
+      "textures/crowd-12": "assets/textures/crowd-13.png",
+      "textures/crowd-13": "assets/textures/crowd-14.png",
+      "textures/crowd-14": "assets/textures/crowd-15.png",
+      "textures/crowd-15": "assets/textures/crowd-16.png",
       "icons/sound": "assets/icons/sound-64.png"
     }
 
-	}
+  }
 }

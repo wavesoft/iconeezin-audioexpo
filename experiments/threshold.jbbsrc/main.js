@@ -25,6 +25,7 @@ var Experiment = function( db ) {
 	var street_map = Iconeezin.Util.createTexture(db['threshold/textures/street/diffuse']);
 	var street_normal = Iconeezin.Util.createTexture(db['threshold/textures/street/normal']);
 	var street_ao = Iconeezin.Util.createTexture(db['threshold/textures/street/ao']);
+	var balustrade_map = Iconeezin.Util.createTexture(db['threshold/textures/balustrade']);
 
 	// Replace materials with MeshNormal Material
 	geom.traverse(function(obj) {
@@ -59,6 +60,13 @@ var Experiment = function( db ) {
 					});
 					break;
 
+				case 'balustrade':
+					obj.material = new THREE.MeshStandardMaterial({
+						map: balustrade_map,
+						transparent: true
+					});
+					break;
+
 				default:
 					obj.material = new THREE.MeshStandardMaterial({
 						color: 0xffffff
@@ -71,7 +79,23 @@ var Experiment = function( db ) {
 
 	// Create corridor logic that repeats the corridor objects
 	// and calculate the correct animation path for every experiment
-	this.corridors = new CorridorLogic( geom )
+	this.corridors = new CorridorLogic( geom, [
+		db['threshold/textures/crowd-1'],
+		db['threshold/textures/crowd-2'],
+		db['threshold/textures/crowd-3'],
+		db['threshold/textures/crowd-4'],
+		db['threshold/textures/crowd-5'],
+		db['threshold/textures/crowd-6'],
+		db['threshold/textures/crowd-7'],
+		db['threshold/textures/crowd-8'],
+		db['threshold/textures/crowd-9'],
+		db['threshold/textures/crowd-10'],
+		db['threshold/textures/crowd-11'],
+		db['threshold/textures/crowd-12'],
+		db['threshold/textures/crowd-13'],
+		db['threshold/textures/crowd-14'],
+		db['threshold/textures/crowd-15']
+	]);
 	this.add( this.corridors );
 
 };
