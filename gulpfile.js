@@ -160,12 +160,12 @@ experiments.forEach(function(experiment) {
 				resolve: {
 				}
 			}))
-      .on("error", notify.onError({
+      .on('error', notify.onError({
         message: 'Error: <%= error.message %>',
         sound: false // deactivate sound?
       }))
-      .on("error", function (err) {
-        console.log("Error:", err);
+      .on('error', function (err) {
+        console.log('Error:', err);
       })
 			.pipe(gulp.dest('experiments/'+experiment+'.jbbsrc'))
 	});
@@ -178,6 +178,13 @@ experiments.forEach(function(experiment) {
 			.src([ 'experiments/'+experiment+'.jbbsrc' ])
 	        .on('end', function(){ gutil.log("Creating experiment bundles"); })
 			.pipe(jbb({ }))
+      .on('error', notify.onError({
+        message: 'Error: <%= error.message %>',
+        sound: false // deactivate sound?
+      }))
+      .on('error', function (err) {
+        console.log('Error:', err);
+      })
 			.pipe(notify('Bundle '+experiment+'.jbb completed'))
 			.pipe(gulp.dest('dist/experiments'));
 	});
