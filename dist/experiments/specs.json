@@ -85,9 +85,41 @@
 			"name": "masking",
 			"desc": "Audio Masking Example",
 			"tasks": [
-				{
-					"name": "test"
-				}
+        {
+          "masked": 3,
+          "diff": 200,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3700", "level": 0.8 },
+            { "src": "sounds/chirp/3900", "level": 0.8 }
+          ]
+        },
+        {
+          "masked": 3,
+          "diff": 100,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3600", "level": 0.8 },
+            { "src": "sounds/chirp/3700", "level": 0.8 }
+          ]
+        },
+        {
+          "masked": 2,
+          "diff": 50,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3600", "level": 0.8 },
+            { "src": "sounds/chirp/3650", "level": 0.8 }
+          ]
+        },
+		    {
+		      "masked": 1,
+          "diff": 20,
+		      "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+		        { "src": "sounds/chirp/3520", "level": 0.8 }
+		      ]
+		    }
 			]
 		}
 	],
