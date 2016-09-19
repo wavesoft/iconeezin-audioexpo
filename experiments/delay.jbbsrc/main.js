@@ -2,6 +2,8 @@
 var THREE = require('three');
 var Iconeezin = require('iconeezin');
 var MonumentRoom = require('./lib/MonumentRoom');
+var HUD = require('./lib/HUD');
+var Materials = require('./lib/Materials');
 
 /**
  * Experiment logic
@@ -13,11 +15,13 @@ var Experiment = function( db ) {
 	this.anchor.position.set( 0, 1.2, 2 );
 	this.anchor.direction.set( 0, 1, 0 );
 
+	this.materials = new Materials(db);
+
 	// The interchangable objects
 	this.activeMonument = -1;
 	this.monuments = [
-		new MonumentRoom( db ),
-		new MonumentRoom( db )
+		new MonumentRoom( db, this.materials ),
+		new MonumentRoom( db, this.materials )
 	];
 	this.monuments[0].visible = false;
 	this.monuments[1].visible = false;
@@ -27,17 +31,15 @@ var Experiment = function( db ) {
 	this.sndFootsteps = db['delay/sounds/footsteps'].create();
 	this.sndDoor = db['delay/sounds/door'].create();
 
-	// // Create a sphere for equirectangular VR
-	// var geom = new THREE.SphereGeometry( 500, 60, 40 );
-	// geom.scale( -1, 1, 1 );
+	// Add a key light
+  var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
+  keyLight.position.set( 1, -1, -1 );
+  this.add(keyLight);
 
-	// // Create material
-	// this.material = new THREE.MeshBasicMaterial();
-
-	// // Create the sphere mesh
-	// var mesh = new THREE.Mesh( geom, this.material );
-	// mesh.rotation.x = Math.PI/2;
-	// this.add( mesh );
+  // this.add(this.monuments[0].lightA);
+  // this.add(this.monuments[0].lightB);
+  // this.add(this.monuments[1].lightA);
+  // this.add(this.monuments[1].lightB);
 
 };
 
@@ -142,7 +144,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
  * Cleanup when hiding
  */
 Experiment.prototype.onWillHide = function( callback ) {
-	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
+	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
 	callback();
 }
 
@@ -165,7 +167,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.monuments[0].length = 0;
 	this.monuments[1].length = 0;
 
-	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
+	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
 
 	// Prepare next task function
 	var executeNextTask = (function() {

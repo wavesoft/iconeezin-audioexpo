@@ -7,6 +7,17 @@
 			"main": ".build.js"
 		},
 
+    "THREE.ImageLoader": {
+      "textures/cinderblock/diffuse": "assets/textures/cinderblock-diffuse.jpg",
+      "textures/cinderblock/normal": "assets/textures/cinderblock-normal.png",
+      "textures/pillar/normal": "assets/textures/pillar-normal.png",
+      "textures/marble/diffuse": "assets/textures/marble-diffuse.jpg",
+      "textures/ceiling/normal": "assets/textures/ceiling-normal.png",
+      "textures/door/diffuse": "assets/textures/door-diffuse.jpg",
+      "textures/floor/diffuse": "assets/textures/floor-diffuse.jpg",
+      "textures/floor/normal": "assets/textures/floor-normal.png"
+    },
+
 		"THREE.OBJLoader": {
 			"models/kionokrano": "assets/models/kionokrano.obj",
 			"models/podium": "assets/models/podium.obj"
