@@ -20,16 +20,14 @@ var InfiniteGround = function(config) {
   this.add(this.dynamic);
   this.add(this.static);
 
-  this.groundMap = new THREE.Texture(this.db['masking/textures/ground/grass_map'],
-    THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping);
-  this.groundNormalMap = new THREE.Texture(this.db['masking/textures/ground/grass_nrm'],
-    THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping);
-
-  this.groundMap.repeat = this.groundNormalMap.repeat = new THREE.Vector2(fogDistance/6, fogDistance/6);
-  this.groundMap.needsUpdate = this.groundNormalMap.needsUpdate = true;
-  this.groundMap.anisotropy = this.groundNormalMap.anisotropy = 16;
-  this.groundMap.magFilter = this.groundNormalMap.magFilter = THREE.NearestFilter;
-  this.groundMap.minFilter = this.groundNormalMap.minFilter = THREE.LinearMipMapLinearFilter;
+  var texture_options = {
+    repeat: new THREE.Vector2(fogDistance/6, fogDistance/6),
+    anisotropy: 16,
+    minFilter: THREE.NearestFilter,
+    maxFilter: THREE.LinearMipMapLinearFilter
+  };
+  this.groundMap = Iconeezin.Util.createTexture(this.db['masking/textures/ground/grass_map'], texture_options);
+  this.groundNormalMap = Iconeezin.Util.createTexture(this.db['masking/textures/ground/grass_nrm'], texture_options);
 
   // Create a plane geomtry up to the extends of the map, used both by
   // sea level and sea floor

@@ -15,8 +15,8 @@ const curvingPoints = [
 
 const z_correction = -1;
 
-const oscillationVector = new THREE.Vector3( 0.0, 1.0, 0.0 );
-const up = new THREE.Vector3( 0.0, 0.0, -1.0 ).normalize();
+const oscillationVector = new THREE.Vector3( 0.0, 0.0, 1.0 );
+const up = new THREE.Vector3( 0.0, 1.0, 1.0 ).normalize();
 var axis = new THREE.Vector3();
 
 var easeInOutQuad = function (t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
@@ -74,11 +74,12 @@ BirdPath.prototype = {
         points[2], points[1], points[0]
       );
 
-    this.target.position.copy(points[2]);
+    this.target.position.copy(points[4]);
 
   },
 
   enter: function( cb ) {
+    this.target.visible = true;
     this.activePath = this.pathEnter;
     this.opacityFadeIn = true;
     this.position = 0;
@@ -86,6 +87,7 @@ BirdPath.prototype = {
   },
 
   leave: function( cb ) {
+    this.target.visible = true;
     this.activePath = this.pathLeave;
     this.opacityFadeIn = false;
     this.position = 0;
@@ -107,7 +109,7 @@ BirdPath.prototype = {
       // var tangent = this.activePath.getTangentAt(pos).normalize();
       // axis.crossVectors( up, tangent ).normalize();
       // var radians = Math.acos( up.dot( tangent ) );
-      this.lastQuaternion.setFromAxisAngle( oscillationVector, 0 );
+      this.lastQuaternion.setFromAxisAngle( up, Math.PI );
 
       if (this.opacityFadeIn) {
         this.target.traverse(function(c) {

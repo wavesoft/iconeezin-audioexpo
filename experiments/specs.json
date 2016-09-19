@@ -6,6 +6,32 @@
 			"tasks": []
 		},
 		{
+			"name": "threshold",
+			"desc": "Threshold experiment",
+			"tasks": [
+		    {
+		      "level": 0.25,
+		      "crowd": 4,
+		      "vnoise": 0.01
+		    },
+		    {
+		      "level": 0.60,
+		      "crowd": 8,
+		      "vnoise": 0.1
+		    },
+		    {
+		      "level": 0.70,
+		      "crowd": 15,
+		      "vnoise": 0.4
+		    },
+		    {
+		      "level": 1.0,
+		      "crowd": 25,
+		      "vnoise": 0.8
+		    }
+			]
+		},
+		{
 			"name": "delay",
 			"desc": "Delay in the speech",
 		  "tasks": [
@@ -56,30 +82,44 @@
 		  ]
 		},
 		{
-			"name": "threshold",
-			"desc": "Threshold experiment",
+			"name": "masking",
+			"desc": "Audio Masking Example",
 			"tasks": [
-				{
-					"level": 0.25
-				},
-				{
-					"level": 0.60
-				},
-				{
-					"level": 0.70
-				},
-				{
-					"level": 1.0
-				}
-			]
-		},
-		{
-			"name": "compression",
-			"desc": "MP3 Compression Example",
-			"tasks": [
-				{
-					"name": "test"
-				}
+        {
+          "masked": 3,
+          "diff": 200,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3700", "level": 0.8 },
+            { "src": "sounds/chirp/3900", "level": 0.8 }
+          ]
+        },
+        {
+          "masked": 3,
+          "diff": 100,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3600", "level": 0.8 },
+            { "src": "sounds/chirp/3700", "level": 0.8 }
+          ]
+        },
+        {
+          "masked": 2,
+          "diff": 50,
+          "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+            { "src": "sounds/chirp/3600", "level": 0.8 },
+            { "src": "sounds/chirp/3650", "level": 0.8 }
+          ]
+        },
+		    {
+		      "masked": 1,
+          "diff": 20,
+		      "sounds": [
+            { "src": "sounds/chirp/3500", "level": 0.8 },
+		        { "src": "sounds/chirp/3520", "level": 0.8 }
+		      ]
+		    }
 			]
 		}
 	],

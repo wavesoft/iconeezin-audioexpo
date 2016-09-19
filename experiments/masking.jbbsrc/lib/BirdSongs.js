@@ -36,6 +36,11 @@ BirdSongs.prototype = {
     this.birds.push(bird);
   },
 
+  reset: function() {
+    this.birds = [];
+    this.active = false;
+  },
+
   stop: function() {
     this.active = false;
   },

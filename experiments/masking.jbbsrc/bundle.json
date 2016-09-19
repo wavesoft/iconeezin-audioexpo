@@ -8,17 +8,35 @@
 		},
 
     "Iconeezin.API.AudioFile": {
-      "sounds/bird-1": "assets/sounds/bird_3000.ogg",
-      "sounds/bird-2": "assets/sounds/bird_3080.ogg",
-      "sounds/bird-3": "assets/sounds/bird_3500.ogg",
-      "sounds/bird-4": "assets/sounds/bird_4000.ogg"
+      "sounds/introduction": "assets/sounds/introduction.ogg",
+      "sounds/reco/error": "assets/sounds/ack-reco-error.ogg",
+      "sounds/reco/invalid": "assets/sounds/ack-reco-invalid-input.ogg",
+      "sounds/ask/how-many": "assets/sounds/ask-how-many.ogg",
+      "sounds/ack/correct": "assets/sounds/ack-correct.ogg",
+      "sounds/ack/mask/2": "assets/sounds/ack-mask-2.ogg",
+      "sounds/ack/mask/3": "assets/sounds/ack-mask-3.ogg",
+      "sounds/ack/mask/4": "assets/sounds/ack-mask-4.ogg",
+      "sounds/ack/wrong/2": "assets/sounds/ack-wrong-2.ogg",
+      "sounds/ack/wrong/3": "assets/sounds/ack-wrong-3.ogg",
+      "sounds/ack/wrong/4": "assets/sounds/ack-wrong-4.ogg",
+      "sounds/chirp/3500": "assets/sounds/chirp_3500.ogg",
+      "sounds/chirp/3520": "assets/sounds/chirp_3520.ogg",
+      "sounds/chirp/3600": "assets/sounds/chirp_3600.ogg",
+      "sounds/chirp/3650": "assets/sounds/chirp_3650.ogg",
+      "sounds/chirp/3700": "assets/sounds/chirp_3700.ogg",
+      "sounds/chirp/3770": "assets/sounds/chirp_3770.ogg",
+      "sounds/chirp/3800": "assets/sounds/chirp_3800.ogg",
+      "sounds/chirp/3900": "assets/sounds/chirp_3900.ogg"
     },
 
     "THREE.OBJLoader": {
       "geometries/grass_01": "assets/plants/FieldGrass01.obj",
       "geometries/birch_01": "assets/plants/Birch01.obj",
-      "geometries/tree_02": "assets/plants/Confier04Tall.obj",
-      "geometries/sparrow": "assets/models/sparrow.obj"
+      "geometries/tree_02": "assets/plants/Confier04Tall.obj"
+    },
+
+    "THREE.JSONLoader": {
+      "geometries/sparrow": "assets/models/sparrow.json"
     },
 
     "THREE.ImageLoader": {

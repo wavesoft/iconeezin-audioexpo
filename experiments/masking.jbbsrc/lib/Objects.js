@@ -7,7 +7,7 @@ var Objects = function(db) {
   // Plant 01
   ////////////////////////////////////////////////
 
-  var plant01_Texture = new Iconeezin.Util.createTexture(db['masking/textures/grass_01']);
+  var plant01_Texture = Iconeezin.Util.createTexture(db['masking/textures/grass_01']);
 
   var plant01_Material = new THREE.MeshLambertMaterial({
     map: plant01_Texture,
@@ -34,11 +34,11 @@ var Objects = function(db) {
   // Tree 01
   ////////////////////////////////////////////////
 
-  var birch01_leaf_map = new Iconeezin.Util.createTexture(db['masking/textures/birch_01/leaves_map']);
-  var birch01_leaf_nrm = new Iconeezin.Util.createTexture(db['masking/textures/birch_01/leaves_nrm']);
+  var birch01_leaf_map = Iconeezin.Util.createTexture(db['masking/textures/birch_01/leaves_map']);
+  var birch01_leaf_nrm = Iconeezin.Util.createTexture(db['masking/textures/birch_01/leaves_nrm']);
 
-  var birch01_bark_map = new Iconeezin.Util.createTexture(db['masking/textures/birch_01/bark_map']);
-  var birch01_bark_nrm = new Iconeezin.Util.createTexture(db['masking/textures/birch_01/bark_nrm']);
+  var birch01_bark_map = Iconeezin.Util.createTexture(db['masking/textures/birch_01/bark_map']);
+  var birch01_bark_nrm = Iconeezin.Util.createTexture(db['masking/textures/birch_01/bark_nrm']);
 
   var birch01_leaf = new THREE.MeshPhongMaterial({
     map: birch01_leaf_map,
@@ -78,14 +78,14 @@ var Objects = function(db) {
   // Tree 02
   ////////////////////////////////////////////////
 
-  var tree02_board_map = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/board_map']);
-  var tree02_board_nrm = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/board_nrm']);
+  var tree02_board_map = Iconeezin.Util.createTexture(db['masking/textures/tree_02/board_map']);
+  var tree02_board_nrm = Iconeezin.Util.createTexture(db['masking/textures/tree_02/board_nrm']);
 
-  var tree02_con_map = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/con_map']);
-  var tree02_con_nrm = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/con_nrm']);
+  var tree02_con_map = Iconeezin.Util.createTexture(db['masking/textures/tree_02/con_map']);
+  var tree02_con_nrm = Iconeezin.Util.createTexture(db['masking/textures/tree_02/con_nrm']);
 
-  var tree02_bark_map = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/bark_map']);
-  var tree02_bark_nrm = new Iconeezin.Util.createTexture(db['masking/textures/tree_02/bark_nrm']);
+  var tree02_bark_map = Iconeezin.Util.createTexture(db['masking/textures/tree_02/bark_map']);
+  var tree02_bark_nrm = Iconeezin.Util.createTexture(db['masking/textures/tree_02/bark_nrm']);
 
   var tree02_board = new THREE.MeshPhongMaterial({
     map: tree02_board_map,
@@ -140,21 +140,30 @@ var Objects = function(db) {
   // Sparrow
   ////////////////////////////////////////////////
 
-  var sparrow_map = new Iconeezin.Util.createTexture(db['masking/textures/sparrow']);
+  var sparrow_map = Iconeezin.Util.createTexture(db['masking/textures/sparrow']);
   var sparrow = new THREE.MeshBasicMaterial({
     map: sparrow_map,
-    transparent: true
+    transparent: true,
+    morphTargets: true
   });
 
   var sparrow_depth = Iconeezin.Util.createShadowMaterial(sparrow);
 
+  var sparrow_geom = db['masking/geometries/sparrow'];
+  sparrow_geom.computeMorphNormals();
+
   this.createSparrow = function() {
-    var obj = db['masking/geometries/sparrow'].clone();
+    var obj = new THREE.Mesh( sparrow_geom, sparrow );
+    obj.castShadow = true;
+    obj.scale.multiplyScalar( 0.25 );
 
-    obj.children[0].material = sparrow.clone();
-    obj.children[0].castShadow = true;
-
-    obj.children[0].scale.multiplyScalar( 0.45 );
+    var mixer = Iconeezin.Runtime.Video.getAnimationMixer( obj );
+    var clip = THREE.AnimationClip.CreateFromMorphTargetSequence(
+      'fly', sparrow_geom.morphTargets, 50
+    );
+    var action = mixer.clipAction( clip ).setDuration( 1 );
+    action.time = Math.random();
+    action.play();
 
     return obj;
   }
