@@ -81,14 +81,14 @@ var Iconeezin =
 	// Load components afterwards
 	var AudioCore = __webpack_require__(4);
 	var VideoCore = __webpack_require__(30);
-	var ControlsCore = __webpack_require__(57);
-	var TrackingCore = __webpack_require__(59);
-	var ExperimentsCore = __webpack_require__(66);
+	var ControlsCore = __webpack_require__(59);
+	var TrackingCore = __webpack_require__(61);
+	var ExperimentsCore = __webpack_require__(68);
 	var InteractionCore = __webpack_require__(27);
 	var BrowserUtil = __webpack_require__(32);
-	var StopableTimers = __webpack_require__(82);
-	var ThreeUtil = __webpack_require__(83);
-	var HudLayerUtil = __webpack_require__(84);
+	var StopableTimers = __webpack_require__(84);
+	var ThreeUtil = __webpack_require__(85);
+	var HudLayerUtil = __webpack_require__(86);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -27939,6 +27939,7 @@ var Iconeezin =
 		Object.assign( JSONLoader.prototype, {
 
 			load: function( url, onLoad, onProgress, onError ) {
+				console.error('Loading json', url);
 
 				var scope = this;
 
@@ -40683,7 +40684,7 @@ var Iconeezin =
 
 			function ( t ) {
 
-				var b2 = exports.ShapeUtils.b2;		
+				var b2 = exports.ShapeUtils.b2;
 
 				return new Vector3(
 					b2( t, this.v0.x, this.v1.x, this.v2.x ),
@@ -41925,6 +41926,7 @@ var Iconeezin =
 
 	})));
 
+
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
@@ -42850,17 +42852,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42903,7 +42905,7 @@ var Iconeezin =
 		var diff = jsDiff.diffWords( src, cmp );
 		var good_c = 0, progress_c = 0, c = 0, anchored = false, removed_c = 0;
 
-		// Process 
+		// Process
 		for (var i=0, l=diff.length; i<l; i++) {
 			var change = diff[i];
 
@@ -42983,9 +42985,10 @@ var Iconeezin =
 				this.resultsCallbacks[i](null, e);
 		}).bind(this);
 		this.recognition.onresult = (function(e) {
+			var result = e.results[e.resultIndex];
 			// console.log("Heard: '" + e.results[0][0].transcript + "' (confidence="+ e.results[0][0].confidence + ")")
 			for (var i=0, l=this.resultsCallbacks.length; i<l; ++i)
-				this.resultsCallbacks[i](e.results, null);
+				this.resultsCallbacks[i](result, null);
 		}).bind(this);
 
 		// // Debug events
@@ -43044,7 +43047,7 @@ var Iconeezin =
 	};
 
 	/**
-	 * Expect a phrase to be spoken. 
+	 * Expect a phrase to be spoken.
 	 *
 	 * The progress callback will be fired with interim results and other metadata
 	 * regarding the speaking progress.
@@ -43059,8 +43062,8 @@ var Iconeezin =
 			}
 
 			// Get match score
-			var transcript = results[0][0].transcript,
-				confidence = results[0][0].confidence,
+			var transcript = results[0].transcript,
+				confidence = results[0].confidence,
 				score = getProgressScore( phrase, transcript );
 
 			// Keep track of last confidence (Because it bets 0 when completed)
@@ -43070,7 +43073,7 @@ var Iconeezin =
 
 			// Prepare callback metadata
 			var meta = {
-				'completed': results[0].isFinal,
+				'completed': results.isFinal,
 				'confidence': confidence,
 				'progress': score[0],
 				'score': score[1],
@@ -43088,6 +43091,66 @@ var Iconeezin =
 		this.startDictation();
 
 	};
+
+	/**
+	 * Expect one of the given gommand(s)
+	 */
+	VoiceCommands.prototype.expectCommands = function( commands, error_cb ) {
+
+		// Compile regex
+		var _commands = Object.keys(commands).map(function (command) {
+			return {
+				regex: new RegExp(command),
+				callback: commands[command]
+			};
+		});
+
+		// Create a callback delegate to receive speech events
+		var last_confidence = 0;
+		var cb = function( results, error ) {
+			if (error) {
+				error_cb(error, null);
+				return;
+			}
+
+			// Wait for final result
+			if (results.isFinal) {
+				var handled = false;
+				var lastTranscript = '';
+
+				// Iterate over result transcripts
+				for (var i=0; i<results.length; i++) {
+					var result = results[i];
+					var transcript = result.transcript;
+					if (handled) return;
+
+					// Match commands
+					_commands.forEach(function (command) {
+						if (handled) return;
+
+						// Find first matching command
+						if (command.regex.exec(transcript)) {
+							handled = true;
+							command.callback(transcript);
+						}
+					});
+
+					lastTranscript = transcript;
+				}
+
+				// If nothing matched, fire unknown callback
+				if (!handled && error_cb) {
+					error_cb(null, lastTranscript);
+				}
+			}
+
+		};
+
+		// Start dictation
+		this.resultsCallbacks.push(cb);
+		this.startDictation();
+
+	}
 
 	/**
 	 * Enable voice commands
@@ -44477,6 +44540,13 @@ var Iconeezin =
 	};
 
 	/**
+	 * Called when the experiment can safely initialize
+	 */
+	Experiment.prototype.onLoad = function( db ) {
+
+	};
+
+	/**
 	 * The Experiment API namespace contains the
 	 * classes for implementing external experiment objects.
 	 */
@@ -45060,7 +45130,7 @@ var Iconeezin =
 	 */
 
 	var Viewport = __webpack_require__(31);
-	var Cursor = __webpack_require__(55);
+	var Cursor = __webpack_require__(57);
 	var Browser = __webpack_require__(32);
 
 	/**
@@ -45100,6 +45170,7 @@ var Iconeezin =
 		this.qualityFlags = {
 			'antialias': true,
 			'hires': false,
+			'ssao': false
 		};
 
 		// Create a canvas DOM if missing
@@ -45112,6 +45183,7 @@ var Iconeezin =
 		// Create a new viewport instance
 		this.viewport = new Viewport( canvasDOM, Browser.vrHMD );
 		this.viewport.setAntialias( this.qualityFlags.antialias );
+		this.viewport.setSSAO( this.qualityFlags.ssao );
 		Browser.onVRSupportChange(function( isPlugged, vrHMD ) {
 			VideoCore.viewport.setHMDDevice( isPlugged ? vrHMD : undefined );
 		});
@@ -45371,6 +45443,13 @@ var Iconeezin =
 	}
 
 	/**
+	 * Create animation mixer
+	 */
+	VideoCore.getAnimationMixer = function( mesh ) {
+		return this.viewport.animations.getMixer( mesh );
+	}
+
+	/**
 	 * Glitch the video with some duration
 	 */
 	VideoCore.glitch = function( duration ) {
@@ -45379,6 +45458,7 @@ var Iconeezin =
 			VideoCore.viewport.setEffect( 0 );
 		}, duration);
 	}
+
 	// Export
 	module.exports = VideoCore;
 
@@ -45412,20 +45492,19 @@ var Iconeezin =
 	var THREE = __webpack_require__(1);
 	var Browser = __webpack_require__(32);
 	var HUDStatus = __webpack_require__(33);
+	var Animations = __webpack_require__(34);
 
 	// Modified version of example scripts
 	// in order to work with Z-Up orientation
-	__webpack_require__(34);
+	__webpack_require__(35);
 
 	// Effect composer complex
-	__webpack_require__(35);
 	__webpack_require__(36);
-
 	__webpack_require__(37);
 	__webpack_require__(38);
+
 	__webpack_require__(39);
 	__webpack_require__(40);
-
 	__webpack_require__(41);
 	__webpack_require__(42);
 
@@ -45442,10 +45521,13 @@ var Iconeezin =
 	__webpack_require__(50);
 
 	__webpack_require__(51);
+	__webpack_require__(52);
+
+	__webpack_require__(53);
 
 	// VR Pass and HUD
-	__webpack_require__(52);
-	__webpack_require__(53);
+	__webpack_require__(54);
+	__webpack_require__(55);
 
 	/**
 	 * Our viewport is where everything gets rendered
@@ -45473,6 +45555,11 @@ var Iconeezin =
 		 */
 		this.sceneObjects = [];
 
+		/**
+		 * Create new animations manager
+		 */
+		this.animations = new Animations();
+
 		/////////////////////////////////////////////////////////////
 		// Constructor
 		/////////////////////////////////////////////////////////////
@@ -45497,7 +45584,7 @@ var Iconeezin =
 		this.scene.fog = new THREE.Fog( 0xffffff, 0.015, 50 );
 
 		// Initialize a camera (with dummy ratio)
-		this.camera = new THREE.PerspectiveCamera( 75, 1.0, 0.1, 45000 );
+		this.camera = new THREE.PerspectiveCamera( 75, 1.0, 0.1, 1000 );
 
 		// Camera looks towards +Y with Z up
 		this.camera.up.set( 0.0, 0.0, 1.0 );
@@ -45553,6 +45640,19 @@ var Iconeezin =
 		this.filmPass.enabled = false;
 		this.effectComposer.addPass( this.filmPass );
 
+		// SSAO pass
+		this.ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+		this.ssaoPass.enabled = false;
+		this.ssaoPass.needsSwap = true;
+		this.ssaoPass.renderToScreen = false;
+		this.ssaoPass.uniforms[ 'size' ].value.set( 1024, 768 );
+		this.ssaoPass.uniforms[ 'cameraNear' ].value = this.camera.near;
+		this.ssaoPass.uniforms[ 'cameraFar' ].value = this.camera.far;
+		this.ssaoPass.uniforms[ 'aoClamp' ].value = 0.3;
+		this.ssaoPass.uniforms[ 'onlyAO' ].value = true;
+		this.ssaoPass.uniforms[ 'lumInfluence' ].value = 0.5;
+		this.effectComposer.addPass( this.ssaoPass );
+
 		// FXAA anti-alias pass
 		this.antialiasPass = new THREE.ShaderPass( THREE.FXAAShader );
 		this.antialiasPass.setSize = (function( w, h ) {
@@ -45561,6 +45661,19 @@ var Iconeezin =
 		this.antialiasPass.enabled = false;
 		this.antialiasPass.renderToScreen = true;
 		this.effectComposer.addPass( this.antialiasPass );
+
+		/////////////////////////////////////////////////////////////
+		// Depth pass
+		/////////////////////////////////////////////////////////////
+
+		// Setup depth pass
+		this.depthMaterial = new THREE.MeshDepthMaterial();
+		this.depthMaterial.depthPacking = THREE.RGBADepthPacking;
+		this.depthMaterial.blending = THREE.NoBlending;
+
+		var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+		this.depthRenderTarget = new THREE.WebGLRenderTarget( 1024, 768, pars );
+		this.ssaoPass.uniforms[ "tDepth" ].value = this.depthRenderTarget.texture;
 
 		/////////////////////////////////////////////////////////////
 		// Environment
@@ -45573,7 +45686,7 @@ var Iconeezin =
 		this.sky.uniforms.mieCoefficient.value = 0.005;
 		this.sky.uniforms.mieDirectionalG.value = 0.8;
 		this.sky.uniforms.luminance.value = 0.9;
-		this.sky.mesh.scale.set(45000, 45000, 45000);
+		this.sky.mesh.scale.set(1000, 1000, 1000);
 		this.addSceneObject( this.sky.mesh );
 
 		// Add sky light
@@ -45603,19 +45716,20 @@ var Iconeezin =
 
 		this.setSunPosition(0.20, 0.25);
 
-		this.addSceneObject(new THREE.CameraHelper(this.skyLight.shadow.camera));
-
-
 		/////////////////////////////////////////////////////////////
 		// Helpers
 		/////////////////////////////////////////////////////////////
 
 		// Add axis on 0,0,0
-		var axisHelper = new THREE.AxisHelper( 5 );
-		this.addSceneObject( axisHelper );
+		// var axisHelper = new THREE.AxisHelper( 5 );
+		// this.addSceneObject( axisHelper );
+
+		// Shadow camera
+		// this.addSceneObject(new THREE.CameraHelper(this.skyLight.shadow.camera));
 
 		// Initialize the sizes (apply actual size)
 		this.setSize( this.viewportDOM.offsetWidth, this.viewportDOM.offsetHeight );
+		this.setFog( null );
 
 	}
 
@@ -45686,6 +45800,13 @@ var Iconeezin =
 	}
 
 	/**
+	 * Enable or diable SSAO pass
+	 */
+	Viewport.prototype.setSSAO = function( enabled ) {
+		// this.antialiasPass.enabled = enabled;
+	}
+
+	/**
 	 * Resize viewport to fit new size
 	 */
 	Viewport.prototype.setOpacity = function( value ) {
@@ -45716,10 +45837,16 @@ var Iconeezin =
 	 * Resize viewport to fit new size
 	 */
 	Viewport.prototype.setSize = function( width, height, pixelRatio, skipStyleUpdate ) {
+		// var newWidth  = Math.floor( width / pixelRatio ) || 1;
+		// var newHeight = Math.floor( height / pixelRatio ) || 1;
 
 		// Get size of the viewport
 		this.width = width;
 		this.height = height;
+
+		// Update SSAO pass
+		this.ssaoPass.uniforms[ 'size' ].value.set( width, height );
+		this.depthRenderTarget.setSize( width, height );
 
 		// Update camera
 		this.camera.aspect = width / height;
@@ -45817,6 +45944,29 @@ var Iconeezin =
 			);
 			this.skyLight.target.updateMatrixWorld();
 
+			// Update animations
+			this.animations.update( d );
+
+		}
+
+		// Render SSAO pass
+		if (this.ssaoPass.enabled) {
+			this.renderer.clear();
+
+			this.sceneObjects.forEach(function(o) { o.visible = false; })
+			this.renderPass.overrideMaterial = this.depthMaterial;
+
+			// Use the VRRenderer to render depth on the scene, on both
+			// eyes when VR is enabled.
+			var oldValue = this.renderPass.renderToScreen;
+			this.renderPass.render(
+				this.renderer, null, this.depthRenderTarget, d, null
+			);
+			this.renderPass.renderToScreen = oldValue;
+
+			this.renderPass.overrideMaterial = null;
+			this.sceneObjects.forEach(function(o) { o.visible = true; })
+
 		}
 
 		// Render composer
@@ -45849,12 +45999,15 @@ var Iconeezin =
 	 * Set global viewport fog
 	 */
 	Viewport.prototype.setFog = function( fog ) {
-		var fogFar = 1000000;
+		var fogFar = 1000;
 		// if (fog && fog.far) fogFar = fog.far;
 
 		// Bring camera's max distance to fog's edge
 		this.camera.far = fogFar + 10;
 		this.camera.updateProjectionMatrix();
+
+		this.ssaoPass.uniforms[ 'cameraNear' ].value = this.camera.near;
+		this.ssaoPass.uniforms[ 'cameraFar' ].value = this.camera.far;
 
 		// Adapt skydone
 		this.sky.mesh.scale.set(
@@ -45963,6 +46116,9 @@ var Iconeezin =
 	 * Reset everything
 	 */
 	Viewport.prototype.reset = function( ) {
+
+		// Reset animations
+		this.animations.reset();
 
 		// Remove all active tweens
 		for (var i=0; i<this.tweenFunctions.length; i++) {
@@ -46518,6 +46674,81 @@ var Iconeezin =
 
 /***/ },
 /* 34 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 *
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 *
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	/**
+	 * Animation class that takes care of dispatching the correct animation
+	 * mixers.
+	 */
+	var Animations = function() {
+	  this.mixers = [];
+	};
+
+	Animations.prototype = {
+	  constructor: Animations,
+
+	  reset: function() {
+	    this.mixers = [];
+	  },
+
+	  getMixer: function( mesh ) {
+
+	    // Check for pre-cached mixer ID
+	    if (mesh.__mixerid__) {
+	      return this.mixers[mesh.__mixerid__];
+	    }
+
+	    // Create a new animation mixer
+	    var mixer = new THREE.AnimationMixer( mesh );
+
+	    // Cache the mixer index
+	    Object.defineProperty(
+	      mesh, "__mixerid__", {
+	        enumerable: false,
+	        value: this.mixers.length,
+	      }
+	    );
+	    this.mixers.push(mixer);
+
+	    // Return mixer
+	    return mixer;
+	  },
+
+	  update: function(delta) {
+	    this.mixers.forEach(function (mixer) {
+	      mixer.update(delta / 1000);
+	    });
+	  }
+
+	};
+
+	module.exports = Animations;
+
+
+/***/ },
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -46789,7 +47020,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports) {
 
 	/**
@@ -46841,7 +47072,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	/**
@@ -46935,7 +47166,232 @@ var Iconeezin =
 
 
 /***/ },
-/* 37 */
+/* 38 */
+/***/ function(module, exports) {
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * Screen-space ambient occlusion shader
+	 * - ported from
+	 *   SSAO GLSL shader v1.2
+	 *   assembled by Martins Upitis (martinsh) (http://devlog-martinsh.blogspot.com)
+	 *   original technique is made by ArKano22 (http://www.gamedev.net/topic/550699-ssao-no-halo-artifacts/)
+	 * - modifications
+	 * - modified to use RGBA packed depth texture (use clear color 1,1,1,1 for depth pass)
+	 * - refactoring and optimizations
+	 */
+
+	THREE.SSAOShader = {
+
+		uniforms: {
+
+			"tDiffuse":     { value: null },
+			"tDepth":       { value: null },
+			"size":         { value: new THREE.Vector2( 512, 512 ) },
+			"cameraNear":   { value: 1 },
+			"cameraFar":    { value: 100 },
+			"onlyAO":       { value: 0 },
+			"aoClamp":      { value: 0.5 },
+			"lumInfluence": { value: 0.5 }
+
+		},
+
+		vertexShader: [
+
+			"varying vec2 vUv;",
+
+			"void main() {",
+
+				"vUv = uv;",
+
+				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+			"}"
+
+		].join( "\n" ),
+
+		fragmentShader: [
+
+			"uniform float cameraNear;",
+			"uniform float cameraFar;",
+
+			"uniform bool onlyAO;",      // use only ambient occlusion pass?
+
+			"uniform vec2 size;",        // texture width, height
+			"uniform float aoClamp;",    // depth clamp - reduces haloing at screen edges
+
+			"uniform float lumInfluence;",  // how much luminance affects occlusion
+
+			"uniform sampler2D tDiffuse;",
+			"uniform sampler2D tDepth;",
+
+			"varying vec2 vUv;",
+
+			// "#define PI 3.14159265",
+			"#define DL 2.399963229728653",  // PI * ( 3.0 - sqrt( 5.0 ) )
+			"#define EULER 2.718281828459045",
+
+			// user variables
+
+			"const int samples = 8;",     // ao sample count
+			"const float radius = 5.0;",  // ao radius
+
+			"const bool useNoise = false;",      // use noise instead of pattern for sample dithering
+			"const float noiseAmount = 0.0003;", // dithering amount
+
+			"const float diffArea = 0.4;",   // self-shadowing reduction
+			"const float gDisplace = 0.4;",  // gauss bell center
+
+
+			// RGBA depth
+
+			"#include <packing>",
+
+			// generating noise / pattern texture for dithering
+
+			"vec2 rand( const vec2 coord ) {",
+
+				"vec2 noise;",
+
+				"if ( useNoise ) {",
+
+					"float nx = dot ( coord, vec2( 12.9898, 78.233 ) );",
+					"float ny = dot ( coord, vec2( 12.9898, 78.233 ) * 2.0 );",
+
+					"noise = clamp( fract ( 43758.5453 * sin( vec2( nx, ny ) ) ), 0.0, 1.0 );",
+
+				"} else {",
+
+					"float ff = fract( 1.0 - coord.s * ( size.x / 2.0 ) );",
+					"float gg = fract( coord.t * ( size.y / 2.0 ) );",
+
+					"noise = vec2( 0.25, 0.75 ) * vec2( ff ) + vec2( 0.75, 0.25 ) * gg;",
+
+				"}",
+
+				"return ( noise * 2.0  - 1.0 ) * noiseAmount;",
+
+			"}",
+
+			"float readDepth( const in vec2 coord ) {",
+
+				"float cameraFarPlusNear = cameraFar + cameraNear;",
+				"float cameraFarMinusNear = cameraFar - cameraNear;",
+				"float cameraCoef = 2.0 * cameraNear;",
+
+				// "return ( 2.0 * cameraNear ) / ( cameraFar + cameraNear - unpackDepth( texture2D( tDepth, coord ) ) * ( cameraFar - cameraNear ) );",
+				"return cameraCoef / ( cameraFarPlusNear - unpackRGBAToDepth( texture2D( tDepth, coord ) ) * cameraFarMinusNear );",
+
+
+			"}",
+
+			"float compareDepths( const in float depth1, const in float depth2, inout int far ) {",
+
+				"float garea = 2.0;",                         // gauss bell width
+				"float diff = ( depth1 - depth2 ) * 100.0;",  // depth difference (0-100)
+
+				// reduce left bell width to avoid self-shadowing
+
+				"if ( diff < gDisplace ) {",
+
+					"garea = diffArea;",
+
+				"} else {",
+
+					"far = 1;",
+
+				"}",
+
+				"float dd = diff - gDisplace;",
+				"float gauss = pow( EULER, -2.0 * dd * dd / ( garea * garea ) );",
+				"return gauss;",
+
+			"}",
+
+			"float calcAO( float depth, float dw, float dh ) {",
+
+				"float dd = radius - depth * radius;",
+				"vec2 vv = vec2( dw, dh );",
+
+				"vec2 coord1 = vUv + dd * vv;",
+				"vec2 coord2 = vUv - dd * vv;",
+
+				"float temp1 = 0.0;",
+				"float temp2 = 0.0;",
+
+				"int far = 0;",
+				"temp1 = compareDepths( depth, readDepth( coord1 ), far );",
+
+				// DEPTH EXTRAPOLATION
+
+				"if ( far > 0 ) {",
+
+					"temp2 = compareDepths( readDepth( coord2 ), depth, far );",
+					"temp1 += ( 1.0 - temp1 ) * temp2;",
+
+				"}",
+
+				"return temp1;",
+
+			"}",
+
+			"void main() {",
+
+				"vec2 noise = rand( vUv );",
+				"float depth = readDepth( vUv );",
+
+				"float tt = clamp( depth, aoClamp, 1.0 );",
+
+				"float w = ( 1.0 / size.x )  / tt + ( noise.x * ( 1.0 - noise.x ) );",
+				"float h = ( 1.0 / size.y ) / tt + ( noise.y * ( 1.0 - noise.y ) );",
+
+				"float ao = 0.0;",
+
+				"float dz = 1.0 / float( samples );",
+				"float z = 1.0 - dz / 2.0;",
+				"float l = 0.0;",
+
+				"for ( int i = 0; i <= samples; i ++ ) {",
+
+					"float r = sqrt( 1.0 - z );",
+
+					"float pw = cos( l ) * r;",
+					"float ph = sin( l ) * r;",
+					"ao += calcAO( depth, pw * w, ph * h );",
+					"z = z - dz;",
+					"l = l + DL;",
+
+				"}",
+
+				"ao /= float( samples );",
+				"ao = 1.0 - ao;",
+
+				"vec3 color = texture2D( tDiffuse, vUv ).rgb;",
+
+				"vec3 lumcoeff = vec3( 0.299, 0.587, 0.114 );",
+				"float lum = dot( color.rgb, lumcoeff );",
+				"vec3 luminance = vec3( lum );",
+
+				"vec3 final = vec3( color * mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // mix( color * ao, white, luminance )
+
+				"if ( onlyAO ) {",
+
+					"final = vec3( mix( vec3( ao ), vec3( 1.0 ), luminance * lumInfluence ) );",  // ambient occlusion only
+
+				"}",
+
+				"gl_FragColor = vec4( final, 1.0 );",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+
+/***/ },
+/* 39 */
 /***/ function(module, exports) {
 
 	/**
@@ -47116,7 +47572,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 38 */
+/* 40 */
 /***/ function(module, exports) {
 
 	/**
@@ -47178,7 +47634,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 39 */
+/* 41 */
 /***/ function(module, exports) {
 
 	/**
@@ -47281,7 +47737,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 40 */
+/* 42 */
 /***/ function(module, exports) {
 
 	/**
@@ -47353,7 +47809,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 41 */
+/* 43 */
 /***/ function(module, exports) {
 
 	/**
@@ -47462,7 +47918,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 42 */
+/* 44 */
 /***/ function(module, exports) {
 
 	/**
@@ -47583,7 +48039,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 43 */
+/* 45 */
 /***/ function(module, exports) {
 
 	/**
@@ -47705,7 +48161,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 44 */
+/* 46 */
 /***/ function(module, exports) {
 
 	/**
@@ -47813,7 +48269,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 45 */
+/* 47 */
 /***/ function(module, exports) {
 
 	/**
@@ -48281,7 +48737,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 46 */
+/* 48 */
 /***/ function(module, exports) {
 
 	/**
@@ -48451,7 +48907,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 47 */
+/* 49 */
 /***/ function(module, exports) {
 
 	/**
@@ -48561,7 +49017,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 48 */
+/* 50 */
 /***/ function(module, exports) {
 
 	/**
@@ -48627,7 +49083,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 49 */
+/* 51 */
 /***/ function(module, exports) {
 
 	/**
@@ -48734,7 +49190,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 50 */
+/* 52 */
 /***/ function(module, exports) {
 
 	/**
@@ -48856,7 +49312,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 51 */
+/* 53 */
 /***/ function(module, exports) {
 
 	/**
@@ -48931,7 +49387,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 52 */
+/* 54 */
 /***/ function(module, exports) {
 
 	/**
@@ -49234,14 +49690,14 @@ var Iconeezin =
 
 
 /***/ },
-/* 53 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @author wavesoft / https://github.com/wavesoft
 	 */
 	var THREE = __webpack_require__(1);
-	__webpack_require__(54);
+	__webpack_require__(56);
 
 	/**
 	 * Maximum number of layers allowed
@@ -49364,7 +49820,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 54 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -49450,7 +49906,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 55 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -49577,7 +50033,7 @@ var Iconeezin =
 
 		// Create a spinner sprite
 		var loader = new THREE.TextureLoader();
-		loader.load( __webpack_require__(56), (function( texture ) {
+		loader.load( __webpack_require__(58), (function( texture ) {
 
 			// Set material map
 			mat.map = texture;
@@ -49769,13 +50225,13 @@ var Iconeezin =
 
 
 /***/ },
-/* 56 */
+/* 58 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA8pJREFUeNrsW8uR2kAQFS7fRQbLRoAyQI7AcgSwF67GEVhEYO11L8tGYIUgMoAILDJAEeCercY122795isKdZVKhWo0mn7T3fPeSEwul0twz/YpuHMbARgBGAEYAbhr+2yqo5eXlwhOCRziPLU45jMcBzjy9Xp90O1sossDwHHhbA7HwsME7gXoAMTZCwDofAHH3GMUH+GIVUHQrQG5Z+cDfH7mPAJg9mdw+jOgevYIUVC6jIBkYAVdaTw6q8CUycWzQ4enJP2mrgGgtoMQzFx5Dym4gtOrTyJUtkSEbZv5ZoKljQFppGDpG4DYMQD0eUqsUJcICRAepEtfoA4UNfkqrOiyVOES++4gtN91WIIraOelCAoi9F36vUFmSAf7Kv2+UtjrrJ0xnCO8tiD3c6ClzDi8qEE6O19hwDEjXipybYGHAO8nnheMnqjo0oqia9kyDjcAoBrb08GgRri2EQ6sFB+xkjk+9kud3XNp53I/YEN+i5pQEBBEiD737PcZ72vTHhuvchhnJsVQblRp0E4M9leHLn/IpKpBcm+hXeodABzkjsnNI4bxQWqXYBiHTDcVts9JEeVmXoS+9tJrbEsMBiPy/I2RqoVcGNG5CMGhYEXE+QhXijnT1ogYm5h+M1QTCcKe6JoObTNcAUS+bzpyfe1dIKsAtOT6E0dsegidN4w0Yzax9W6wIde/MdWd3vdbFbzBACDlcEFAEIVuxoUwVvuSaZ/orPVOimADUaKVOmwoYDETMdactw6ABMK2o3SOTLK8QQAg6QETkvv2AEAik3YEhDq8xPtvEwCJwoYd5WvOKMcci+ltASCtAHOGv5c19UJERlbDJq2AYIsIxTUz34nI9GGTQ6TCvVgcpsk75yfKMSO7TVbYoFEAGgbNyVuaHkdc80uXlNikHOb2BDh5y7FDuX1M5LNWOrnaEOH4O+dMk/Nt9+2YgqpdE0x9IMHxdxXnm+7n0qbCPQRlwmRiGcwMO3/VCx+WPiyQCeEJIUOy3EVAzTcCtOD1db4tErh0e1SNAt0IWDHihRIZVef/RQIhS3nw/1b8xlcKUFm7YwhRqPmMkHnZkraMwz4AWJQ+FCRakVHKbhl+38fE/Qem35N06UFVNOm8G4yYUOf4fapbqGqsIHQ5UpHPOilA38YeArdWtkyIdQCiwK8Z2RY3+Y3QDOmwK5sNDYDlLUaETgrkwbCscAoAsrPjQJzfq345boIJVp6dr7wxQenFx8mT8yeqFXztB0yRjiaBmw8mz1iDct23xJPxj5N3biMAIwAjACMAd21/BRgAk6Xp4c7+81UAAAAASUVORK5CYII="
 
 /***/ },
-/* 57 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -49802,12 +50258,12 @@ var Iconeezin =
 
 	var VideoCore = __webpack_require__(30);
 
-	var SightInteraction = __webpack_require__(58);
+	var SightInteraction = __webpack_require__(60);
 
-	var InfiniteControl = __webpack_require__(60);
-	var PathFollowerControl = __webpack_require__(62);
-	var MouseControl = __webpack_require__(63);
-	var VRControl = __webpack_require__(64);
+	var InfiniteControl = __webpack_require__(62);
+	var PathFollowerControl = __webpack_require__(64);
+	var MouseControl = __webpack_require__(65);
+	var VRControl = __webpack_require__(66);
 
 	/**
 	 * The ControlsCore singleton contains the
@@ -50093,7 +50549,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 58 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50119,7 +50575,7 @@ var Iconeezin =
 	 */
 
 	var VideoCore = __webpack_require__(30);
-	var TrackingCore = __webpack_require__(59);
+	var TrackingCore = __webpack_require__(61);
 	var ThreeAPI = __webpack_require__(26);
 
 	const CENTER = new THREE.Vector2(0,0);
@@ -50349,7 +50805,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 59 */
+/* 61 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -50801,7 +51257,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 60 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50827,7 +51283,7 @@ var Iconeezin =
 	 */
 
 	var THREE = __webpack_require__(1);
-	var BaseControl = __webpack_require__(61);
+	var BaseControl = __webpack_require__(63);
 
 	/**
 	 * This control locks the camera in a single location and does not move it.
@@ -50880,7 +51336,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 61 */
+/* 63 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -50989,7 +51445,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 62 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51015,7 +51471,7 @@ var Iconeezin =
 	 */
 
 	var THREE = __webpack_require__(1);
-	var BaseControl = __webpack_require__(61);
+	var BaseControl = __webpack_require__(63);
 
 	var zero = new THREE.Vector3(0,0,0);
 	var norm = new THREE.Vector3();
@@ -51134,7 +51590,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 63 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51160,7 +51616,7 @@ var Iconeezin =
 	 */
 
 	var VideoCore = __webpack_require__(30);
-	var BaseControl = __webpack_require__(61);
+	var BaseControl = __webpack_require__(63);
 
 	const PI_2 = Math.PI / 2;
 	const RESET_NORMAL_SPEED = 0.01;
@@ -51353,7 +51809,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 64 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51378,9 +51834,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var BaseControl = __webpack_require__(61);
+	var BaseControl = __webpack_require__(63);
 	var Browser = __webpack_require__(32);
-	__webpack_require__(65);
+	__webpack_require__(67);
 
 	var vec = new THREE.Vector3();
 
@@ -51427,7 +51883,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 65 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -51587,7 +52043,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 66 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51614,16 +52070,16 @@ var Iconeezin =
 
 	var VideoCore = __webpack_require__(30);
 	var AudioCore = __webpack_require__(4);
-	var ControlsCore = __webpack_require__(57);
-	var TrackingCore = __webpack_require__(59);
+	var ControlsCore = __webpack_require__(59);
+	var TrackingCore = __webpack_require__(61);
 
-	var ResultsRoom = __webpack_require__(67);
-	var Experiments = __webpack_require__(70);
+	var ResultsRoom = __webpack_require__(69);
+	var Experiments = __webpack_require__(72);
 
 	var Config = __webpack_require__(29);
-	var Loaders = __webpack_require__(71);
+	var Loaders = __webpack_require__(73);
 
-	var StopableTimers = __webpack_require__(82);
+	var StopableTimers = __webpack_require__(84);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime
@@ -51905,7 +52361,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 67 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51934,7 +52390,7 @@ var Iconeezin =
 	var ExperimentsAPI = __webpack_require__(25);
 	var InteractionCore = __webpack_require__(27);
 
-	var Label = __webpack_require__(68);
+	var Label = __webpack_require__(70);
 
 	/**
 	 * Paint function for block
@@ -52050,7 +52506,7 @@ var Iconeezin =
 
 		// Create a spinner sprite
 		var loader = new THREE.TextureLoader();
-		loader.load( __webpack_require__(69), (function( texture ) {
+		loader.load( __webpack_require__(71), (function( texture ) {
 
 			// Set material map
 			mat.map = texture;
@@ -52258,7 +52714,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 68 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52495,13 +52951,13 @@ var Iconeezin =
 
 
 /***/ },
-/* 69 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "img/results.jpg";
 
 /***/ },
-/* 70 */
+/* 72 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -52563,6 +53019,7 @@ var Iconeezin =
 
 		var do_fadein = (function() {
 			// Will show active
+			this.activeExperiment.onLoad( this.activeExperiment.database );
 			this.activeExperiment.onWillShow((function() {
 				// Fade in active
 				this.activeExperiment.isActive = true;
@@ -52720,7 +53177,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 71 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52747,9 +53204,9 @@ var Iconeezin =
 
 	var Config = __webpack_require__(29);
 
-	var JBBLoader = __webpack_require__(72);
-	var JBBProfileThreeLoader = __webpack_require__(79);
-	var JBBProfileIconeezinLoader = __webpack_require__(81);
+	var JBBLoader = __webpack_require__(74);
+	var JBBProfileThreeLoader = __webpack_require__(81);
+	var JBBProfileIconeezinLoader = __webpack_require__(83);
 
 	/**
 	 * Loaders namespace contains all the different loading
@@ -52859,7 +53316,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 72 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -52883,10 +53340,10 @@ var Iconeezin =
 	 */
 
 	/* Imports */
-	var BinaryBundle = __webpack_require__(74);
-	var DecodeProfile = __webpack_require__(75);
-	var ProgressManager = __webpack_require__(76);
-	var Errors = __webpack_require__(77);
+	var BinaryBundle = __webpack_require__(76);
+	var DecodeProfile = __webpack_require__(77);
+	var ProgressManager = __webpack_require__(78);
+	var Errors = __webpack_require__(79);
 
 	/* Production optimisations and debug metadata flags */
 	if (typeof GULP_BUILD === "undefined") var GULP_BUILD = false;
@@ -52896,7 +53353,7 @@ var Iconeezin =
 
 	/* Additional includes on node builds */
 	if (IS_NODE) {
-		var fs = __webpack_require__(78);
+		var fs = __webpack_require__(80);
 	}
 
 	/* Size constants */
@@ -54190,10 +54647,10 @@ var Iconeezin =
 	// Export the binary loader
 	module.exports = BinaryLoader;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(73)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(75)))
 
 /***/ },
-/* 73 */
+/* 75 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -54293,7 +54750,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 74 */
+/* 76 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54653,7 +55110,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 75 */
+/* 77 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54770,7 +55227,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 76 */
+/* 78 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -54945,7 +55402,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 77 */
+/* 79 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55044,13 +55501,13 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 78 */
+/* 80 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 79 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -55077,7 +55534,119 @@ var Iconeezin =
 	/* Generated source follows */
 
 	var THREE = __webpack_require__(1);
-	var MD2Character = __webpack_require__(80);
+	var MD2Character = __webpack_require__(82);
+
+	/**
+	 * Factory & Initializer of THREE.ColorKeyframeTrack
+	 */
+	var factory_THREE_ColorKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.ColorKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.ColorKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.StringKeyframeTrack
+	 */
+	var factory_THREE_StringKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.StringKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.StringKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.BooleanKeyframeTrack
+	 */
+	var factory_THREE_BooleanKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.BooleanKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.BooleanKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.NumberKeyframeTrack
+	 */
+	var factory_THREE_NumberKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.NumberKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.NumberKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.QuaternionKeyframeTrack
+	 */
+	var factory_THREE_QuaternionKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.QuaternionKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.QuaternionKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.VectorKeyframeTrack
+	 */
+	var factory_THREE_VectorKeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.VectorKeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.VectorKeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.KeyframeTrack
+	 */
+	var factory_THREE_KeyframeTrack = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.KeyframeTrack.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.KeyframeTrack.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
 
 	/**
 	 * Factory & Initializer of THREE.CubeTexture
@@ -56479,97 +57048,6 @@ var Iconeezin =
 	}
 
 	/**
-	 * Factory & Initializer of THREE.AnimationClip
-	 */
-	var factory_THREE_AnimationClip = {
-		props: 3,
-		create: function() {
-			return Object.create(THREE.AnimationClip.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.AnimationClip.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1],
-				props[offset+pagesize*2]);
-		}
-	}
-
-	/**
-	 * Factory & Initializer of THREE.VectorKeyframeTrack
-	 */
-	var factory_THREE_VectorKeyframeTrack = {
-		props: 2,
-		create: function() {
-			return Object.create(THREE.VectorKeyframeTrack.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.VectorKeyframeTrack.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1]);
-		}
-	}
-
-	/**
-	 * Factory & Initializer of THREE.QuaternionKeyframeTrack
-	 */
-	var factory_THREE_QuaternionKeyframeTrack = {
-		props: 2,
-		create: function() {
-			return Object.create(THREE.QuaternionKeyframeTrack.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.QuaternionKeyframeTrack.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1]);
-		}
-	}
-
-	/**
-	 * Factory & Initializer of THREE.NumberKeyframeTrack
-	 */
-	var factory_THREE_NumberKeyframeTrack = {
-		props: 2,
-		create: function() {
-			return Object.create(THREE.NumberKeyframeTrack.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.NumberKeyframeTrack.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1]);
-		}
-	}
-
-	/**
-	 * Factory & Initializer of THREE.BooleanKeyframeTrack
-	 */
-	var factory_THREE_BooleanKeyframeTrack = {
-		props: 2,
-		create: function() {
-			return Object.create(THREE.BooleanKeyframeTrack.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.BooleanKeyframeTrack.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1]);
-		}
-	}
-
-	/**
-	 * Factory & Initializer of THREE.StringKeyframeTrack
-	 */
-	var factory_THREE_StringKeyframeTrack = {
-		props: 2,
-		create: function() {
-			return Object.create(THREE.StringKeyframeTrack.prototype);
-		},
-		init: function(inst, props, pagesize, offset) {
-			THREE.StringKeyframeTrack.call(inst,
-				props[offset+pagesize*0],
-				props[offset+pagesize*1]);
-		}
-	}
-
-	/**
 	 * Factory & Initializer of THREE.Fog
 	 */
 	var factory_THREE_Fog = {
@@ -56695,37 +57173,67 @@ var Iconeezin =
 				}
 	}
 
+	/**
+	 * Factory & Initializer of THREE.AnimationClip
+	 */
+	var factory_THREE_AnimationClip = {
+		props: 3,
+		create: function() {
+			return Object.create(THREE.AnimationClip.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.AnimationClip.call(inst,
+				props[offset+pagesize*0],
+				props[offset+pagesize*1],
+				props[offset+pagesize*2]);
+		}
+	}
+
+	/**
+	 * Factory & Initializer of THREE.AnimationMixer
+	 */
+	var factory_THREE_AnimationMixer = {
+		props: 1,
+		create: function() {
+			return Object.create(THREE.AnimationMixer.prototype);
+		},
+		init: function(inst, props, pagesize, offset) {
+			THREE.AnimationMixer.call(inst,
+				props[offset+pagesize*0]);
+		}
+	}
+
 	module.exports = {
 		id: 17,
-		size: 67,
-		frequent: 19,
+		size: 70,
+		frequent: 20,
 		decode: function( id ) {
 				if (id < 32) {
 					if (id < 10) {
 						if (id < 5) {
 							if (id < 3) {
 								switch (id) {
-									case 0: return factory_THREE_Vector2;
-									case 1: return factory_THREE_Vector3;
-									case 2: return factory_THREE_Vector4;
+									case 0: return factory_THREE_ColorKeyframeTrack;
+									case 1: return factory_THREE_StringKeyframeTrack;
+									case 2: return factory_THREE_BooleanKeyframeTrack;
 								}
 							} else {
 								switch (id) {
-									case 3: return factory_THREE_Face3;
-									case 4: return factory_THREE_Color;
+									case 3: return factory_THREE_NumberKeyframeTrack;
+									case 4: return factory_THREE_QuaternionKeyframeTrack;
 								}
 							}
 						} else {
 							if (id < 8) {
 								switch (id) {
-									case 5: return factory_THREE_Quaternion;
-									case 6: return factory_THREE_Euler;
-									case 7: return factory_THREE_Box2;
+									case 5: return factory_THREE_VectorKeyframeTrack;
+									case 6: return factory_THREE_Vector2;
+									case 7: return factory_THREE_Vector3;
 								}
 							} else {
 								switch (id) {
-									case 8: return factory_THREE_Box3;
-									case 9: return factory_THREE_Sphere;
+									case 8: return factory_THREE_Vector4;
+									case 9: return factory_THREE_Face3;
 								}
 							}
 						}
@@ -56733,112 +57241,115 @@ var Iconeezin =
 						if (id < 15) {
 							if (id < 13) {
 								switch (id) {
-									case 10: return factory_THREE_Matrix3;
-									case 11: return factory_THREE_Matrix4;
-									case 12: return factory_THREE_BufferAttribute;
+									case 10: return factory_THREE_Color;
+									case 11: return factory_THREE_Quaternion;
+									case 12: return factory_THREE_Euler;
 								}
 							} else {
 								switch (id) {
-									case 13: return factory_THREE_AnimationClip;
-									case 14: return factory_THREE_VectorKeyframeTrack;
+									case 13: return factory_THREE_Box2;
+									case 14: return factory_THREE_Box3;
 								}
 							}
 						} else {
-							if (id < 17) {
+							if (id < 18) {
 								switch (id) {
-									case 15: return factory_THREE_QuaternionKeyframeTrack;
-									case 16: return factory_THREE_NumberKeyframeTrack;
+									case 15: return factory_THREE_Sphere;
+									case 16: return factory_THREE_Matrix3;
+									case 17: return factory_THREE_Matrix4;
 								}
 							} else {
 								switch (id) {
-									case 17: return factory_THREE_BooleanKeyframeTrack;
-									case 18: return factory_THREE_StringKeyframeTrack;
+									case 18: return factory_THREE_BufferAttribute;
+									case 19: return factory_THREE_AnimationClip;
 								}
 							}
 						}
 					}
 				} else {
-					if (id < 56) {
-						if (id < 44) {
-							if (id < 38) {
+					if (id < 57) {
+						if (id < 45) {
+							if (id < 39) {
 								switch (id) {
-									case 32: return factory_THREE_CubeTexture;
-									case 33: return factory_THREE_CompressedTexture;
-									case 34: return factory_THREE_Texture;
-									case 35: return factory_THREE_LineBasicMaterial;
-									case 36: return factory_THREE_SpriteMaterial;
-									case 37: return factory_THREE_PointsMaterial;
+									case 32: return factory_THREE_KeyframeTrack;
+									case 33: return factory_THREE_CubeTexture;
+									case 34: return factory_THREE_CompressedTexture;
+									case 35: return factory_THREE_Texture;
+									case 36: return factory_THREE_LineBasicMaterial;
+									case 37: return factory_THREE_SpriteMaterial;
+									case 38: return factory_THREE_PointsMaterial;
 								}
 							} else {
 								switch (id) {
-									case 38: return factory_THREE_MeshNormalMaterial;
-									case 39: return factory_THREE_MeshDepthMaterial;
-									case 40: return factory_THREE_MeshLambertMaterial;
-									case 41: return factory_THREE_MeshPhongMaterial;
-									case 42: return factory_THREE_MeshBasicMaterial;
-									case 43: return factory_THREE_Material;
+									case 39: return factory_THREE_MeshNormalMaterial;
+									case 40: return factory_THREE_MeshDepthMaterial;
+									case 41: return factory_THREE_MeshLambertMaterial;
+									case 42: return factory_THREE_MeshPhongMaterial;
+									case 43: return factory_THREE_MeshBasicMaterial;
+									case 44: return factory_THREE_Material;
 								}
 							}
 						} else {
-							if (id < 50) {
+							if (id < 51) {
 								switch (id) {
-									case 44: return factory_THREE_Scene;
-									case 45: return factory_THREE_SpotLight;
-									case 46: return factory_THREE_PointLight;
-									case 47: return factory_THREE_HemisphereLight;
-									case 48: return factory_THREE_DirectionalLight;
-									case 49: return factory_THREE_AmbientLight;
+									case 45: return factory_THREE_Scene;
+									case 46: return factory_THREE_SpotLight;
+									case 47: return factory_THREE_PointLight;
+									case 48: return factory_THREE_HemisphereLight;
+									case 49: return factory_THREE_DirectionalLight;
+									case 50: return factory_THREE_AmbientLight;
 								}
 							} else {
 								switch (id) {
-									case 50: return factory_THREE_Mesh;
-									case 51: return factory_THREE_Object3D;
-									case 52: return factory_THREE_BufferGeometry;
-									case 53: return factory_THREE_TubeGeometry;
-									case 54: return factory_THREE_TorusKnotGeometry;
-									case 55: return factory_THREE_TorusGeometry;
+									case 51: return factory_THREE_Mesh;
+									case 52: return factory_THREE_Object3D;
+									case 53: return factory_THREE_BufferGeometry;
+									case 54: return factory_THREE_TubeGeometry;
+									case 55: return factory_THREE_TorusKnotGeometry;
+									case 56: return factory_THREE_TorusGeometry;
 								}
 							}
 						}
 					} else {
-						if (id < 68) {
-							if (id < 62) {
+						if (id < 70) {
+							if (id < 64) {
 								switch (id) {
-									case 56: return factory_THREE_TetrahedronGeometry;
-									case 57: return factory_THREE_SphereGeometry;
-									case 58: return factory_THREE_SphereBufferGeometry;
-									case 59: return factory_THREE_RingGeometry;
-									case 60: return factory_THREE_PolyhedronGeometry;
-									case 61: return factory_THREE_PlaneGeometry;
+									case 57: return factory_THREE_TetrahedronGeometry;
+									case 58: return factory_THREE_SphereGeometry;
+									case 59: return factory_THREE_SphereBufferGeometry;
+									case 60: return factory_THREE_RingGeometry;
+									case 61: return factory_THREE_PolyhedronGeometry;
+									case 62: return factory_THREE_PlaneGeometry;
+									case 63: return factory_THREE_PlaneBufferGeometry;
 								}
 							} else {
 								switch (id) {
-									case 62: return factory_THREE_PlaneBufferGeometry;
-									case 63: return factory_THREE_ParametricGeometry;
-									case 64: return factory_THREE_OctahedronGeometry;
-									case 65: return factory_THREE_LatheGeometry;
-									case 66: return factory_THREE_IcosahedronGeometry;
-									case 67: return factory_THREE_DodecahedronGeometry;
+									case 64: return factory_THREE_ParametricGeometry;
+									case 65: return factory_THREE_OctahedronGeometry;
+									case 66: return factory_THREE_LatheGeometry;
+									case 67: return factory_THREE_IcosahedronGeometry;
+									case 68: return factory_THREE_DodecahedronGeometry;
+									case 69: return factory_THREE_CylinderGeometry;
 								}
 							}
 						} else {
-							if (id < 74) {
+							if (id < 76) {
 								switch (id) {
-									case 68: return factory_THREE_CylinderGeometry;
-									case 69: return factory_THREE_CircleGeometry;
-									case 70: return factory_THREE_CircleBufferGeometry;
-									case 71: return factory_THREE_BoxGeometry;
-									case 72: return factory_THREE_Geometry;
-									case 73: return factory_THREE_Fog;
+									case 70: return factory_THREE_CircleGeometry;
+									case 71: return factory_THREE_CircleBufferGeometry;
+									case 72: return factory_THREE_BoxGeometry;
+									case 73: return factory_THREE_Geometry;
+									case 74: return factory_THREE_Fog;
+									case 75: return factory_THREE_FogExp2;
 								}
 							} else {
 								switch (id) {
-									case 74: return factory_THREE_FogExp2;
-									case 75: return factory_THREE_MultiMaterial;
-									case 76: return factory_THREE_PerspectiveCamera;
-									case 77: return factory_THREE_OrthographicCamera;
-									case 78: return factory_THREE_CubeCamera;
-									case 79: return factory_THREE_MD2Character;
+									case 76: return factory_THREE_MultiMaterial;
+									case 77: return factory_THREE_PerspectiveCamera;
+									case 78: return factory_THREE_OrthographicCamera;
+									case 79: return factory_THREE_CubeCamera;
+									case 80: return factory_THREE_MD2Character;
+									case 81: return factory_THREE_AnimationMixer;
 								}
 							}
 						}
@@ -56849,7 +57360,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 80 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -57113,7 +57624,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 81 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(2);
@@ -57168,7 +57679,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 82 */
+/* 84 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -57350,7 +57861,7 @@ var Iconeezin =
 	module.exports = StopableTimers;
 
 /***/ },
-/* 83 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -57480,7 +57991,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 84 */
+/* 86 */
 /***/ function(module, exports) {
 
 	"use strict";
