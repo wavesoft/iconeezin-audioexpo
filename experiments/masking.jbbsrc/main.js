@@ -5,6 +5,7 @@ var InfiniteGround = require('./lib/InfiniteGround');
 var Objects = require('./lib/Objects');
 var BirdPath = require('./lib/BirdPath');
 var BirdSong = require('./lib/BirdSongs');
+var HUD = require('./lib/HUD');
 
 const ANSWER = {
   CORRECT: 0,
@@ -57,12 +58,17 @@ Experiment.prototype.onLoad = function(db) {
  */
 Experiment.prototype.onShown = function() {
 
+  var hud = new HUD( this.database['masking/icons/vu'] );
+  Iconeezin.Runtime.Video.addHudLayer(hud);
   Iconeezin.Runtime.Controls.infiniteNavigationUsing( this );
 
   var runNextTask = (function() {
 
     // Load next task from tracking
     Iconeezin.Runtime.Tracking.startNextTask( { }, (function( meta, progress ){
+
+      // Show frequency difference
+      hud.setDifference( meta.diff );
 
       // Run sequence
       console.log('--Meta: ', meta);
@@ -269,20 +275,27 @@ Experiment.prototype.getUserInput = function(callback) {
   var db = this.database;
   console.log('Waiting for use rinput');
 
+  var applyCallback = function(number) {
+    Iconeezin.Runtime.Video.hideInteractionLabel();
+    callback(number);
+  }
+
   var waitInput = function() {
+
+    Iconeezin.Runtime.Video.showInteractionLabel('Πείτε έναν αριθμό');
 
     // Run voice command recognition
     Iconeezin.Runtime.Audio.voiceCommands.setLanguage( 'el-GR' );
     Iconeezin.Runtime.Audio.voiceCommands.expectCommands({
 
-      '(^|\s)[εέ]ναν?(\s|$)|^1$': callback.bind(this, 1),
-      '(^|\s)δ[υύ]ο(\s|$)|^2$': callback.bind(this, 2),
-      '(^|\s)τρε[ιί]ς(\s|$)|(^|\s)τρ[ιί]α(\s|$)|^3$|greece': callback.bind(this, 3),
-      '(^|\s)τ[εέ]σσερεις(\s|$)|(^|\s)τ[εέ]σσερα(\s|$)|^4$': callback.bind(this, 4),
-      '(^|\s)π[εέ]ντε(\s|$)|^5$': callback.bind(this, 5)
+      '(^|\s)[εέ]ναν?(\s|$)|^1$': applyCallback.bind(this, 1),
+      '(^|\s)δ[υύ]ο(\s|$)|^2$': applyCallback.bind(this, 2),
+      '(^|\s)τρε[ιί]ς(\s|$)|(^|\s)τρ[ιί]α(\s|$)|^3$|greece': applyCallback.bind(this, 3),
+      '(^|\s)τ[εέ]σσερεις(\s|$)|(^|\s)τ[εέ]σσερα(\s|$)|^4$': applyCallback.bind(this, 4),
+      '(^|\s)π[εέ]ντε(\s|$)|^5$': applyCallback.bind(this, 5)
 
     }, function(error, lastTranscript) {
-      console.log(lastTranscript);
+      Iconeezin.Runtime.Video.hideInteractionLabel();
       if (error != null) {
         // Engine error
         db['masking/sounds/reco/error'].play();

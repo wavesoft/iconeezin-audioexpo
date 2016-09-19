@@ -15,32 +15,6 @@ var Experiment = function( db ) {
 	this.anchor.position.set( 0, 1.2, 2 );
 	this.anchor.direction.set( 0, 1, 0 );
 
-	this.materials = new Materials(db);
-
-	// The interchangable objects
-	this.activeMonument = -1;
-	this.monuments = [
-		new MonumentRoom( db, this.materials ),
-		new MonumentRoom( db, this.materials )
-	];
-	this.monuments[0].visible = false;
-	this.monuments[1].visible = false;
-	this.add(this.monuments[0]);
-	this.add(this.monuments[1]);
-
-	this.sndFootsteps = db['delay/sounds/footsteps'].create();
-	this.sndDoor = db['delay/sounds/door'].create();
-
-	// Add a key light
-  var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
-  keyLight.position.set( 1, -1, -1 );
-  this.add(keyLight);
-
-  // this.add(this.monuments[0].lightA);
-  // this.add(this.monuments[0].lightB);
-  // this.add(this.monuments[1].lightA);
-  // this.add(this.monuments[1].lightB);
-
 };
 
 /**
@@ -141,6 +115,38 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 }
 
 /**
+ * Initialize
+ */
+Experiment.prototype.onLoad = function( db ) {
+
+	this.materials = new Materials(db);
+
+	// The interchangable objects
+	this.activeMonument = -1;
+	this.monuments = [
+		new MonumentRoom( db, this.materials ),
+		new MonumentRoom( db, this.materials )
+	];
+	this.monuments[0].visible = false;
+	this.monuments[1].visible = false;
+	this.add(this.monuments[0]);
+	this.add(this.monuments[1]);
+
+	this.sndFootsteps = db['delay/sounds/footsteps'].create();
+	this.sndDoor = db['delay/sounds/door'].create();
+
+	// Add a key light
+  var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
+  keyLight.position.set( 1, -1, -1 );
+  this.add(keyLight);
+
+  // Add HUD
+  this.hud = new HUD(db['delay/textures/icon']);
+	Iconeezin.Runtime.Video.addHudLayer(this.hud);
+
+}
+
+/**
  * Cleanup when hiding
  */
 Experiment.prototype.onWillHide = function( callback ) {
@@ -180,6 +186,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 				// Enable voice delay at specified values
 				console.log('--deay=', meta['delay']);
+				this.hud.setDelay( meta['delay'] );
 				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
 
 				// Continue helper

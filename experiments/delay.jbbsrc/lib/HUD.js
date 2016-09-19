@@ -29,7 +29,7 @@ var Iconeezin = require("iconeezin");
 var HUDStatus = function(icon) {
   Iconeezin.API.HUDLayer.call(this, 256, 256, 'br');
 
-  this.text = "Χωρίς θόρυβο";
+  this.text = "Χωρίς Καθυστέρηση";
   this.opacity = 0;
   this.icon = Iconeezin.Util.redrawWhenLoaded(this, icon);
 
@@ -41,15 +41,14 @@ HUDStatus.prototype = Object.assign( Object.create( Iconeezin.API.HUDLayer.proto
   constructor: HUDStatus,
 
   reset: function() {
-    this.text = "Χωρίς θόρυβο";
+    this.text = "Χωρίς Καθυστέρηση";
     this.opacity = 0;
     this.redraw();
   },
 
-  setNoise: function(level) {
-    var noisePercent = level * 100;
-    this.text = "Θόρυβος στο "+noisePercent.toFixed(1)+" %";
-    this.opacity = Math.min( level / 0.1, 1.0 );
+  setDelay: function(delay) {
+    this.text = "Καθυστέρηση "+delay.toFixed(0)+" ms";
+    this.opacity = 1;
     this.redraw();
   },
 

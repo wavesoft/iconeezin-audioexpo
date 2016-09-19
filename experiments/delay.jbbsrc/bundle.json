@@ -8,6 +8,7 @@
 		},
 
     "THREE.ImageLoader": {
+      "textures/icon": "assets/icons/clock.png",
       "textures/cinderblock/diffuse": "assets/textures/cinderblock-diffuse.jpg",
       "textures/cinderblock/normal": "assets/textures/cinderblock-normal.png",
       "textures/pillar/normal": "assets/textures/pillar-normal.png",

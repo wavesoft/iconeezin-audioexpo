@@ -40,6 +40,7 @@
     },
 
     "THREE.ImageLoader": {
+      "icons/vu": "assets/icons/vu.png",
       "textures/grass_01": "assets/plants/FieldGrass01.png",
 
       "textures/birch_01/leaves_map": "assets/plants/birchleaf01a.png",
