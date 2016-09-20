@@ -15,12 +15,36 @@
 		},
 
 		"THREE.OBJLoader": {
-			"models/lobby": "assets/models/lobby2.obj"
+			"models/lobby": "assets/models/lobby.obj",
+			"models/frame": "assets/models/frame.obj",
+			"models/plants/birch": "assets/plants/Birch01.obj"
 		},
 
-		"THREE.ObjectLoader": {
-			"models/teapot": "assets/models/teapot-claraio.json"
+		"THREE.ImageLoader": {
+			"posters/1": "assets/textures/poster-1.jpg",
+			"posters/2": "assets/textures/poster-2.jpg",
+			"posters/3": "assets/textures/poster-3.jpg",
+			"posters/4": "assets/textures/poster-4.jpg",
+			"posters/5": "assets/textures/poster-5.jpg",
+			"posters/6": "assets/textures/poster-6.jpg",
+			"posters/7": "assets/textures/poster-7.jpg",
+
+			"textures/floor/ao": "assets/textures/floor-ao.jpg",
+			"textures/walls/ao": "assets/textures/walls-ao.jpg",
+			"textures/pillars/ao": "assets/textures/pillars-ao.jpg",
+
+			"textures/plants/birch/bark/diffuse": "assets/plants/birch_final.jpg",
+			"textures/plants/birch/bark/normal": "assets/plants/Birch_Final2_NRM.png",
+			"textures/plants/birch/leaf/diffuse": "assets/plants/birchleaf01a.png",
+			"textures/plants/birch/leaf/normal": "assets/plants/BirchLeaf01a_NRM.png",
+
+			"textures/grassandstone/diffuse": "assets/textures/GrassandStone.jpg",
+			"textures/grassandstone/normal": "assets/textures/GrassandStone_NRM.png",
+			"textures/tiles/normal": "assets/textures/roof-normal-2.png",
+			"textures/concrete/diffuse": "assets/textures/concrete.jpg",
+			"textures/wood/diffuse": "assets/textures/wood-deck.jpg"
+
 		}
-		
+
 	}
 }

@@ -296,6 +296,7 @@ Experiment.prototype.getUserInput = function(callback) {
 
     }, function(error, lastTranscript) {
       Iconeezin.Runtime.Video.hideInteractionLabel();
+      Iconeezin.Runtime.Video.glitch(250);
       if (error != null) {
         // Engine error
         db['masking/sounds/reco/error'].play();
