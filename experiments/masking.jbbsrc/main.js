@@ -36,8 +36,8 @@ Experiment.prototype = Object.create( Iconeezin.API.Experiment.prototype );
  */
 Experiment.prototype.onLoad = function(db) {
 
-  this.add(this.sea = new InfiniteGround({objects: this.objects, db: db}));
-  this.sea.position.set(0, 0, -2);
+  this.add(this.infiniteGround = new InfiniteGround({objects: this.objects, db: db}));
+  this.infiniteGround.position.set(0, 0, -2);
 
   this.direction = new THREE.Vector3(0, 0, 0);
 
@@ -98,8 +98,10 @@ Experiment.prototype.onShown = function() {
  * Update infinite sea animation
  */
 Experiment.prototype.onUpdate = function( delta ) {
+  if (!this.infiniteGround) return;
 
-  this.sea.update( delta, this.direction );
+  // Update ground
+  this.infiniteGround.update( delta, this.direction );
 
   // Update clocks of bird songs and paths
   this.birdSong.update( delta );

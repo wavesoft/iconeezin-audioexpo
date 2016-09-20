@@ -16,6 +16,7 @@ var Experiment = function( db ) {
 	this.anchor.direction.set( 0, 1, 0 );
 
 	this.activeRecording = null;
+	this.materials = new Materials(db);
 
 };
 
@@ -38,20 +39,7 @@ Experiment.prototype.switchTexture = function( image, cb ) {
 /**
  * Start experiment when shown
  */
-Experiment.prototype.boo = function( ) {
-
-	Iconeezin.Runtime.Controls.followPath(
-		this.monument.pathLeave, {
-			'speed': 2
-		}
-	);
-
-}
-
-/**
- * Start experiment when shown
- */
-Experiment.prototype.executeRun = function( scale, lines, callback ) {
+Experiment.prototype.setupAndEnter = function( scale, lines, callback ) {
 
 	// Pick a monument and the last one to use as reference
 	var mid = (this.activeMonument == 0) ? 1 : 0, lid = 1-mid,
@@ -83,12 +71,9 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 	}).bind(this);
 	var walk_out = (function( cb ) {
 		// Start footsteps audio
-		this.sndDoor = this.database['delay/sounds/door'].create();
 		this.sndDoor.play();
 		// First open doors
 		m_last.openDoor((function() {
-			this.sndFootsteps = this.database['delay/sounds/footsteps'].create();
-			this.sndFootsteps.play();
 			// Then follow leaving path
 			Iconeezin.Runtime.Controls.followPath(
 				m_last.pathLeave, {
@@ -103,6 +88,7 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
 	}).bind(this);
 
 	// If we had a previous item, walk out of it first
+	this.sndFootsteps.play();
 	if (this.activeMonument != -1) {
 		walk_out(function() {
 			walk_in(callback);
@@ -121,8 +107,6 @@ Experiment.prototype.executeRun = function( scale, lines, callback ) {
  */
 Experiment.prototype.onLoad = function( db ) {
 
-	this.materials = new Materials(db);
-
 	// The interchangable objects
 	this.activeMonument = -1;
 	this.monuments = [
@@ -134,8 +118,8 @@ Experiment.prototype.onLoad = function( db ) {
 	this.add(this.monuments[0]);
 	this.add(this.monuments[1]);
 
-	this.sndFootsteps = db['delay/sounds/footsteps'].create();
-	this.sndDoor = db['delay/sounds/door'].create();
+	this.sndFootsteps = db['delay/sounds/footsteps'];
+	this.sndDoor = db['delay/sounds/door'];
 
 	// Add a key light
   var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
@@ -157,14 +141,6 @@ Experiment.prototype.onWillHide = function( callback ) {
 }
 
 /**
- * When shown, playback the welcome narration
- */
-Experiment.prototype.onShown = function() {
-	this.database['delay/sounds/introduction'].play();
-	this.database['delay/sounds/ambient'].play(true);
-}
-
-/**
  * Start experiment when shown
  */
 Experiment.prototype.onWillShow = function( callback ) {
@@ -175,100 +151,118 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.monuments[0].length = 0;
 	this.monuments[1].length = 0;
 
+	this.database['delay/sounds/ambient'].play(true);
+
 	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
 
+	var experimentalRun = (function( meta, progress ) {
+
+			// Enable voice delay at specified values
+			console.log('--deay=', meta['delay']);
+			this.hud.setDelay( meta['delay'] );
+			Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
+
+			// Start recording
+			this.activeRecording = Iconeezin.Runtime.Audio.voiceEffects.record();
+
+			// Continue helper
+			var completeTask = (function(meta) {
+				var meta = meta || {};
+
+				// Collect recording
+				if (this.activeRecording) {
+					meta['_recording'] = this.activeRecording.stop();
+				}
+
+				// Mark completion of task
+				Iconeezin.Runtime.Tracking.completeTask(meta);
+
+				// Check if we are completed
+				if (progress == 1.0) {
+					// This experiment is completed
+					Iconeezin.Runtime.Experiments.experimentCompleted();
+				} else {
+					// Schedule a new iteration
+					executeNextTask();
+				}
+
+			}).bind(this);
+
+			window.spoken = completeTask;
+
+			// Retry function
+			var tryDictation = (function() {
+
+				// Reset progress
+				this.monuments[this.activeMonument].setPodiumMessageProgress( 0 );
+
+				// Compile the message to expect
+				var message = meta['message'].join(" ");
+				message = message.replace(/[.,;:?]/g, "").trim();
+				console.log("Text: '"+message+"'");
+
+				Iconeezin.Runtime.Audio.voiceCommands.setLanguage( meta['lang'] );
+				Iconeezin.Runtime.Audio.voiceCommands.expectPhrase( message, (function(meta) {
+
+					// Update progress in the podium
+					this.monuments[this.activeMonument].setPodiumMessageProgress( meta['progress'] );
+
+					// Check if completed
+					if (meta['completed']) {
+						if (meta['score'] < 0.8) {
+							Iconeezin.Runtime.Video.glitch(250);
+							setTimeout(tryDictation, 250);
+						} else {
+							completeTask({
+								confidence: meta['confidence'],
+								progress: meta['progress'],
+								score: meta['score'],
+								transcript: meta['transcript']
+							});
+						}
+					}
+
+				}).bind(this));
+
+			}).bind(this);
+
+			// First dictation attempt
+			tryDictation();
+
+	}).bind(this);
+
 	// Prepare next task function
+	var firstRun = true;
 	var executeNextTask = (function() {
 
 		// Query runtime tracking for next task metadata
 		Iconeezin.Runtime.Tracking.startNextTask( { }, (function( meta, progress ){
 
 			// Start run
-			this.executeRun( meta['scale'], meta['message'], (function() {
+			this.setupAndEnter( meta['scale'], meta['message'], (function() {
+				if (firstRun) {
 
-				// Enable voice delay at specified values
-				console.log('--deay=', meta['delay']);
-				this.hud.setDelay( meta['delay'] );
-				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
+					// Trigger callback when ready
+					callback();
 
-				// Start recording
-				this.activeRecording = Iconeezin.Runtime.Audio.voiceEffects.record();
+					// Play introduction
+					firstRun = false;
+					this.database['delay/sounds/introduction'].play(false, function() {
+						experimentalRun(meta, progress);
+					});
 
-				// Continue helper
-				var completeTask = (function(meta) {
-					var meta = meta || {};
+				} else {
+					experimentalRun(meta, progress);
 
-					// Collect recording
-					if (this.activeRecording) {
-						meta['_recording'] = this.activeRecording.stop();
-					}
-
-					// Mark completion of task
-					Iconeezin.Runtime.Tracking.completeTask(meta);
-
-					// Check if we are completed
-					if (progress == 1.0) {
-						// This experiment is completed
-						Iconeezin.Runtime.Experiments.experimentCompleted();
-					} else {
-						// Schedule a new iteration
-						executeNextTask();
-					}
-
-				}).bind(this);
-
-				window.spoken = completeTask;
-
-				// Retry function
-				var tryDictation = (function() {
-
-					// Reset progress
-					this.monuments[this.activeMonument].setPodiumMessageProgress( 0 );
-
-					// Compile the message to expect
-					var message = meta['message'].join(" ");
-					message = message.replace(/[.,;:?]/g, "").trim();
-					console.log("Text: '"+message+"'");
-
-					Iconeezin.Runtime.Audio.voiceCommands.setLanguage( meta['lang'] );
-					Iconeezin.Runtime.Audio.voiceCommands.expectPhrase( message, (function(meta) {
-
-						// Update progress in the podium
-						this.monuments[this.activeMonument].setPodiumMessageProgress( meta['progress'] );
-
-						// Check if completed
-						if (meta['completed']) {
-							if (meta['score'] < 0.8) {
-								Iconeezin.Runtime.Video.glitch(250);
-								setTimeout(tryDictation, 250);
-							} else {
-								completeTask({
-									confidence: meta['confidence'],
-									progress: meta['progress'],
-									score: meta['score'],
-									transcript: meta['transcript']
-								});
-							}
-						}
-
-					}).bind(this));
-
-				}).bind(this);
-
-				// First dictation attempt
-				tryDictation();
-
+				}
 			}).bind(this) )
 
 		}).bind(this));
 
 	}).bind(this);
 
-	// Callback when ready
-	callback();
-
-	// And start first task
-	setTimeout(executeNextTask, 5000);
+	// Initial task
+	executeNextTask();
 
 }
 

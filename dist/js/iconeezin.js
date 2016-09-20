@@ -89,9 +89,9 @@ var Iconeezin =
 	var InteractionCore = __webpack_require__(27);
 	var BrowserUtil = __webpack_require__(32);
 	var StopableTimers = __webpack_require__(84);
-	var ThreeUtil = __webpack_require__(85);
-	var HudLayerUtil = __webpack_require__(86);
-	var SequencerUtil = __webpack_require__(87);
+	var ThreeUtil = __webpack_require__(86);
+	var HudLayerUtil = __webpack_require__(87);
+	var SequencerUtil = __webpack_require__(85);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -42100,9 +42100,29 @@ var Iconeezin =
 	};
 
 	/**
+	 * Shorthand to stop a playback audio
+	 */
+	AudioFile.prototype.stop = function() {
+		if (!this.sound) {
+			return;
+		}
+		if (!this.sound.isPlaying) {
+			return;
+		}
+		this.sound.stop();
+	};
+
+	/**
 	 * Shorthand to create and play
 	 */
-	AudioFile.prototype.play = function( loop ) {
+	AudioFile.prototype.play = function( loop, complete_cb ) {
+		if (typeof loop === 'function') {
+			complete_cb = loop;
+			loop = false;
+		}
+		if (loop === undefined) {
+			loop = false;
+		}
 
 		// Create an audio object
 		if (!this.sound) {
@@ -42112,7 +42132,7 @@ var Iconeezin =
 			AudioCore.makeResetable( sound );
 
 			// Set loop
-			this.sound.setLoop( loop === undefined ? false : true );
+			this.sound.setLoop( loop );
 
 			// Load buffer & play
 			this.load(function( buffer ) {
@@ -42123,9 +42143,17 @@ var Iconeezin =
 		} else {
 
 			// Just play
-			this.sound.setLoop( loop === undefined ? false : true );
+			this.sound.setLoop( loop );
 			this.sound.play();
 
+		}
+
+		// Register callback
+		if (complete_cb) {
+			this.sound.source.onended = (function() {
+				THREE.Audio.prototype.onEnded.call(this.sound);
+				complete_cb();
+			}).bind(this);
 		}
 
 		// Return sound object
@@ -50303,9 +50331,6 @@ var Iconeezin =
 		mouseControl = new MouseControl();
 		vrControl = new VRControl();
 
-		// Position-only controls
-		pathFollower = new PathFollowerControl();
-
 		// Default propeties
 		this.paused = true;
 		this.hmd = undefined;
@@ -50512,6 +50537,7 @@ var Iconeezin =
 	ControlsCore.followPath = function( curve, options ) {
 
 		// Setup and enable path follower
+		pathFollower = new PathFollowerControl();
 		pathFollower.followPath( curve, options );
 		this.activateControl( pathFollower );
 
@@ -51018,9 +51044,9 @@ var Iconeezin =
 		//////////////////////////////////////////
 
 		if (this.tracking) {
-			this.feedEvent({ name: name, properties: properties });
+			this.feedEvent({ name: name, properties: eventProperties });
 		} else {
-			this.events.push({ name: name, properties: properties });
+			this.events.push({ name: name, properties: eventProperties });
 		}
 	}
 
@@ -52157,6 +52183,7 @@ var Iconeezin =
 	var Loaders = __webpack_require__(73);
 
 	var StopableTimers = __webpack_require__(84);
+	var SequencerUtil = __webpack_require__(85);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime
@@ -52346,18 +52373,23 @@ var Iconeezin =
 			// Reset other cores
 			AudioCore.reset();
 			StopableTimers.reset();
+			SequencerUtil.reset();
 
 			// Ask TrackingCore to prepare for the experiment
 			TrackingCore.startExperiment( experiment, meta, (function() {
 
 				// Focus to the given experiment instance on the viewport
-				this.experiments.focusExperiment( this.loadedExperiments[experiment], handleExperimentVisible, function() {
+				this.experiments.focusExperiment(
+					this.loadedExperiments[experiment],
+					handleExperimentVisible,
+					function() {
 
-					// Reset controls core only when it's not visible
-					ControlsCore.reset();
-					VideoCore.reset();
+						// Reset controls core only when it's not visible
+						ControlsCore.reset();
+						VideoCore.reset();
 
-				});
+					}
+				);
 
 			}).bind(this));
 
@@ -52365,6 +52397,7 @@ var Iconeezin =
 
 			// Reset all stopable timers
 			StopableTimers.reset();
+			SequencerUtil.reset();
 
 			// Load experiment
 			Loaders.loadExperiment( experiment, (function ( err, inst ) {
@@ -53096,7 +53129,6 @@ var Iconeezin =
 
 		var do_fadein = (function() {
 			// Will show active
-			this.activeExperiment.onLoad( this.activeExperiment.database );
 			this.activeExperiment.onWillShow((function() {
 				// Fade in active
 				this.activeExperiment.isActive = true;
@@ -53128,6 +53160,7 @@ var Iconeezin =
 
 			// Trigger transition callback
 			if (cb_transition) cb_transition();
+			this.activeExperiment.onLoad( this.activeExperiment.database );
 
 			// Fade-in
 			do_fadein();
@@ -57941,205 +57974,16 @@ var Iconeezin =
 /* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	/**
-	 * Iconeez.in - A Web VR Platform for social experiments
-	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 *
-	 * This program is free software; you can redistribute it and/or modify
-	 * it under the terms of the GNU General Public License as published by
-	 * the Free Software Foundation; either version 2 of the License, or
-	 * (at your option) any later version.
-	 *
-	 * This program is distributed in the hope that it will be useful,
-	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 * GNU General Public License for more details.
-	 *
-	 * You should have received a copy of the GNU General Public License along
-	 * with this program; if not, write to the Free Software Foundation, Inc.,
-	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-	 *
-	 * @author Ioannis Charalampidis / https://github.com/wavesoft
-	 */
-
-	var VideoCore = __webpack_require__(30);
-
-	var ShadowShader = {
-
-	  fragment: [
-	    '#include <packing>',
-	    'uniform sampler2D texture;',
-	    'varying vec2 vUV;',
-	    'void main() {',
-	      'vec4 pixel = texture2D( texture, vUV );',
-	      'if ( pixel.a < 0.5 ) discard;',
-	      'gl_FragData[ 0 ] = packDepthToRGBA( gl_FragCoord.z );',
-	    '}'
-	  ].join('\n'),
-
-	  vertex: [
-	    'varying vec2 vUV;',
-	    'void main() {',
-	      'vUV = 0.75 * uv;',
-	      'vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
-	      'gl_Position = projectionMatrix * mvPosition;',
-	    '}'
-	  ].join('\n')
-
-	};
-
-	var ThreeUtil = {
-
-	  createTexture: function(img, props) {
-
-	    // Create texture and register a listener when it's loaded
-	    var tex = new THREE.Texture(img);
-	    img.addEventListener('load', function() {
-	      tex.needsUpdate = true;
-	    });
-
-	    // In most of the cases we want to wrap, so default to wrapping
-	    tex.wrapS = THREE.RepeatWrapping;
-	    tex.wrapT = THREE.RepeatWrapping;
-
-	    // Add default props
-	    if (props) {
-	      Object.keys(props).forEach(function(prop) {
-	        tex[prop] = props[prop];
-	      });
-	    }
-
-	    return tex;
-	  },
-
-	  createShadowMaterial: function(forTexture) {
-	    return new THREE.ShaderMaterial( {
-	      uniforms: {
-	        texture:  { value: forTexture }
-	      },
-	      vertexShader: ShadowShader.vertex,
-	      fragmentShader: ShadowShader.fragment,
-	      side: THREE.DoubleSide
-	    });
-	  },
-
-	  createBildboard: function(width, height, texture, castShadow) {
-	    var plane = new THREE.Mesh(
-	        new THREE.PlaneGeometry(width, height),
-	        new THREE.MeshBasicMaterial({
-	          map: texture,
-	          transparent: true,
-	          side: THREE.FrontSide
-	        })
-	      );
-
-	    // We are on a z-up world
-	    plane.up = new THREE.Vector3(0,0,1);
-
-	    // Cast shadow if specified
-	    if (castShadow) {
-	      plane.customDepthMaterial = ThreeUtil.createShadowMaterial(texture);
-	      plane.material.alphaTest = 0.1;
-	      plane.castShadow = true;
-	      plane.receiveShadow = true;
-	    }
-
-	    // Register a custom render listener in order
-	    // to make the bildboard point always towards the camera
-	    VideoCore.addRenderListener(function() {
-	      var pos = VideoCore.viewport.camera.getWorldPosition();
-	      pos.z = plane.position.z;
-	      plane.lookAt( pos );
-	    });
-
-	    return plane;
-	  },
-
-	  getAxisParameter: function(center, xUnit, yUnit, xValue, yValue) {
-	    var xDir = xUnit.clone().sub(center).multiplyScalar(xValue);
-	    var yDir = yUnit.clone().sub(center).multiplyScalar(yValue);
-	    return center.clone().add( xDir ).add( yDir );
-	  }
-
-	};
-
-	module.exports = ThreeUtil;
-
-
-/***/ },
-/* 86 */
-/***/ function(module, exports) {
-
-	"use strict";
-	/**
-	 * Iconeez.in - A Web VR Platform for social experiments
-	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 *
-	 * This program is free software; you can redistribute it and/or modify
-	 * it under the terms of the GNU General Public License as published by
-	 * the Free Software Foundation; either version 2 of the License, or
-	 * (at your option) any later version.
-	 *
-	 * This program is distributed in the hope that it will be useful,
-	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 * GNU General Public License for more details.
-	 *
-	 * You should have received a copy of the GNU General Public License along
-	 * with this program; if not, write to the Free Software Foundation, Inc.,
-	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-	 *
-	 * @author Ioannis Charalampidis / https://github.com/wavesoft
-	 */
-
-	var HudLayerUtil = {
-
-	  /**
-	   * Helper function to load image from given DOM element
-	   * and to wait until it's loaded in order to trigger a re-draw.
-	   */
-	  redrawWhenLoaded: function(layer, image) {
-	    image.addEventListener('load', function() {
-	      layer.redraw();
-	    });
-	    return image;
-	  },
-
-	  /**
-	   * Utility function to draw a rounded rectangle,
-	   * automatically bound to the layer drawing context
-	   */
-	  roundedRect: function(ctx,x,y,w,h,r) {
-	    var r = r || 0;
-	    ctx.beginPath();
-	    ctx.moveTo(x+r, y);
-	    ctx.lineTo(x+w-r, y);
-	    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-	    ctx.lineTo(x+w, y+h-r);
-	    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-	    ctx.lineTo(x+r, y+h);
-	    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-	    ctx.lineTo(x, y+r, x+r, y);
-	    ctx.quadraticCurveTo(x, y, x+r, y);
-	  }
-
-	};
-
-	module.exports = HudLayerUtil;
-
-
-/***/ },
-/* 87 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var THREE = __webpack_require__(1);
+
+	var activeSequences = [ ];
 
 	var Sequence = function(parent) {
 
 	  // Create two-directional binding
 	  this._parent = parent;
 	  this._next = null;
+	  this._interrupted = false;
 
 	  // The actions
 	  this._continueCallback = null;
@@ -58272,12 +58116,25 @@ var Iconeezin =
 	    root = root._parent;
 	  }
 
+	  // Mark on active
+	  activeSequences.push(this);
+
 	  // Asynchronous callback for continuing the sequence
 	  var action = root;
 	  var continueSequence = function() {
+	    var idOnActive = activeSequences.indexOf(this);
+
+	    // Check root for interruptions
+	    if (root._interrupted) {
+	      if (idOnActive >= 0)
+	        activeSequences.splice(idOnActive, 1);
+	      return;
+	    }
 
 	    // If we have no more actions, call the completion callback
 	    if (!action) {
+	      if (idOnActive >= 0)
+	        activeSequences.splice(idOnActive, 1);
 	      if (completed_cb) completed_cb();
 	      return;
 	    }
@@ -58293,6 +58150,24 @@ var Iconeezin =
 
 	};
 
+	/**
+	 * Interrupt sequence
+	 */
+	Sequence.prototype.stop = function() {
+	  var root = this;
+	  while (root._parent !== undefined) {
+	    root = root._parent;
+	  }
+
+	  // Interrupt all tasks, starting from root and walking into
+	  // all children
+	  var interruptTask = root;
+	  while (interruptTask) {
+	    interruptTask._interrupted = true;
+	    interruptTask = interruptTask._next;
+	  }
+	};
+
 	module.exports = {
 
 	  /**
@@ -58300,9 +58175,221 @@ var Iconeezin =
 	   */
 	  createSequence: function() {
 	    return new Sequence();
+	  },
+
+	  /**
+	   * Get active sequences
+	   */
+	  getActiveSequences: function() {
+	    return activeSequences;
+	  },
+
+	  /**
+	   * Reset all active sequences
+	   */
+	  reset: function() {
+	    // Stop all sequences
+	    activeSequences.forEach(function(sequence) {
+	      sequence.stop();
+	    });
+
+	    // Remove from list
+	    activeSequences = [];
 	  }
 
 	}
+
+
+/***/ },
+/* 86 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 *
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 *
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var VideoCore = __webpack_require__(30);
+
+	var ShadowShader = {
+
+	  fragment: [
+	    '#include <packing>',
+	    'uniform sampler2D texture;',
+	    'varying vec2 vUV;',
+	    'void main() {',
+	      'vec4 pixel = texture2D( texture, vUV );',
+	      'if ( pixel.a < 0.5 ) discard;',
+	      'gl_FragData[ 0 ] = packDepthToRGBA( gl_FragCoord.z );',
+	    '}'
+	  ].join('\n'),
+
+	  vertex: [
+	    'varying vec2 vUV;',
+	    'void main() {',
+	      'vUV = 0.75 * uv;',
+	      'vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
+	      'gl_Position = projectionMatrix * mvPosition;',
+	    '}'
+	  ].join('\n')
+
+	};
+
+	var ThreeUtil = {
+
+	  createTexture: function(img, props) {
+
+	    // Create texture and register a listener when it's loaded
+	    var tex = new THREE.Texture(img);
+	    img.addEventListener('load', function() {
+	      tex.needsUpdate = true;
+	    });
+
+	    // In most of the cases we want to wrap, so default to wrapping
+	    tex.wrapS = THREE.RepeatWrapping;
+	    tex.wrapT = THREE.RepeatWrapping;
+
+	    // Add default props
+	    if (props) {
+	      Object.keys(props).forEach(function(prop) {
+	        tex[prop] = props[prop];
+	      });
+	    }
+
+	    return tex;
+	  },
+
+	  createShadowMaterial: function(forTexture) {
+	    return new THREE.ShaderMaterial( {
+	      uniforms: {
+	        texture:  { value: forTexture }
+	      },
+	      vertexShader: ShadowShader.vertex,
+	      fragmentShader: ShadowShader.fragment,
+	      side: THREE.DoubleSide
+	    });
+	  },
+
+	  createBildboard: function(width, height, texture, castShadow) {
+	    var plane = new THREE.Mesh(
+	        new THREE.PlaneGeometry(width, height),
+	        new THREE.MeshBasicMaterial({
+	          map: texture,
+	          transparent: true,
+	          side: THREE.FrontSide
+	        })
+	      );
+
+	    // We are on a z-up world
+	    plane.up = new THREE.Vector3(0,0,1);
+
+	    // Cast shadow if specified
+	    if (castShadow) {
+	      plane.customDepthMaterial = ThreeUtil.createShadowMaterial(texture);
+	      plane.material.alphaTest = 0.1;
+	      plane.castShadow = true;
+	      plane.receiveShadow = true;
+	    }
+
+	    // Register a custom render listener in order
+	    // to make the bildboard point always towards the camera
+	    VideoCore.addRenderListener(function() {
+	      var pos = VideoCore.viewport.camera.getWorldPosition();
+	      pos.z = plane.position.z;
+	      plane.lookAt( pos );
+	    });
+
+	    return plane;
+	  },
+
+	  getAxisParameter: function(center, xUnit, yUnit, xValue, yValue) {
+	    var xDir = xUnit.clone().sub(center).multiplyScalar(xValue);
+	    var yDir = yUnit.clone().sub(center).multiplyScalar(yValue);
+	    return center.clone().add( xDir ).add( yDir );
+	  }
+
+	};
+
+	module.exports = ThreeUtil;
+
+
+/***/ },
+/* 87 */
+/***/ function(module, exports) {
+
+	"use strict";
+	/**
+	 * Iconeez.in - A Web VR Platform for social experiments
+	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
+	 *
+	 * This program is free software; you can redistribute it and/or modify
+	 * it under the terms of the GNU General Public License as published by
+	 * the Free Software Foundation; either version 2 of the License, or
+	 * (at your option) any later version.
+	 *
+	 * This program is distributed in the hope that it will be useful,
+	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 * GNU General Public License for more details.
+	 *
+	 * You should have received a copy of the GNU General Public License along
+	 * with this program; if not, write to the Free Software Foundation, Inc.,
+	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	 *
+	 * @author Ioannis Charalampidis / https://github.com/wavesoft
+	 */
+
+	var HudLayerUtil = {
+
+	  /**
+	   * Helper function to load image from given DOM element
+	   * and to wait until it's loaded in order to trigger a re-draw.
+	   */
+	  redrawWhenLoaded: function(layer, image) {
+	    image.addEventListener('load', function() {
+	      layer.redraw();
+	    });
+	    return image;
+	  },
+
+	  /**
+	   * Utility function to draw a rounded rectangle,
+	   * automatically bound to the layer drawing context
+	   */
+	  roundedRect: function(ctx,x,y,w,h,r) {
+	    var r = r || 0;
+	    ctx.beginPath();
+	    ctx.moveTo(x+r, y);
+	    ctx.lineTo(x+w-r, y);
+	    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+	    ctx.lineTo(x+w, y+h-r);
+	    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+	    ctx.lineTo(x+r, y+h);
+	    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+	    ctx.lineTo(x, y+r, x+r, y);
+	    ctx.quadraticCurveTo(x, y, x+r, y);
+	  }
+
+	};
+
+	module.exports = HudLayerUtil;
 
 
 /***/ }
