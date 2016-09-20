@@ -135,7 +135,7 @@ var CorridorLogic = function( corridor, peopleSprites ) {
 	// Make them interactive
 	Iconeezin.API.makeInteractive( this.leftInteraction, {
 		gaze: false,
-		title: "Turn Left",
+		title: "Αριστερά",
 		trackID: 'corridor.left',
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;
@@ -144,7 +144,7 @@ var CorridorLogic = function( corridor, peopleSprites ) {
 	});
 	Iconeezin.API.makeInteractive( this.rightInteraction, {
 		gaze: false,
-		title: "Turn Right",
+		title: "Δεξιά",
 		trackID: 'corridor.right',
 		onMouseOver: (function() {
 			if (!this.canChangeDirection) return;

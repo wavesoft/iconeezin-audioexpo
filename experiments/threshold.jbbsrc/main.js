@@ -140,6 +140,8 @@ Experiment.prototype.onWillShow = function( callback ) {
 		has_announced: false,
 		active_meta: null,
 
+		attempts: 0,
+
 	};
 
 	var position = {
@@ -285,6 +287,14 @@ Experiment.prototype.onWillShow = function( callback ) {
 				// otherwise operate with the tasks already known.
 				if (state.accept_task) {
 
+					// Compelte task
+					Iconeezin.Runtime.Tracking.completeTask({
+						attempts: state.attempts
+					});
+
+					// Reset tracking variables
+					state.attempts = 0;
+
 					// If the last task was at 100% progress, complete experiment
 					if (state.complete_experiment) {
 						console.log('>> Completing task');
@@ -306,6 +316,9 @@ Experiment.prototype.onWillShow = function( callback ) {
 					}).bind(this));
 
 				} else {
+
+					// Account this as wrong task, increment attempts
+					state.attempts++;
 
 					// Fade-in the appropriate number of people in the corridor
 					this.corridors.showCrowd( state.active_meta.crowd || 0, dir );

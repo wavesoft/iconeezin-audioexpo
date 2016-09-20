@@ -67,6 +67,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
+	const VERSION = "1.0.0";
+
 	// Load libraries as soon as possible
 	var libTHREE = __webpack_require__(1);
 	global.THREE = libTHREE;
@@ -120,6 +122,7 @@ var Iconeezin =
 
 			// Initialize helper
 			'initialize': function( viewportDOM, canvasDOM ) {
+				console.log('Iconeez.in engine v' + VERSION);
 
 				// Initialize core components
 				VideoCore.initialize( viewportDOM, canvasDOM );
@@ -42621,7 +42624,7 @@ var Iconeezin =
 	 * the user must call .stop() and receive the THREE.Audio
 	 * object when needs to complete the object.
 	 */
-	VoiceEffects.prototype.record = function( callback ) {
+	VoiceEffects.prototype.record = function() {
 
 		// Start recording line in, bypassing any audio effects that it might exists
 		this.recorder.record( this.lineIn.source );
@@ -49913,17 +49916,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -49969,13 +49972,13 @@ var Iconeezin =
 		for (var i=0; i<ANIMATION_STEPS-1; i++) {
 			var ofs = Math.PI*2*(i/ANIMATION_STEPS);
 			this.animGeometries.push(
-				new THREE.RingGeometry( RING_SIZE, RING_SIZE + RING_THCKNESS, RING_RESOLUTION, 
+				new THREE.RingGeometry( RING_SIZE, RING_SIZE + RING_THCKNESS, RING_RESOLUTION,
 					1, Math.PI/2-ofs ,ofs )
 			);
 		}
 		// Add the final full-ring geometry
-		this.animGeometries.push( 
-			new THREE.RingGeometry( RING_SIZE, RING_SIZE + RING_THCKNESS, RING_RESOLUTION ) 
+		this.animGeometries.push(
+			new THREE.RingGeometry( RING_SIZE, RING_SIZE + RING_THCKNESS, RING_RESOLUTION )
 		);
 
 		// Create a cursor
@@ -50020,7 +50023,6 @@ var Iconeezin =
 		var mat = new THREE.SpriteMaterial({
 			transparent: true,
 			opacity: 1.0,
-			useScreenCoordinates: false,
 			color: 0xffffff
 		});
 
@@ -50082,7 +50084,7 @@ var Iconeezin =
 
 		// Pick appropriate geometry if v>1
 		} else {
-			
+
 			// Calculate animation step
 			var i = 0;
 			if (v) {
@@ -50836,9 +50838,32 @@ var Iconeezin =
 	var TrackingCore = { };
 
 	/**
+	 * Generate a random ID
+	 */
+	function anonymousID() {
+		var text = "";
+		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+		for( var i=0; i < 16; i++ )
+			text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		return 'anon-'+text;
+	}
+
+	/**
 	 * Initialize tracking core
 	 */
-	TrackingCore.initialize = function( trackingID ) {
+	TrackingCore.initialize = function() {
+
+		// Check if we have a tracking ID from the URL
+		var trackingID = anonymousID();
+		if (window.location.hash.startsWith("#u-")) {
+			trackingID = 'u-' + window.location.hash.substr(3);
+		}
+		console.info('Your tracking ID is ' + trackingID);
+
+		// Results
+		this.results = [];
 
 		// Timers
 		this.timers = { };
@@ -51245,10 +51270,33 @@ var Iconeezin =
 	 */
 	TrackingCore.completeTask = function( results ) {
 
+		// Separate store from tracking variables
+		var results = results || {};
+		var store = {};
+		var track = {};
+
+		Object.keys(results).forEach(function (key) {
+			if (key.substr(0,1) === '_') {
+				store[key] = results[key];
+			} else {
+				track[key] = results[key];
+			}
+		});
+
 		// Track event completion
-		this.trackEvent("experiment.task.completed", Object.assign({
-			'task': this.activeTaskName, 'duration': this.stopTimer("internal.task") }, results
+		this.trackEvent("experiment.task.completed", Object.assign(
+			{
+				'task': this.activeTaskName,
+				'duration': this.stopTimer("internal.task")
+			},track
 		));
+
+		// Collect results
+		this.results.push({
+			'experiment': this.activeExperimentName,
+			'task': this.activeTaskName,
+			'results': results
+		});
 
 	}
 
