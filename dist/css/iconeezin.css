@@ -15,6 +15,9 @@ body {
   overflow: hidden;
   background: #000;
 }
+svg {
+  vertical-align: middle;
+}
 #app {
   position: absolute;
   left: 0;
@@ -197,6 +200,20 @@ body {
   border-radius: 20px;
   background-color: rgba(30, 30, 30, 0.8);
 }
+#app .icnz-welcome-host .icnz-welcome-panel.icnz-error {
+  background-color: rgba(255, 87, 34, 0.38);
+  height: 200px;
+}
+#app .icnz-welcome-host .icnz-welcome-panel.icnz-error .icnz-welcome-body {
+  color: #ffc107;
+}
+#app .icnz-welcome-host .icnz-welcome-panel.icnz-error .icnz-welcome-body h1 {
+  color: #ff9800;
+}
+#app .icnz-welcome-host .icnz-welcome-panel.icnz-error .icnz-error-frame {
+  color: #fff;
+  font-family: Consolas, Courier;
+}
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-body {
   font-size: 16px;
   text-align: center;
@@ -235,9 +252,6 @@ body {
   font-size: 1.8em;
   vertical-align: sub;
   font-size: 1.4em;
-}
-#app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button img {
-  vertical-align: middle;
 }
 #app .icnz-welcome-host .icnz-welcome-panel .icnz-welcome-buttons button:hover {
   background-color: #222;

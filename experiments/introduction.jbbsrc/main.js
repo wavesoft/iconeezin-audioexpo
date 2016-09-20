@@ -98,19 +98,19 @@ Experiment.prototype.onLoad = function(db) {
   var posters = [
   	[2.5, 1, Math.PI/2, 'posters/1'],
   	[2.5, 6.5, Math.PI/2, 'posters/2'],
-  	[2.5, 12, Math.PI/2, 'posters/3'],
+  	[2.5, 12, Math.PI/2, 'posters/10'],
 
-  	[-1.6, 16.5, Math.PI, 'posters/1'],
-  	[-7.1, 16.5, Math.PI, 'posters/1'],
-  	[-12.7, 16.5, Math.PI, 'posters/1'],
+  	[-1.6, 16.5, Math.PI, 'posters/3'],
+  	[-7.1, 16.5, Math.PI, 'posters/9'],
+  	[-12.7, 16.5, Math.PI, 'posters/5'],
 
+  	[-16.8, 12, -Math.PI/2, 'posters/8'],
+  	[-16.8, 6.5, -Math.PI/2, 'posters/3'],
   	[-16.8, 1, -Math.PI/2, 'posters/7'],
-  	[-16.8, 6.5, -Math.PI/2, 'posters/1'],
-  	[-16.8, 12, -Math.PI/2, 'posters/1'],
 
-  	[-1.6, -2.8, 0, 'posters/4'],
-  	[-7.1, -2.8, 0, 'posters/5'],
-  	[-12.7, -2.8, 0, 'posters/6'],
+  	[-12.7, -2.8, 0, 'posters/2'],
+  	[-7.1, -2.8, 0, 'posters/4'],
+  	[-1.6, -2.8, 0, 'posters/6'],
   ];
 
   posters.forEach((function (poster) {
@@ -122,7 +122,7 @@ Experiment.prototype.onLoad = function(db) {
   }).bind(this));
 
 	// Make it interactive
-	this.interactivePoster = posters[6][4];
+	this.interactivePoster = posters[8][4];
 	Iconeezin.Runtime.Interaction.makeInteractive( this.interactivePoster, {
 		gaze: true,
 		enabled: false,
@@ -254,7 +254,7 @@ Experiment.prototype.onShown = function() {
 			Iconeezin.Runtime.Controls.followPath(
 				this.firstPath,
 				{
-					speed: 2,
+					speed: 1,
 					callback: function(v) {
 						if (v === 1) callback();
 					}
@@ -273,7 +273,7 @@ Experiment.prototype.onShown = function() {
 			Iconeezin.Runtime.Controls.followPath(
 				this.secondPath,
 				{
-					speed: 2,
+					speed: 1,
 					callback: function(v) {
 						if (v === 1) callback();
 					}
@@ -328,7 +328,7 @@ Experiment.prototype.onShown = function() {
 			Iconeezin.Runtime.Controls.followPath(
 				this.thirdPath,
 				{
-					speed: 2
+					speed: 1
 				}
 			);
 		}).bind(this))

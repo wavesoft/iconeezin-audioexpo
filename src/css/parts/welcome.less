@@ -16,7 +16,7 @@
 		position: absolute;
 		width: @welcome-width;
 		height: @welcome-height;
-		
+
 		// Center
 		left: 50%; top: 50%;
 		-webkit-transform: translateX(-@welcome-width/2) translateY(-@welcome-height/2) ;
@@ -28,7 +28,25 @@
 		// Styling
 		border-radius: 20px;
 		background-color: rgba(30,30,30,0.8);
-		
+
+		// Error styling
+		&.icnz-error {
+	    background-color: rgba(255, 87, 34, 0.38);
+	    height: 200px;
+
+	    .icnz-welcome-body {
+		    color: #ffc107;
+		    h1 {
+			    color: #ff9800;
+		    }
+	    }
+
+	    .icnz-error-frame {
+	    	color: #fff;
+	    	font-family: Consolas, Courier;
+	    }
+		}
+
 		// Content
 		.icnz-welcome-body {
 			font-size: 16px;
@@ -39,7 +57,7 @@
 			color: #666;
 			h1 {
 				color: #999;
-			    font-size: 1.8em;
+			 	font-size: 1.8em;
 			}
 
 		}
@@ -57,9 +75,9 @@
 			button {
 
 				// Styling
-			    width: 90%;
+		    width: 90%;
 				padding: 10px;
-			    border-radius: 12px;
+		    border-radius: 12px;
 				border: solid 1px #333;
 				cursor: pointer;
 				display: none;
@@ -81,11 +99,6 @@
 				    font-size: 1.8em;
 				    vertical-align: sub;
 					font-size: 1.4em;
-				}
-	
-				// Image element
-				img {
-				    vertical-align: middle;
 				}
 
 				// Interactive

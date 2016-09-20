@@ -192,6 +192,24 @@ var Iconeezin =
 				return VideoCore.viewport.runTween( duration, fn, cb );
 			},
 
+			/**
+			 * Pre-flight checks
+			 */
+			'preflight': function(cb_results) {
+
+				// First perform a speech recognition pre-flight
+				AudioCore.voiceCommands.probeSupport(function (hasSupport) {
+					if (!hasSupport) {
+						cb_results(false, 'Unable to initialize speech recognition');
+						return;
+					}
+
+					// Success
+					cb_results(true);
+				});
+
+			}
+
 		},
 
 		// Exposing libraries for re-using
@@ -42907,9 +42925,9 @@ var Iconeezin =
 	var jsDiff = __webpack_require__(10);
 
 	/**
-	 * Unify a word by removing accents and capitalizations
+	 * Normalize a word by removing accents and capitalizations
 	 */
-	function unify( word ) {
+	function normalize( word ) {
 		return word.toLowerCase()
 			.replace(/[ά]/g,"α")
 			.replace(/[έ]/g,"ε")
@@ -42934,8 +42952,8 @@ var Iconeezin =
 	function getProgressScore( a, b ) {
 
 		// Calculate the diff between the two phrases
-		var src = unify(a), src_c = src.trim().split(/\s+/g).length;
-		var cmp = unify(b);
+		var src = normalize(a), src_c = src.trim().split(/\s+/g).length;
+		var cmp = normalize(b);
 		var diff = jsDiff.diffWords( src, cmp );
 		var good_c = 0, progress_c = 0, c = 0, anchored = false, removed_c = 0;
 
@@ -43190,6 +43208,38 @@ var Iconeezin =
 	 * Enable voice commands
 	 */
 	VoiceCommands.prototype.setPaused = function( isPaused ) {
+
+	}
+
+	/**
+	 * This function triggers a speech input and stops right when it gets
+	 * a confirmation. This is used only to probe the browser in order to
+	 * show the promt to the user.
+	 */
+	VoiceCommands.prototype.probeSupport = function( callback ) {
+
+		// Create an instance
+		var probeRecognition = new SpeechRecognition();
+		var didStart = false;
+
+		probeRecognition.onstart = function() {
+			if (didStart) return;
+
+			// Stop right away
+			didStart = true;
+			probeRecognition.stop();
+
+			// Success callback
+			callback(true);
+		};
+		probeRecognition.onerror = function() {
+			if (didStart) return;
+			// Erroreus callback
+			callback(false);
+		};
+
+		// Start
+		probeRecognition.start();
 
 	}
 
@@ -50327,6 +50377,9 @@ var Iconeezin =
 		// Register render callback
 		VideoCore.viewport.addRenderListener( this.onUpdate.bind(this) );
 
+		// Initialize path follower
+		pathFollower = new PathFollowerControl();
+
 		// Base controls
 		mouseControl = new MouseControl();
 		vrControl = new VRControl();
@@ -50379,6 +50432,9 @@ var Iconeezin =
 
 		// Reset interactions
 		interaction.reset();
+
+		// Reset path follower
+		pathFollower = new PathFollowerControl();
 
 	}
 
@@ -50537,7 +50593,6 @@ var Iconeezin =
 	ControlsCore.followPath = function( curve, options ) {
 
 		// Setup and enable path follower
-		pathFollower = new PathFollowerControl();
 		pathFollower.followPath( curve, options );
 		this.activateControl( pathFollower );
 

@@ -62,6 +62,10 @@ gulp.task('js/website', function() {
 			module: {
 				loaders: [
 					{
+						test: /\.svg$/,
+						loader: 'babel?presets[]=es2015,presets[]=react!svg-react'
+					},
+					{
 						test: /\.jsx?$/,
 						exclude: /(node_modules|bower_components)/,
 						loader: 'babel',

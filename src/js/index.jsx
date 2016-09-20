@@ -2,17 +2,17 @@
 /**
  * Iconeez.in - A Web VR Platform for social experiments
  * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -27,6 +27,7 @@ var ReactDOM = require('react-dom');
 
 var Viewport = require('./components/Viewport');
 var Welcome = require('./components/Welcome');
+var ErrorMessage = require('./components/ErrorMessage');
 
 /**
  * Root component
@@ -41,7 +42,9 @@ var IconeezinRoot = React.createClass({
 			'hasvr': false,
 			'hmd': false,
 			'paused': true,
-			'experiment': null
+			'experiment': null,
+			'error': null,
+			'loading': true
 		};
 	},
 
@@ -87,9 +90,11 @@ var IconeezinRoot = React.createClass({
 		this.setState({ 'hasvr': isSupported });
 	},
 	handleStartDesktop: function() {
-		this.setState({ 'paused': false, 'hmd': false });
+		if (this.state.error) return;
+		this.setState({ 'paused': false, 'hmd': false, 'error': null });
 	},
 	handleStartHMD: function() {
+		if (this.state.error) return;
 		this.setState({ 'paused': false, 'hmd': true });
 	},
 	handlePause: function() {
@@ -110,13 +115,47 @@ var IconeezinRoot = React.createClass({
 	},
 
 	/**
+	 * When component is mounted, run pre-flight tests
+	 */
+	componentDidMount: function() {
+
+		// Run pre-flights and show possible errors
+		Iconeezin.Runtime.preflight((function(isOk, error) {
+
+			// If everything is ok, just hide the loading screen
+			if (isOk) {
+				this.setState({ loading: false });
+				return;
+			}
+
+			// Otherwise show error
+			this.setState({
+				loading: false,
+				error: error
+			});
+
+		}).bind(this));
+
+	},
+
+	/**
 	 * Main render function
 	 */
 	render: function() {
 		return (
 			<div ref="content" className="icnz-content">
-			  <Viewport experiment={this.state.experiment} paused={this.state.paused} hmd={this.state.hmd} />
-			  <Welcome hasvr={this.state.hasvr} visible={this.state.paused} onStartDesktop={this.handleStartDesktop} onStartHMD={this.handleStartHMD} />
+			  <Viewport
+			  	experiment={this.state.experiment}
+			  	paused={this.state.paused}
+			  	hmd={this.state.hmd} />
+			  <Welcome
+			  	hasvr={this.state.hasvr}
+			  	visible={this.state.paused && !this.state.error && !this.state.loading}
+			  	onStartDesktop={this.handleStartDesktop}
+			  	onStartHMD={this.handleStartHMD} />
+			  <ErrorMessage
+			  	visible={!!this.state.error}
+			  	error={this.state.error} />
 			</div>
 		);
 	}
