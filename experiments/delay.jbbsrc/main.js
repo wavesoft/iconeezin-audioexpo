@@ -15,6 +15,8 @@ var Experiment = function( db ) {
 	this.anchor.position.set( 0, 1.2, 2 );
 	this.anchor.direction.set( 0, 1, 0 );
 
+	this.activeRecording = null;
+
 };
 
 /**
@@ -150,7 +152,7 @@ Experiment.prototype.onLoad = function( db ) {
  * Cleanup when hiding
  */
 Experiment.prototype.onWillHide = function( callback ) {
-	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
+	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(false);
 	callback();
 }
 
@@ -173,7 +175,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 	this.monuments[0].length = 0;
 	this.monuments[1].length = 0;
 
-	// Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
+	Iconeezin.Runtime.Audio.voiceEffects.setEnabled(true);
 
 	// Prepare next task function
 	var executeNextTask = (function() {
@@ -189,12 +191,20 @@ Experiment.prototype.onWillShow = function( callback ) {
 				this.hud.setDelay( meta['delay'] );
 				Iconeezin.Runtime.Audio.voiceEffects.setDelay( meta['delay'] );
 
+				// Start recording
+				this.activeRecording = Iconeezin.Runtime.Audio.voiceEffects.record();
+
 				// Continue helper
-				var completeTask = (function() {
+				var completeTask = (function(meta) {
+					var meta = meta || {};
+
+					// Collect recording
+					if (this.activeRecording) {
+						meta['_recording'] = this.activeRecording.stop();
+					}
 
 					// Mark completion of task
-					Iconeezin.Runtime.Tracking.completeTask({
-					});
+					Iconeezin.Runtime.Tracking.completeTask(meta);
 
 					// Check if we are completed
 					if (progress == 1.0) {
@@ -232,7 +242,12 @@ Experiment.prototype.onWillShow = function( callback ) {
 								Iconeezin.Runtime.Video.glitch(250);
 								setTimeout(tryDictation, 250);
 							} else {
-								completeTask();
+								completeTask({
+									confidence: meta['confidence'],
+									progress: meta['progress'],
+									score: meta['score'],
+									transcript: meta['transcript']
+								});
 							}
 						}
 
@@ -249,39 +264,11 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 	}).bind(this);
 
-	/*
-	// Set initial texture
-	var id = 0, v = 0;
-	Iconeezin.Runtime.setInterval((function() {
-
-		// Calculate an item but not being like the last one
-		var a = [ 'garden', 'reingauer', 'winter', 'sunset', 'desert' ], n = id;
-		while (id == n) {
-			n = Math.floor(a.length * Math.random());
-		}
-		id = n;
-
-		// Apply
-		this.switchTexture( a[id], function() {
-
-			// Update progress
-			v += 0.1;
-			Iconeezin.Runtime.Video.showProgress( v, "Updated to "+v );
-
-		});
-
-
-	}).bind(this), 5000);
-
-	// Set default texture
-	this.material.map = this.database['delay/pano/garden'];
-	*/
-
 	// Callback when ready
 	callback();
 
 	// And start first task
-	executeNextTask();
+	setTimeout(executeNextTask, 5000);
 
 }
 
