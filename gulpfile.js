@@ -79,10 +79,10 @@ gulp.task('js/website', function() {
 			},
 			externals: IconeezinExternals,
 			plugins: [
-				new webpack.webpack.optimize.DedupePlugin(),
-				new webpack.webpack.optimize.UglifyJsPlugin({
-					minimize: true
-				})
+				// new webpack.webpack.optimize.DedupePlugin(),
+				// new webpack.webpack.optimize.UglifyJsPlugin({
+				// 	minimize: true
+				// })
 			],
 			resolve: {
 				extensions: ['', '.js', '.jsx'],
@@ -214,8 +214,8 @@ gulp.task('exp/live', experiments.map(function(experiment) {
  * Stay live
  */
 gulp.task('live', ['default', 'exp/live'], function() {
-	gulp.watch('node_modules/iconeezin/dist/*.js', ['js/depends'], function(event) { })
-	gulp.watch('node_modules/iconeezin/dist/*.jpg', ['img/depends'], function(event) { })
+	gulp.watch('node_modules/iconeezin/dist/**/*.js', ['js/depends'], function(event) { })
+	gulp.watch('node_modules/iconeezin/dist/**/*.jpg', ['img/depends'], function(event) { })
 	gulp.watch('src/js/**', ['js/website'], function(event) { })
 	gulp.watch('src/css/**', ['css/website'], function(event) { })
 	gulp.watch('src/html/**', ['html/website'], function(event) { })

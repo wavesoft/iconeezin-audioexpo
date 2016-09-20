@@ -11,8 +11,10 @@ var Experiment = function( db ) {
 	Iconeezin.API.Experiment.call(this, db);
 
 	// Camera enters in the center, looking away from the door
-	this.anchor.position.set( 0, 0, 2 );
+	this.anchor.position.set( 1, -1, 2 );
 	this.anchor.direction.set( 0, 1, 0 );
+
+	this.interactionConfirmCallback = null;
 
 };
 
@@ -89,7 +91,7 @@ Experiment.prototype.onLoad = function(db) {
 	tree3.position.set(-7.9, 4.8, 0);
 	this.add(tree3);
 
-  var keyLight = new THREE.DirectionalLight( 0x999999, 1 );
+  var keyLight = new THREE.DirectionalLight( 0x999999, 0.8 );
   keyLight.position.set( 1, 1, -1 );
   this.add(keyLight);
 
@@ -102,9 +104,9 @@ Experiment.prototype.onLoad = function(db) {
   	[-7.1, 16.5, Math.PI, 'posters/1'],
   	[-12.7, 16.5, Math.PI, 'posters/1'],
 
-  	[-16.8, 1, -Math.PI/2, 'posters/1'],
+  	[-16.8, 1, -Math.PI/2, 'posters/7'],
   	[-16.8, 6.5, -Math.PI/2, 'posters/1'],
-  	[-16.8, 12, -Math.PI/2, 'posters/7'],
+  	[-16.8, 12, -Math.PI/2, 'posters/1'],
 
   	[-1.6, -2.8, 0, 'posters/4'],
   	[-7.1, -2.8, 0, 'posters/5'],
@@ -115,8 +117,46 @@ Experiment.prototype.onLoad = function(db) {
 	  var obj = objects.createPoster( db['introduction/' + poster[3]] );
 	  obj.position.set(poster[0], poster[1], 1.5);
 	  obj.rotation.set(0, 0, poster[2])
+	  poster.push(obj);
 	  this.add(obj);
   }).bind(this));
+
+	// Make it interactive
+	this.interactivePoster = posters[6][4];
+	Iconeezin.Runtime.Interaction.makeInteractive( this.interactivePoster, {
+		gaze: true,
+		enabled: false,
+		title: "Κοιτάξτε εδώ",
+		onInteract: (function() {
+
+			// Callback to the interaction confirmation function
+			if (this.interactionConfirmCallback) {
+				this.interactionConfirmCallback();
+			}
+
+		}).bind(this)
+	});
+
+	this.firstPath = new THREE.CubicBezierCurve3(
+			new THREE.Vector3(   1.0000, -1.0000, 0 ),
+			new THREE.Vector3(   1.0000,  1.7000, 0 ),
+			new THREE.Vector3(  -3.5500,  1.7500, 0 ),
+			new THREE.Vector3( -15.5000,  0.7700, 0 )
+		);
+
+	this.secondPath = new THREE.CubicBezierCurve3(
+			new THREE.Vector3( -15.5000,  0.7700, 0 ),
+			new THREE.Vector3( -18.4000, -0.2500, 0 ),
+			new THREE.Vector3( -14.5000,  5.7000, 0 ),
+			new THREE.Vector3( -14.4000, 14.9000, 0 )
+		);
+
+	this.thirdPath = new THREE.CubicBezierCurve3(
+			new THREE.Vector3( -14.4000, 14.9000, 0 ),
+			new THREE.Vector3( -14.4000, 18.5000, 0 ),
+			new THREE.Vector3(  -6.200,  13.3000, 0 ),
+			new THREE.Vector3(   1.0000, 15.0000, 0 )
+		);
 
 	// // Replace materials with MeshNormal Material
 	// geom.traverse(function(obj) {
@@ -174,8 +214,134 @@ Experiment.prototype.onLoad = function(db) {
  * Start experiment when shown
  */
 Experiment.prototype.onShown = function() {
+	var db = this.database;
 
-	this.database['introduction/sounds/intro'].play();
+	Iconeezin.Util.createSequence()
+
+		///////////////////////////////////////
+		// Introduction
+		///////////////////////////////////////
+		.playAudio( db['introduction/sounds/intro/1'] )
+		.select((function(sequencer) {
+
+			// Playback either VR navigation or PC navigation
+			if (Iconeezin.Runtime.Video.hasVR) {
+				sequencer.playAudio( db['introduction/sounds/intro/2a'] )
+			} else {
+				sequencer.playAudio( db['introduction/sounds/intro/2b'] )
+			}
+
+		}).bind(this))
+		.playAudio( db['introduction/sounds/intro/3'] )
+
+		///////////////////////////////////////
+		// Wait for item selection
+		///////////////////////////////////////
+		.waitFor((function(callback) {
+
+			// Enable interactive object
+			Iconeezin.Runtime.Interaction.setInteractive( this.interactivePoster, true );
+
+			// Wait for user to gaze
+			this.interactionConfirmCallback = (function() {
+				Iconeezin.Runtime.Interaction.setInteractive( this.interactivePoster, false );
+				this.interactionConfirmCallback = null;
+				callback();
+			}).bind(this);
+
+		}).bind(this))
+		.waitFor((function(callback) {
+			Iconeezin.Runtime.Controls.followPath(
+				this.firstPath,
+				{
+					speed: 2,
+					callback: function(v) {
+						if (v === 1) callback();
+					}
+				}
+			);
+		}).bind(this))
+
+		///////////////////////////////////////
+		// Greet and prepare for voice input
+		///////////////////////////////////////
+		.playAudio( db['introduction/sounds/intro/4'] )
+		.do((function() {
+			db['introduction/sounds/intro/4b']
+		}).bind(this))
+		.waitFor((function(callback) {
+			Iconeezin.Runtime.Controls.followPath(
+				this.secondPath,
+				{
+					speed: 2,
+					callback: function(v) {
+						if (v === 1) callback();
+					}
+				}
+			);
+		}).bind(this))
+		.playAudio( db['introduction/sounds/intro/4c'] )
+
+		///////////////////////////////////////
+		// Voice Input
+		///////////////////////////////////////
+		.waitFor((function(callback) {
+
+	    Iconeezin.Runtime.Video.showInteractionLabel('Πείτε το κείμενο που βλέπετε');
+
+    	var readInput = (function() {
+
+		    // Run voice command recognition
+		    Iconeezin.Runtime.Audio.voiceCommands.setLanguage( 'el-GR' );
+		    Iconeezin.Runtime.Audio.voiceCommands.expectCommands({
+
+		      'κατ[αά]λαβα πως πρ[εέ]πει να μιλ[αά]ω': function() {
+			      Iconeezin.Runtime.Video.hideInteractionLabel();
+		      	callback();
+		      }
+
+		    }, function(error, lastTranscript) {
+		      Iconeezin.Runtime.Video.hideInteractionLabel();
+		      Iconeezin.Runtime.Video.glitch(250);
+		      if (error != null) {
+		        // Engine error
+		        db['introduction/sounds/reco/error'].play();
+		        setTimeout(readInput, 3500);
+		      } else {
+		        // No command matched
+		        db['introduction/sounds/reco/mismatch'].play();
+		        setTimeout(readInput, 3500);
+		      }
+		    });
+
+    	}).bind(this);
+
+	    // Initial chain trigger
+	    readInput();
+
+		}).bind(this))
+
+		///////////////////////////////////////
+		// Start moving and talk about success
+		///////////////////////////////////////
+		.do((function() {
+			Iconeezin.Runtime.Controls.followPath(
+				this.thirdPath,
+				{
+					speed: 2
+				}
+			);
+		}).bind(this))
+		.playAudio( db['introduction/sounds/intro/5'] )
+		.do((function() {
+
+			// Complete experiment
+			Iconeezin.Runtime.Experiments.experimentCompleted();
+
+		}).bind(this))
+
+		///////////////////////////////////////
+		.start();
 
 }
 

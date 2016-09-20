@@ -91,6 +91,7 @@ var Iconeezin =
 	var StopableTimers = __webpack_require__(84);
 	var ThreeUtil = __webpack_require__(85);
 	var HudLayerUtil = __webpack_require__(86);
+	var SequencerUtil = __webpack_require__(87);
 
 	/**
 	 * Expose useful parts of the runtime API
@@ -103,7 +104,8 @@ var Iconeezin =
 		// Utility functions
 		'Util': Object.assign({},
 			ThreeUtil,
-			HudLayerUtil
+			HudLayerUtil,
+			SequencerUtil
 		),
 
 		// Iconeezin API
@@ -42000,17 +42002,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -42056,9 +42058,9 @@ var Iconeezin =
 	}
 
 	/**
-	 * Create an audio instance, don't start playing 
+	 * Create an audio instance, don't start playing
 	 */
-	AudioFile.prototype.create = function() {
+	AudioFile.prototype.create = function(create_cb) {
 
 		// Create an audio object
 		var sound = new THREE.Audio( AudioCore.listener );
@@ -42067,7 +42069,7 @@ var Iconeezin =
 		// Load buffer & play
 		this.load(function( buffer ) {
 			sound.setBuffer( buffer );
-			sound.play();
+			if (create_cb) create_cb();
 		});
 
 		// Return sound object
@@ -42138,6 +42140,7 @@ var Iconeezin =
 	module.exports = {
 		'AudioFile': AudioFile,
 	};
+
 
 /***/ },
 /* 4 */
@@ -44709,17 +44712,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -44736,7 +44739,7 @@ var Iconeezin =
 	 * Initialize interaction core
 	 */
 	InteractionCore.initialize = function() {
-		
+
 	}
 
 	/**
@@ -44769,12 +44772,14 @@ var Iconeezin =
 			opt.title = options.title;
 			opt.debounce = options.debounce || 0.0;
 			opt.trackID = options.trackID;
+			opt.enabled = (options.enabled === undefined) ? true : options.enabled;
 
 		} else {
 
 			// Simple callback
 			opt.onInteract = options;
 			opt.gaze = true;
+			opt.enabled = true;
 
 		}
 
@@ -44787,6 +44792,13 @@ var Iconeezin =
 		);
 	}
 
+	/**
+	 * Enable or disable interactive status of an element
+	 */
+	InteractionCore.setInteractive = function( object, isInteractive ) {
+		if (!object.__interact__) return;
+		object.__interact__.enabled = isInteractive;
+	}
 
 	// Export regitry
 	module.exports = InteractionCore;
@@ -50558,17 +50570,17 @@ var Iconeezin =
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -50584,6 +50596,12 @@ var Iconeezin =
 
 	const SELECT_DURATION = 0.25;
 	const GAZE_DURATION = 0.75;
+
+	function findInteractionObject(obj) {
+		if (obj.__interact__ !== undefined) return obj;
+		if (obj.parent) return findInteractionObject(obj.parent);
+		return null;
+	}
 
 	/**
 	 * Sight interaction takes care of raycasting and intersecting
@@ -50635,6 +50653,7 @@ var Iconeezin =
 		this.viewport.scene.traverse((function(e) {
 			if (e.__interact__ !== undefined) {
 				this.interactiveObjects.push(e);
+				console.log('Found interactive object', e);
 			}
 		}).bind(this));
 
@@ -50674,11 +50693,21 @@ var Iconeezin =
 
 		// Intersect interactive objects
 		this.raycaster.setFromCamera( CENTER, this.viewport.camera );
-		var intersects = this.raycaster.intersectObjects( this.interactiveObjects, true );
+		var intersects = this.raycaster.intersectObjects( this.interactiveObjects, true )
+		var intersectObject = null;
+
+		// Find the object with interaction details
+		if ( intersects.length > 0 ) {
+			intersectObject = intersects.reduce(function(pickedObject, obj) {
+				if (pickedObject) return pickedObject;
+				return findInteractionObject(obj.object);
+			}, null);
+		}
 
 		// Trigger events
-		if ( intersects.length > 0 ) {
-			if (intersects[0].object !== this.hoverObject) {
+		if (intersectObject && intersectObject.__interact__.enabled) {
+
+			if (intersectObject !== this.hoverObject) {
 
 				// Deselect previous object
 				if (this.hoverObject) {
@@ -50692,7 +50721,7 @@ var Iconeezin =
 
 						// Reschedule debounce timer
 						clearTimeout(this.hoverInteraction._debounceTimer);
-						this.hoverInteraction._debounceTimer = setTimeout(this.hoverInteraction.onMouseOut, 
+						this.hoverInteraction._debounceTimer = setTimeout(this.hoverInteraction.onMouseOut,
 							this.hoverInteraction.debounce);
 					}
 
@@ -50710,7 +50739,7 @@ var Iconeezin =
 				}
 
 				// Focus new object
-				this.hoverObject = intersects[0].object;
+				this.hoverObject = intersectObject;
 				this.hoverInteraction = this.hoverObject.__interact__;
 
 				// Handle mouse over
@@ -50779,7 +50808,7 @@ var Iconeezin =
 
 					// Reschedule debounce timer
 					clearTimeout(this.hoverInteraction._debounceTimer);
-					this.hoverInteraction._debounceTimer = setTimeout(this.hoverInteraction.onMouseOut, 
+					this.hoverInteraction._debounceTimer = setTimeout(this.hoverInteraction.onMouseOut,
 						this.hoverInteraction.debounce);
 				}
 
@@ -58098,6 +58127,182 @@ var Iconeezin =
 	};
 
 	module.exports = HudLayerUtil;
+
+
+/***/ },
+/* 87 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var THREE = __webpack_require__(1);
+
+	var Sequence = function(parent) {
+
+	  // Create two-directional binding
+	  this._parent = parent;
+	  this._next = null;
+
+	  // The actions
+	  this._continueCallback = null;
+	}
+
+	/**
+	 * Play an audio object and continue when completed
+	 */
+	Sequence.prototype.playAudio = function( audio_file ) {
+	  if (this._parent) this._parent._next = this;
+	  this._continueCallback = (function( next_cb ) {
+
+	    // De-bounce action
+	    setTimeout(function() {
+
+	      // Create a new audio file instance and play when ready
+	      var instance = audio_file.create(function() {
+	        instance.play();
+	      });
+
+	      // Wait for it to complete and go to next task
+	      instance.source.onended = function() {
+	        THREE.Audio.prototype.onEnded.call(instance);
+	        next_cb();
+	      }
+
+	    }, 1);
+
+	    return this._next;
+
+	  }).bind(this);
+
+	  return new Sequence(this);
+	}
+
+	/**
+	 * Take the action and continue
+	 */
+	Sequence.prototype.do = function( action_cb ) {
+	  if (this._parent) this._parent._next = this;
+	  this._continueCallback = (function( next_cb ) {
+
+	    // De-bounce action
+	    setTimeout(function() {
+	      action_cb();
+	      next_cb();
+	    }, 1);
+
+	    return this._next;
+
+	  }).bind(this);
+
+	  return new Sequence(this);
+	}
+
+	/**
+	 * Run the specified callback and wait for it to call the completion callback
+	 */
+	Sequence.prototype.waitFor = function( action_cb ) {
+	  if (this._parent) this._parent._next = this;
+	  this._continueCallback = (function( next_cb ) {
+
+	    // De-bounce action
+	    setTimeout(function() {
+	      action_cb( next_cb );
+	    }, 1);
+
+	    return this._next;
+
+	  }).bind(this);
+
+	  return new Sequence(this);
+	}
+
+	/**
+	 * Pause execution for the specified number of milliseconds
+	 */
+	Sequence.prototype.sleep = function( sleep_ms ) {
+	  if (this._parent) this._parent._next = this;
+	  this._continueCallback = (function( next_cb ) {
+
+	    setTimeout( next_cb, sleep_ms );
+	    return this._next;
+
+	  }).bind(this);
+
+	  return new Sequence(this);
+	}
+
+	/**
+	 * Take a decision and possibly return a new
+	 */
+	Sequence.prototype.select = function( decision_fn ) {
+	  if (this._parent) this._parent._next = this;
+	  this._continueCallback = (function( next_cb ) {
+
+	    // Take a decision and get the correct next item
+	    var forkSequence = new Sequence();
+	    decision_fn( forkSequence );
+
+	    // Find the last leaf of forked sequence
+	    var leafSequence = forkSequence;
+	    while (leafSequence._next) {
+	      leafSequence = leafSequence._next;
+	    }
+
+	    // Chain my current next on the leaf of that sequence
+	    leafSequence._next = this._next;
+	    if (this._next) {
+	      this._next._parent = leafSequence;
+	    }
+
+	    // De-bounce next callback to continue
+	    setTimeout( next_cb, 1 );
+
+	    // Return forked sequence
+	    return forkSequence;
+
+	  }).bind(this);
+
+	  return new Sequence(this);
+	}
+
+	/**
+	 * Start the sequence
+	 */
+	Sequence.prototype.start = function( completed_cb ) {
+	  var root = this;
+	  while (root._parent !== undefined) {
+	    root = root._parent;
+	  }
+
+	  // Asynchronous callback for continuing the sequence
+	  var action = root;
+	  var continueSequence = function() {
+
+	    // If we have no more actions, call the completion callback
+	    if (!action) {
+	      if (completed_cb) completed_cb();
+	      return;
+	    }
+
+	    // Call the next function to continue, and ask it to provide
+	    // us with the next task in chain.
+	    action = action._continueCallback(continueSequence);
+
+	  };
+
+	  // Start sequence
+	  continueSequence();
+
+	};
+
+	module.exports = {
+
+	  /**
+	   * Expose the creation of new root sequencer
+	   */
+	  createSequence: function() {
+	    return new Sequence();
+	  }
+
+	}
 
 
 /***/ }

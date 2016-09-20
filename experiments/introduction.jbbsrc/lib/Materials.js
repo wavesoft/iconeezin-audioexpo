@@ -58,7 +58,7 @@ var Materials = function( db ) {
   this.concrete_walls = new THREE.MeshStandardMaterial({
     map: concrete_diffuse,
     aoMap: walls_ao,
-    aoIntensity: 0.5,
+    aoMapIntensity: 0.8,
     roughness: 1.0,
     metalness: 0.0,
   });
@@ -84,6 +84,7 @@ var Materials = function( db ) {
   this.wood = new THREE.MeshStandardMaterial({
     map: wood_diffuse,
     aoMap: floor_ao,
+    aoMapIntensity: 1.0,
     roughness: 1.0,
     metalness: 0.0,
   });

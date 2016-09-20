@@ -10,29 +10,11 @@ Ni 1.000000
 d 1.000000
 illum 2
 
-newmtl 09_|_Paint-04_Gr
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.448627 0.448627 0.448627
-Ks 0.200000 0.200000 0.200000
-Ni 1.000000
-d 1.000000
-illum 2
-
 newmtl 09_|_Paint-09_Re
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.583529 0.000000 0.000000
 Ks 0.049020 0.039216 0.039216
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 09_|_Paint-10_Or
-Ns 96.078431
-Ka 0.000000 0.000000 0.000000
-Kd 0.567843 0.282353 0.090980
-Ks 0.043137 0.043137 0.043137
 Ni 1.000000
 d 1.000000
 illum 2
@@ -61,7 +43,28 @@ newmtl Material.002
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 1.000000 1.000000 1.000000
-Ks 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000
-illum 1
+illum 2
+map_Kd /Users/icharala/Develop/iconeezin-audioexpo/experiments/introduction.jbbsrc/assets/textures/pillars-ao.png
+
+newmtl Material.003
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /Users/icharala/Develop/iconeezin-audioexpo/experiments/introduction.jbbsrc/assets/textures/pillars-ao.png
+
+newmtl Material.004
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd /Users/icharala/Develop/iconeezin-audioexpo/experiments/introduction.jbbsrc/assets/textures/pillars-ao.png

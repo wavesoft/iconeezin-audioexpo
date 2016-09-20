@@ -8,10 +8,19 @@
 		},
 
 		"Iconeezin.API.AudioFile": {
-			"sounds/intro": "assets/sounds/intro.ogg",
-			"sounds/very-good": "assets/sounds/very-good.ogg",
-			"sounds/guide-complete": "assets/sounds/guide-complete.ogg",
-			"sounds/guide-gaze": "assets/sounds/guide-gaze.ogg"
+
+			"sounds/intro/1": "assets/sounds/intro-1-common.ogg",
+			"sounds/intro/2a": "assets/sounds/intro-2a-mouse.ogg",
+			"sounds/intro/2b": "assets/sounds/intro-2b-vr.ogg",
+			"sounds/intro/3": "assets/sounds/intro-3-how-to-select.ogg",
+			"sounds/intro/4": "assets/sounds/intro-4-speech-intro.ogg",
+			"sounds/intro/4b": "assets/sounds/intro-4b-filler.ogg",
+			"sounds/intro/4c": "assets/sounds/intro-4c-speak-the-text.ogg",
+			"sounds/intro/5": "assets/sounds/intro-5-closing.ogg",
+
+			"sounds/reco/error": "assets/sounds/reco-error.ogg",
+			"sounds/reco/mismatch": "assets/sounds/reco-mismatch.ogg"
+
 		},
 
 		"THREE.OBJLoader": {
