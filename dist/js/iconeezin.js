@@ -50815,7 +50815,7 @@ var Iconeezin =
 
 					// Stop tracking
 					if (this.hoverInteraction.trackID) {
-						TrackingCore.trackEnd('interact.gaze');
+						TrackingCore.trackEnd('gaze');
 					}
 
 					// Reset highlight
@@ -50839,7 +50839,7 @@ var Iconeezin =
 
 				// Start tracking
 				if (this.hoverInteraction.trackID) {
-					TrackingCore.trackStart('interact.gaze', { 'id': this.hoverInteraction.trackID });
+					TrackingCore.trackStart('gaze', { 'id': this.hoverInteraction.trackID });
 				}
 
 				// Highlight if not gazing
@@ -50902,7 +50902,7 @@ var Iconeezin =
 
 				// Stop tracking
 				if (this.hoverInteraction.trackID) {
-					TrackingCore.trackEnd('interact.gaze');
+					TrackingCore.trackEnd('gaze');
 				}
 
 				// Reset properties
@@ -50957,7 +50957,7 @@ var Iconeezin =
 	/**
 	 * Generate a random ID
 	 */
-	function anonymousID() {
+	function generateAnonymousID() {
 		var text = "";
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -50973,11 +50973,18 @@ var Iconeezin =
 	TrackingCore.initialize = function() {
 
 		// Check if we have a tracking ID from the URL
-		var trackingID = anonymousID();
-		if (window.location.hash.startsWith("#u-")) {
-			trackingID = 'u-' + window.location.hash.substr(3);
+		this.trackingID = generateAnonymousID();
+		if (window.sessionStorage) {
+			if (sessionStorage.getItem('iconeezin_anon_id')) {
+				var visit = (parseInt(sessionStorage.getItem('iconeezin_visit_id')) || 0) + 1;
+				this.trackingID = sessionStorage.getItem('iconeezin_anon_id') + '.' + visit;
+				sessionStorage.setItem('iconeezin_visit_id', visit);
+			} else {
+				sessionStorage.setItem('iconeezin_anon_id', this.trackingID);
+				sessionStorage.setItem('iconeezin_visit_id', 1);
+				this.trackingID += '.1';
+			}
 		}
-		console.info('Your tracking ID is ' + trackingID);
 
 		// Results
 		this.results = [];
@@ -50989,9 +50996,6 @@ var Iconeezin =
 
 		// Globals
 		this.globals = { };
-		if (trackingID) {
-			this.globals['uid'] = trackingID;
-		}
 
 		// Active experiment metadata
 		this.activeExperimentName = null;
@@ -51023,6 +51027,9 @@ var Iconeezin =
 		  ga('send', 'pageview');
 			this.tracking = true;
 
+			// Update tracking ID
+			console.info('Your tracking ID is ' + this.trackingID);
+
 			// Feed pending events
 			this.events.forEach((event) => {
 				this.feedEvent(event);
@@ -51032,33 +51039,68 @@ var Iconeezin =
 	}
 
 	/**
+	 * Set a custom tracking ID
+	 */
+	TrackingCore.setTrackingID = function( id ) {
+		this.trackingID = id;
+		if (window.sessionStorage) {
+			var visit = (parseInt(sessionStorage.getItem('iconeezin_visit_id')) || 0) + 1;
+			sessionStorage.setItem('iconeezin_anon_id', this.trackingID);
+			sessionStorage.setItem('iconeezin_visit_id', visit);
+			this.trackingID = id + '.' + visit;
+		}
+	}
+
+	/**
 	 * Feed event to the tracker
 	 */
 	TrackingCore.feedEvent = function( event ) {
-		var i;
-		var uid = 'anonymous';
-		var path = '/';
-		var keys = Object.keys(event.properties);
+		var propertyKeys = Object.keys(event.properties);
+		var sumPropertyKeys = Object.keys(event.sum_properties);
+		var group = 'global';
 
-		// Remove useful properies from the keys and handle
-		// them earlier, in order to populate category and action
-		if (i = keys.indexOf('experiment') >= 0) {
-			path = '/' + event.properties.experiment;
-			keys.splice(i,1);
+		// Populate group
+		if (event.experiment) {
+			group = event.experiment;
 		}
-		if (i = keys.indexOf('uid') >= 0) {
-			uid = 'U-' + event.properties.uid;
-			keys.splice(i,1);
+		if (event.task) {
+			group += '.' + event.task;
 		}
 
-		// Feed each property as a separate GA event
-		Object.keys(event.properties).forEach((key) => {
+		// Compile label
+		var label = propertyKeys.sort().reduce(function (currStr, key) {
+			if (currStr) currStr += "&";
+			return currStr + key + '=' + event.properties[key];
+		}, "");
+
+		// Fire the core event
+		if (propertyKeys.length === 0) {
+			// console.debug("Feed", this.trackingID, ',', group, ',', event.name);
 			ga('send', 'event',
-				uid,
-				event.name,
-				key+':'+event.properties[key]
+				this.trackingID,									// Category : User ID
+				group,														// Action		: Category
+				event.name 												// Label    : Event
+			);
+		} else {
+			// console.debug("Feed", this.trackingID, ',', group, ',', event.name + '.' + label);
+			ga('send', 'event',
+				this.trackingID,									// Category : User ID
+				group,														// Action		: Category
+				event.name + '.' + label 					// Label    : Event
+			);
+		}
+
+		// Fire summaries
+		sumPropertyKeys.forEach((key) => {
+			// console.debug("Feed", this.trackingID, ',', group, ',', event.name + '.' + label + '+' + key, ',', event.sum_properties[key]);
+			ga('send', 'event',
+				this.trackingID,											// Category : User ID
+				group,																// Action		: Category
+				event.name + '.' + label + '+' + key,	// Label		: event.prop:value
+				event.sum_properties[key]							// Value 		: custom
 			);
 		});
+
 	}
 
 	/**
@@ -51098,17 +51140,22 @@ var Iconeezin =
 	/**
 	 * Set global event property
 	 */
-	TrackingCore.trackEvent = function( name, properties ) {
-		var eventProperties = Object.assign( {}, this.globals, properties || {} );
+	TrackingCore.trackEvent = function( name, properties, sum_properties ) {
 
-		//////////////////////////////////////////
-		console.log("Event:", name, eventProperties);
-		//////////////////////////////////////////
+		// Prepare trackign event
+		var meta = {
+			name: name,
+			properties: properties || {},
+			sum_properties: sum_properties || {},
+			experiment: this.activeExperimentName,
+			task: this.activeTaskName
+		};
 
+		// Keep/send tracking info
 		if (this.tracking) {
-			this.feedEvent({ name: name, properties: eventProperties });
+			this.feedEvent(meta);
 		} else {
-			this.events.push({ name: name, properties: eventProperties });
+			this.events.push(meta);
 		}
 	}
 
@@ -51189,9 +51236,9 @@ var Iconeezin =
 		}
 
 		// Update local properties
-		this.activeTaskMeta = meta;
-		this.activeTaskName = meta.name;
 		this.activeTaskID += 1;
+		this.activeTaskMeta = meta;
+		this.activeTaskName = meta.name || 'task-'+this.activeTaskID;
 		console.log("next=",this.activeTaskID,", meta=",meta);
 
 		// Callback with the data
@@ -51209,7 +51256,7 @@ var Iconeezin =
 	TrackingCore.trackStart = function( name, properties ) {
 		this.restartTimer( name );
 		this.timerProperties[ name ] = properties;
-		this.trackEvent( name + '.start', properties );
+		this.trackEvent( name + '-start', properties );
 	}
 
 	/**
@@ -51218,11 +51265,11 @@ var Iconeezin =
 	TrackingCore.trackEnd = function( name, properties ) {
 		var duration = this.stopTimer( name );
 		var eventProperties = Object.assign( {},
-			this.timerProperties[ name ], properties || {},
-			{ 'duration': duration });
+			this.timerProperties[ name ], properties || {}
+		);
 
 		// Track end event
-		this.trackEvent( name + '.end', eventProperties );
+		this.trackEvent( name + '-end', eventProperties, { 'duration': duration } );
 		delete this.timerProperties[ name ];
 
 	}
@@ -51304,8 +51351,7 @@ var Iconeezin =
 			this.activeTaskMeta = {};
 
 			// Set experiment tracking data
-			this.setGlobal("experiment", name);
-			this.trackEvent("experiment.started", { 'experiment': name });
+			this.trackEvent("started");
 
 			// Callback with experiment metadata
 			if (callback) callback(meta);
@@ -51320,12 +51366,14 @@ var Iconeezin =
 		if (!this.activeExperimentName) return;
 
 		// Track event
-		this.trackEvent("experiment.completed", {
-			'experiment': this.activeExperimentName, 'duration': this.stopTimer("internal.experiment")
+		this.trackEvent("completed", {}, {
+			'duration': this.stopTimer("internal.experiment")
 		});
 
 		// Reset active experiment name
 		this.activeExperimentName = null;
+		this.activeTaskName = "";
+		this.activeTaskMeta = {};
 	}
 
 	/**
@@ -51343,7 +51391,7 @@ var Iconeezin =
 		this.queryNamedTaskMeta( name, properties, (function( id, name, meta ) {
 
 			// Track event
-			this.trackEvent("experiment.task.started", { 'task': name, 'id': id });
+			this.trackEvent("started");
 
 			// Start task timer
 			this.restartTimer("internal.task");
@@ -51370,7 +51418,7 @@ var Iconeezin =
 		this.queryNextTaskMeta( properties, (function( id, name, meta ) {
 
 			// Track event
-			this.trackEvent("experiment.task.started", { 'task': name, 'id': id });
+			this.trackEvent("started");
 
 			// Start task timer
 			this.restartTimer("internal.task");
@@ -51401,12 +51449,9 @@ var Iconeezin =
 		});
 
 		// Track event completion
-		this.trackEvent("experiment.task.completed", Object.assign(
-			{
-				'task': this.activeTaskName,
-				'duration': this.stopTimer("internal.task")
-			},track
-		));
+		this.trackEvent("completed", track, {
+			'duration': this.stopTimer("internal.task")
+		});
 
 		// Collect results
 		this.results.push({
@@ -52301,11 +52346,17 @@ var Iconeezin =
 				return;
 			}
 
-			// Initialize tracking
+			// Check if hash refers to a tracking ID
+			var hash = String(window.location.hash).substr(1);
+			if (hash.startsWith('u-')) {
+				TrackingCore.setTrackingID(hash);
+				hash = '';
+			}
+
+			// Start tracking
 			TrackingCore.setup(this.meta.tracking || {});
 
 			// Load default experiment if hash missing
-			var hash = String(window.location.hash).substr(1);
 			if (!hash) {
 				this.showExperiment( this.meta.experiments[ this.activeExperimentId ].name );
 			} else {
