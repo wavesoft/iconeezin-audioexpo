@@ -66,10 +66,6 @@
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var _React$createClass;
-
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 	var Iconeezin = __webpack_require__(1);
 
 	var React = __webpack_require__(2);
@@ -82,7 +78,7 @@
 	/**
 	 * Root component
 	 */
-	var IconeezinRoot = React.createClass((_React$createClass = {
+	var IconeezinRoot = React.createClass({
 		displayName: "IconeezinRoot",
 
 
@@ -116,6 +112,22 @@
 
 			// Listen for VR availability events
 			Iconeezin.Runtime.Browser.onVRSupportChange(this.handleVRChange);
+
+			// Run pre-flights and show possible errors
+			Iconeezin.Runtime.preflight(function (isOk, error) {
+
+				// If everything is ok, just hide the loading screen
+				if (isOk) {
+					this.setState({ loading: false });
+					return;
+				}
+
+				// Otherwise show error
+				this.setState({
+					loading: false,
+					error: error
+				});
+			}.bind(this));
 		},
 
 		/**
@@ -157,43 +169,31 @@
 					// We are not full screen
 					this.handlePause();
 				}
+		},
+
+		/**
+	  * Main render function
+	  */
+		render: function render() {
+			return React.createElement(
+				"div",
+				{ ref: "content", className: "icnz-content" },
+				React.createElement(Viewport, {
+					experiment: this.state.experiment,
+					paused: this.state.paused,
+					hmd: this.state.hmd }),
+				React.createElement(Welcome, {
+					hasvr: this.state.hasvr,
+					visible: this.state.paused && !this.state.error && !this.state.loading,
+					onStartDesktop: this.handleStartDesktop,
+					onStartHMD: this.handleStartHMD }),
+				React.createElement(ErrorMessage, {
+					visible: !!this.state.error,
+					error: this.state.error })
+			);
 		}
 
-	}, _defineProperty(_React$createClass, "componentDidMount", function componentDidMount() {
-
-		// Run pre-flights and show possible errors
-		Iconeezin.Runtime.preflight(function (isOk, error) {
-
-			// If everything is ok, just hide the loading screen
-			if (isOk) {
-				this.setState({ loading: false });
-				return;
-			}
-
-			// Otherwise show error
-			this.setState({
-				loading: false,
-				error: error
-			});
-		}.bind(this));
-	}), _defineProperty(_React$createClass, "render", function render() {
-		return React.createElement(
-			"div",
-			{ ref: "content", className: "icnz-content" },
-			React.createElement(Viewport, {
-				experiment: this.state.experiment,
-				paused: this.state.paused,
-				hmd: this.state.hmd }),
-			React.createElement(Welcome, {
-				hasvr: this.state.hasvr,
-				visible: this.state.paused && !this.state.error && !this.state.loading,
-				onStartDesktop: this.handleStartDesktop,
-				onStartHMD: this.handleStartHMD }),
-			React.createElement(ErrorMessage, {
-				visible: !!this.state.error,
-				error: this.state.error })
-		);
-	}), _React$createClass));
+	});
 
 	/**
 	 * Render root component

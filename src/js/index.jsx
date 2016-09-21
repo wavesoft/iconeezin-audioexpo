@@ -65,6 +65,23 @@ var IconeezinRoot = React.createClass({
 		// Listen for VR availability events
 		Iconeezin.Runtime.Browser.onVRSupportChange( this.handleVRChange );
 
+		// Run pre-flights and show possible errors
+		Iconeezin.Runtime.preflight((function(isOk, error) {
+
+			// If everything is ok, just hide the loading screen
+			if (isOk) {
+				this.setState({ loading: false });
+				return;
+			}
+
+			// Otherwise show error
+			this.setState({
+				loading: false,
+				error: error
+			});
+
+		}).bind(this));
+
 	},
 
 	/**
@@ -112,30 +129,6 @@ var IconeezinRoot = React.createClass({
 			// We are not full screen
 			this.handlePause();
 		}
-	},
-
-	/**
-	 * When component is mounted, run pre-flight tests
-	 */
-	componentDidMount: function() {
-
-		// Run pre-flights and show possible errors
-		Iconeezin.Runtime.preflight((function(isOk, error) {
-
-			// If everything is ok, just hide the loading screen
-			if (isOk) {
-				this.setState({ loading: false });
-				return;
-			}
-
-			// Otherwise show error
-			this.setState({
-				loading: false,
-				error: error
-			});
-
-		}).bind(this));
-
 	},
 
 	/**
