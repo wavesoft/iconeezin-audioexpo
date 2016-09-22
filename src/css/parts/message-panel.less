@@ -1,0 +1,136 @@
+// ============================
+// Message Panel
+// ============================
+
+// Configuration
+@message-panel-width: 450px;
+@message-panel-height: 250px;
+
+.icnz-message-panel {
+  .fillparent();
+  .hideable( 0.25s );
+  background-color: rgba(0,0,0,0.5);
+
+  .icnz-message-panel-frame {
+    // Position and size
+    position: absolute;
+    width: @message-panel-width;
+    height: @message-panel-height;
+
+    // Center
+    left: 50%; top: 50%;
+    -webkit-transform: translateX(-@message-panel-width/2) translateY(-@message-panel-height/2) ;
+    -moz-transform: translateX(-@message-panel-width/2) translateY(-@message-panel-height/2) ;
+    -ms-transform: translateX(-@message-panel-width/2) translateY(-@message-panel-height/2) ;
+    -o-transform: translateX(-@message-panel-width/2) translateY(-@message-panel-height/2) ;
+    transform: translateX(-@message-panel-width/2) translateY(-@message-panel-height/2) ;
+
+    // Styling
+    border-radius: 20px;
+    background-color: rgba(0,0,0,0.9);
+
+    .icnz-part-logo {
+      position: absolute;
+      width: 132px;
+      height: 114px;
+      left: -15px;
+      top: -20px;
+
+      background-image: url('../img/iconeezin.png');
+    }
+
+    .icnz-part-header {
+      position: absolute;
+      width: 284px;
+      height: 60px;
+      left: 138px;
+      top: 12px;
+
+      color: #FBB03B;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .icnz-part-body {
+      position: absolute;
+      width: 410px;
+      height: 120px;
+      top: 98px;
+      left: 20px;
+
+      color: #999999;
+      text-align: center;
+      font-size: 14px;
+
+      .icnz-buttongroup {
+        margin-top: 10px;
+
+        &.icnz-buttons-1 {
+          button {
+            width: 100%;
+          }
+        }
+        &.icnz-buttons-2 {
+          button {
+            width: 200px;
+          }
+          button + button {
+            margin-left: 10px;
+          }
+        }
+
+        button {
+
+          // Styling
+          padding: 10px;
+          border-radius: 12px;
+          border: solid 1px #B3B3B3;
+          cursor: pointer;
+
+          // Animation
+          -webkit-transition: all 0.25s;
+          -moz-transition: all 0.25s;
+          -ms-transition: all 0.25s;
+          -o-transition: all 0.25s;
+          transition: all 0.25s;
+
+          // Coloring
+          background-color: #333333;
+          color: #FFF;
+
+          // Fonts & Icon
+          font-size: 14px;
+          font-weight: bold;
+
+          // Interactive
+          &:hover {
+            background-color: #222;
+            color: #FFF;
+          }
+          &:active {
+            background-color: #666;
+            color: #000;
+          }
+          &.visible {
+            display: inline;
+          }
+
+        }
+
+      }
+
+    }
+
+    .icnz-part-version {
+      position: absolute;
+      right: 20px;
+      bottom: 10px;
+
+      color: #808080;
+      font-size: 12px;
+      text-align: right;
+    }
+
+  }
+
+}

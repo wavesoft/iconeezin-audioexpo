@@ -25,9 +25,16 @@ var Iconeezin = require("iconeezin");
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+var IconVR = require('../img/vr.svg');
+var IconDesktop = require('../img/desktop.svg');
+var IconExclamation = require('../img/exclamation.svg');
+
 var Viewport = require('./components/Viewport');
 var Welcome = require('./components/Welcome');
 var ErrorMessage = require('./components/ErrorMessage');
+var MessagePanel = require('./components/MessagePanel');
+
+var metadata = require('json!../../package.json');
 
 /**
  * Root component
@@ -39,12 +46,13 @@ var IconeezinRoot = React.createClass({
 	 */
 	getInitialState: function() {
 		return {
-			'hasvr': false,
-			'hmd': false,
-			'paused': true,
-			'experiment': null,
-			'error': null,
-			'loading': true
+			hasvr: false,
+			hmd: false,
+			paused: true,
+			experiment: null,
+			error: null,
+			loading: true,
+			version: metadata.version
 		};
 	},
 
@@ -62,8 +70,11 @@ var IconeezinRoot = React.createClass({
 		// Remove loading class from body
 		document.body.className = "";
 
-		// Listen for VR availability events
+		// Bind on iconeezin callbacks
 		Iconeezin.Runtime.Browser.onVRSupportChange( this.handleVRChange );
+
+		// Set particular cache dropping ID
+		Iconeezin.Runtime.Experiments.setCacheHash( 'v'+metadata.version );
 
 		// Run pre-flights and show possible errors
 		Iconeezin.Runtime.preflight((function(isOk, error) {
@@ -131,6 +142,43 @@ var IconeezinRoot = React.createClass({
 		}
 	},
 
+	getErrorMessage: function() {
+		return (
+				<div className="icnz-error-frame">
+					<div className="icnz-part-icon">
+						<IconExclamation />
+					</div>
+					<div className="icnz-part-content">
+						<h4>Ανεπανόρθωτο σφάλμα</h4>
+						<p>{this.state.error}</p>
+					</div>
+				</div>
+			);
+	},
+
+	getStartMessage: function() {
+		let buttons = [
+			<button key="desktop" className="icnz-button">
+				<IconDesktop /> Οθόνη Υπολογιστή
+			</button>,
+			<button key="vr" className="icnz-button">
+				<IconVR /> Συσκευή VR
+			</button>
+		];
+
+		return (
+			<div>
+				<div>
+					Καλωσήρθατε στην έκθεση ακουστικών πειραμάτων.
+					Για τη βέλτιστη εμπειρία σας, προτείνεται να χρησιμοποιήσετε τον πλοηγό Google Chrome.
+				</div>
+				<div className="icnz-buttongroup icnz-buttons-2">
+					{buttons}
+				</div>
+			</div>
+			);
+	},
+
 	/**
 	 * Main render function
 	 */
@@ -141,14 +189,12 @@ var IconeezinRoot = React.createClass({
 			  	experiment={this.state.experiment}
 			  	paused={this.state.paused}
 			  	hmd={this.state.hmd} />
-			  <Welcome
-			  	hasvr={this.state.hasvr}
-			  	visible={this.state.paused && !this.state.error && !this.state.loading}
-			  	onStartDesktop={this.handleStartDesktop}
-			  	onStartHMD={this.handleStartHMD} />
-			  <ErrorMessage
-			  	visible={!!this.state.error}
-			  	error={this.state.error} />
+			  <MessagePanel
+			  	title="Έκθεση Ακουστικών Πειραμάτων"
+			  	version={`Έκδοση ${metadata.version}`}
+			  	visible={this.state.paused && !this.state.loading}>
+			  	{this.state.error ? this.getErrorMessage() : this.getStartMessage()}
+			  </MessagePanel>
 			</div>
 		);
 	}

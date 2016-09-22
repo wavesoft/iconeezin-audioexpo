@@ -67,36 +67,40 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	const VERSION = "1.0.0";
+	const meta = __webpack_require__(1);
+	const VERSION = meta.version;
 
 	// Load libraries as soon as possible
-	var libTHREE = __webpack_require__(1);
+	var libTHREE = __webpack_require__(2);
 	global.THREE = libTHREE;
 
 	// Iconeezin API
-	var IconeezinAPI = __webpack_require__(2);
+	var IconeezinAPI = __webpack_require__(3);
 
 	// Load default configuration
-	var DefaultConfig = __webpack_require__(29);
+	var DefaultConfig = __webpack_require__(30);
 	DefaultConfig.up = new libTHREE.Vector3( 0,0,1 );
 
 	// Load components afterwards
-	var AudioCore = __webpack_require__(4);
-	var VideoCore = __webpack_require__(30);
-	var ControlsCore = __webpack_require__(59);
-	var TrackingCore = __webpack_require__(61);
-	var ExperimentsCore = __webpack_require__(68);
-	var InteractionCore = __webpack_require__(27);
-	var BrowserUtil = __webpack_require__(32);
-	var StopableTimers = __webpack_require__(84);
-	var ThreeUtil = __webpack_require__(86);
-	var HudLayerUtil = __webpack_require__(87);
-	var SequencerUtil = __webpack_require__(85);
+	var AudioCore = __webpack_require__(5);
+	var VideoCore = __webpack_require__(31);
+	var ControlsCore = __webpack_require__(60);
+	var TrackingCore = __webpack_require__(62);
+	var ExperimentsCore = __webpack_require__(69);
+	var InteractionCore = __webpack_require__(28);
+	var BrowserUtil = __webpack_require__(33);
+	var StopableTimers = __webpack_require__(85);
+	var ThreeUtil = __webpack_require__(87);
+	var HudLayerUtil = __webpack_require__(88);
+	var SequencerUtil = __webpack_require__(86);
 
 	/**
 	 * Expose useful parts of the runtime API
 	 */
 	module.exports = {
+
+		// Runtime version
+		'Version': VERSION,
 
 		// Iconeezin Configuration
 		'Config': DefaultConfig,
@@ -198,9 +202,9 @@ var Iconeezin =
 			'preflight': function(cb_results) {
 
 				// First perform a speech recognition pre-flight
-				AudioCore.voiceCommands.probeSupport(function (hasSupport) {
+				AudioCore.voiceCommands.probeSupport(function (hasSupport, errorMessage) {
 					if (!hasSupport) {
-						cb_results(false, 'Unable to initialize speech recognition');
+						cb_results(false, errorMessage || 'Unable to initialize speech recognition');
 						return;
 					}
 
@@ -227,6 +231,52 @@ var Iconeezin =
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	module.exports = {
+		"name": "iconeezin",
+		"version": "1.0.0",
+		"description": "A Web VR Platform for social experiments",
+		"main": "index.js",
+		"scripts": {
+			"test": "echo \"Error: no test specified\" && exit 1"
+		},
+		"repository": {
+			"type": "git",
+			"url": "git+https://github.com/wavesoft/iconeezin.git"
+		},
+		"keywords": [
+			"vr",
+			"webvr",
+			"webaudio",
+			"experiment"
+		],
+		"author": "Ioannis Charalampidis",
+		"license": "Apache-2.0",
+		"bugs": {
+			"url": "https://github.com/wavesoft/iconeezin/issues"
+		},
+		"homepage": "https://github.com/wavesoft/iconeezin#readme",
+		"dependencies": {
+			"annyang": "^2.4.0",
+			"diff": "^2.2.3",
+			"jbb": "^1.3.6",
+			"jbb-profile-iconeezin": "^0.1.0",
+			"jbb-profile-three": "^1.0.2",
+			"jquery": "^2.2.4",
+			"three": "^0.78.0"
+		},
+		"devDependencies": {
+			"file-loader": "^0.9.0",
+			"gulp": "^3.9.1",
+			"json-loader": "^0.5.4",
+			"url-loader": "^0.5.7",
+			"webpack-stream": "^3.2.0"
+		}
+	};
+
+/***/ },
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function (global, factory) {
@@ -41955,7 +42005,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -41980,10 +42030,10 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var AudioAPI = __webpack_require__(3);
-	var ExperimentAPI = __webpack_require__(25);
-	var ThreeAPI = __webpack_require__(26);
-	var HudAPI = __webpack_require__(28);
+	var AudioAPI = __webpack_require__(4);
+	var ExperimentAPI = __webpack_require__(26);
+	var ThreeAPI = __webpack_require__(27);
+	var HudAPI = __webpack_require__(29);
 
 	/**
 	 * Expose useful APIs
@@ -42017,7 +42067,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -42042,8 +42092,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var AudioCore = __webpack_require__(4);
+	var THREE = __webpack_require__(2);
+	var AudioCore = __webpack_require__(5);
 
 	/**
 	 * An audio file is the source fo audio
@@ -42193,7 +42243,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -42218,9 +42268,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Tween = __webpack_require__(5);
-	var VoiceEffects = __webpack_require__(6);
-	var VoiceCommands = __webpack_require__(9);
+	var Tween = __webpack_require__(6);
+	var VoiceEffects = __webpack_require__(7);
+	var VoiceCommands = __webpack_require__(10);
 
 	/**
 	 * The AudioCore singleton contains the
@@ -42406,7 +42456,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -42550,7 +42600,7 @@ var Iconeezin =
 	module.exports = Tween;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -42575,9 +42625,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	__webpack_require__(7);
+	var THREE = __webpack_require__(2);
 	__webpack_require__(8);
+	__webpack_require__(9);
 
 	/**
 	 * Voice Commands API
@@ -42692,14 +42742,14 @@ var Iconeezin =
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @author wavesoft / http://wavesoft.github.io/
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	THREE.UserAudio = function ( listener ) {
 
@@ -42771,14 +42821,14 @@ var Iconeezin =
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @author wavesoft / http://wavesoft.github.io/
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	THREE.AudioRecorder = function ( listener, bufferLen ) {
 
@@ -42901,7 +42951,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -42926,7 +42976,7 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var jsDiff = __webpack_require__(10);
+	var jsDiff = __webpack_require__(11);
 
 	/**
 	 * Normalize a word by removing accents and capitalizations
@@ -43224,7 +43274,7 @@ var Iconeezin =
 
 		// Check for missing support
 		if (!SpeechRecognition) {
-			callback(false, 'Missing speech recognition support');
+			callback(false, 'Your browser is not supporting the WebSpeechRecognition API, needed for this project to run. Please use Google Chrome, or make sure the feature is enabled in your configuration');
 			return;
 		}
 
@@ -43245,7 +43295,7 @@ var Iconeezin =
 		probeRecognition.onerror = function() {
 			if (didStart) return;
 			// Erroreus callback
-			callback(false);
+			callback(false, 'You denied access to your microphone. This project requires microphone access in order to accept voice commands.');
 		};
 
 		// Start
@@ -43258,7 +43308,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43266,33 +43316,33 @@ var Iconeezin =
 	exports.__esModule = true;
 	exports.canonicalize = exports.convertChangesToXML = exports.convertChangesToDMP = exports.parsePatch = exports.applyPatches = exports.applyPatch = exports.createPatch = exports.createTwoFilesPatch = exports.structuredPatch = exports.diffJson = exports.diffCss = exports.diffSentences = exports.diffTrimmedLines = exports.diffLines = exports.diffWordsWithSpace = exports.diffWords = exports.diffChars = exports.Diff = undefined;
 	/*istanbul ignore end*/
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
 
 	/*istanbul ignore end*/
-	var /*istanbul ignore start*/_character = __webpack_require__(12) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_character = __webpack_require__(13) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_word = __webpack_require__(13) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_word = __webpack_require__(14) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_line = __webpack_require__(15) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_line = __webpack_require__(16) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_sentence = __webpack_require__(16) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_sentence = __webpack_require__(17) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_css = __webpack_require__(17) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_css = __webpack_require__(18) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_json = __webpack_require__(18) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_json = __webpack_require__(19) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_apply = __webpack_require__(19) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_apply = __webpack_require__(20) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_parse = __webpack_require__(20) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_parse = __webpack_require__(21) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_create = __webpack_require__(22) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_create = __webpack_require__(23) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_dmp = __webpack_require__(23) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_dmp = __webpack_require__(24) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_xml = __webpack_require__(24) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_xml = __webpack_require__(25) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -43335,7 +43385,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43568,7 +43618,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43577,7 +43627,7 @@ var Iconeezin =
 	exports.characterDiff = undefined;
 	exports. /*istanbul ignore end*/diffChars = diffChars;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
@@ -43592,7 +43642,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43602,13 +43652,13 @@ var Iconeezin =
 	exports. /*istanbul ignore end*/diffWords = diffWords;
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/diffWordsWithSpace = diffWordsWithSpace;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
 
 	/*istanbul ignore end*/
-	var /*istanbul ignore start*/_params = __webpack_require__(14) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_params = __webpack_require__(15) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -43668,7 +43718,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43692,7 +43742,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43702,13 +43752,13 @@ var Iconeezin =
 	exports. /*istanbul ignore end*/diffLines = diffLines;
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/diffTrimmedLines = diffTrimmedLines;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
 
 	/*istanbul ignore end*/
-	var /*istanbul ignore start*/_params = __webpack_require__(14) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_params = __webpack_require__(15) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -43751,7 +43801,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43760,7 +43810,7 @@ var Iconeezin =
 	exports.sentenceDiff = undefined;
 	exports. /*istanbul ignore end*/diffSentences = diffSentences;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
@@ -43779,7 +43829,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43788,7 +43838,7 @@ var Iconeezin =
 	exports.cssDiff = undefined;
 	exports. /*istanbul ignore end*/diffCss = diffCss;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
@@ -43807,7 +43857,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43820,13 +43870,13 @@ var Iconeezin =
 	exports. /*istanbul ignore end*/diffJson = diffJson;
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/canonicalize = canonicalize;
 
-	var /*istanbul ignore start*/_base = __webpack_require__(11) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_base = __webpack_require__(12) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _base2 = _interopRequireDefault(_base);
 
 	/*istanbul ignore end*/
-	var /*istanbul ignore start*/_line = __webpack_require__(15) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_line = __webpack_require__(16) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -43913,7 +43963,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -43922,9 +43972,9 @@ var Iconeezin =
 	exports. /*istanbul ignore end*/applyPatch = applyPatch;
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/applyPatches = applyPatches;
 
-	var /*istanbul ignore start*/_parse = __webpack_require__(20) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_parse = __webpack_require__(21) /*istanbul ignore end*/;
 
-	var /*istanbul ignore start*/_distanceIterator = __webpack_require__(21) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_distanceIterator = __webpack_require__(22) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	var _distanceIterator2 = _interopRequireDefault(_distanceIterator);
@@ -44083,7 +44133,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/'use strict';
@@ -44223,7 +44273,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/"use strict";
@@ -44276,7 +44326,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*istanbul ignore start*/'use strict';
@@ -44286,7 +44336,7 @@ var Iconeezin =
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/createTwoFilesPatch = createTwoFilesPatch;
 	/*istanbul ignore start*/exports. /*istanbul ignore end*/createPatch = createPatch;
 
-	var /*istanbul ignore start*/_line = __webpack_require__(15) /*istanbul ignore end*/;
+	var /*istanbul ignore start*/_line = __webpack_require__(16) /*istanbul ignore end*/;
 
 	/*istanbul ignore start*/
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -44435,7 +44485,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/"use strict";
@@ -44465,7 +44515,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports) {
 
 	/*istanbul ignore start*/'use strict';
@@ -44506,7 +44556,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -44531,7 +44581,7 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	/**
 	 * Experiment source file
@@ -44651,7 +44701,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -44676,8 +44726,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var InteractionCore = __webpack_require__(27);
+	var THREE = __webpack_require__(2);
+	var InteractionCore = __webpack_require__(28);
 
 	////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////
@@ -44793,7 +44843,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -44893,7 +44943,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45121,7 +45171,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -45207,7 +45257,7 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -45232,9 +45282,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Viewport = __webpack_require__(31);
-	var Cursor = __webpack_require__(57);
-	var Browser = __webpack_require__(32);
+	var Viewport = __webpack_require__(32);
+	var Cursor = __webpack_require__(58);
+	var Browser = __webpack_require__(33);
 
 	/**
 	 * Private properties
@@ -45567,7 +45617,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -45592,45 +45642,45 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var Browser = __webpack_require__(32);
-	var HUDStatus = __webpack_require__(33);
-	var Animations = __webpack_require__(34);
+	var THREE = __webpack_require__(2);
+	var Browser = __webpack_require__(33);
+	var HUDStatus = __webpack_require__(34);
+	var Animations = __webpack_require__(35);
 
 	// Modified version of example scripts
 	// in order to work with Z-Up orientation
-	__webpack_require__(35);
+	__webpack_require__(36);
 
 	// Effect composer complex
-	__webpack_require__(36);
 	__webpack_require__(37);
 	__webpack_require__(38);
-
 	__webpack_require__(39);
+
 	__webpack_require__(40);
 	__webpack_require__(41);
 	__webpack_require__(42);
-
 	__webpack_require__(43);
+
 	__webpack_require__(44);
-
 	__webpack_require__(45);
+
 	__webpack_require__(46);
-
 	__webpack_require__(47);
+
 	__webpack_require__(48);
-
 	__webpack_require__(49);
+
 	__webpack_require__(50);
-
 	__webpack_require__(51);
-	__webpack_require__(52);
 
+	__webpack_require__(52);
 	__webpack_require__(53);
 
-	// VR Pass and HUD
 	__webpack_require__(54);
+
+	// VR Pass and HUD
 	__webpack_require__(55);
+	__webpack_require__(56);
 
 	/**
 	 * Our viewport is where everything gets rendered
@@ -46245,7 +46295,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46597,7 +46647,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -46622,8 +46672,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var IconeezinAPI = __webpack_require__(2);
+	var THREE = __webpack_require__(2);
+	var IconeezinAPI = __webpack_require__(3);
 
 	/**
 	 * HUD Status component
@@ -46773,7 +46823,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -46848,7 +46898,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -46867,7 +46917,7 @@ var Iconeezin =
 	 * Three.js integration by zz85 http://twitter.com/blurspline
 	*/
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	THREE.ShaderLib[ 'sky' ] = {
 
@@ -47120,7 +47170,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	/**
@@ -47172,7 +47222,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports) {
 
 	/**
@@ -47266,7 +47316,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports) {
 
 	/**
@@ -47491,7 +47541,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports) {
 
 	/**
@@ -47672,7 +47722,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports) {
 
 	/**
@@ -47734,7 +47784,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports) {
 
 	/**
@@ -47837,7 +47887,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports) {
 
 	/**
@@ -47909,7 +47959,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports) {
 
 	/**
@@ -48018,7 +48068,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports) {
 
 	/**
@@ -48139,7 +48189,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports) {
 
 	/**
@@ -48261,7 +48311,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports) {
 
 	/**
@@ -48369,7 +48419,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports) {
 
 	/**
@@ -48837,7 +48887,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports) {
 
 	/**
@@ -49007,7 +49057,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports) {
 
 	/**
@@ -49117,7 +49167,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports) {
 
 	/**
@@ -49183,7 +49233,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports) {
 
 	/**
@@ -49290,7 +49340,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports) {
 
 	/**
@@ -49412,7 +49462,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports) {
 
 	/**
@@ -49487,7 +49537,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports) {
 
 	/**
@@ -49790,14 +49840,14 @@ var Iconeezin =
 
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @author wavesoft / https://github.com/wavesoft
 	 */
-	var THREE = __webpack_require__(1);
-	__webpack_require__(56);
+	var THREE = __webpack_require__(2);
+	__webpack_require__(57);
 
 	/**
 	 * Maximum number of layers allowed
@@ -49920,7 +49970,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -49929,7 +49979,7 @@ var Iconeezin =
 	 * Overlay shader used by GUI pass
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	const MAX_LAYERS = 5;
 
@@ -50006,7 +50056,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50132,7 +50182,7 @@ var Iconeezin =
 
 		// Create a spinner sprite
 		var loader = new THREE.TextureLoader();
-		loader.load( __webpack_require__(58), (function( texture ) {
+		loader.load( __webpack_require__(59), (function( texture ) {
 
 			// Set material map
 			mat.map = texture;
@@ -50324,13 +50374,13 @@ var Iconeezin =
 
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA8pJREFUeNrsW8uR2kAQFS7fRQbLRoAyQI7AcgSwF67GEVhEYO11L8tGYIUgMoAILDJAEeCercY122795isKdZVKhWo0mn7T3fPeSEwul0twz/YpuHMbARgBGAEYAbhr+2yqo5eXlwhOCRziPLU45jMcBzjy9Xp90O1sossDwHHhbA7HwsME7gXoAMTZCwDofAHH3GMUH+GIVUHQrQG5Z+cDfH7mPAJg9mdw+jOgevYIUVC6jIBkYAVdaTw6q8CUycWzQ4enJP2mrgGgtoMQzFx5Dym4gtOrTyJUtkSEbZv5ZoKljQFppGDpG4DYMQD0eUqsUJcICRAepEtfoA4UNfkqrOiyVOES++4gtN91WIIraOelCAoi9F36vUFmSAf7Kv2+UtjrrJ0xnCO8tiD3c6ClzDi8qEE6O19hwDEjXipybYGHAO8nnheMnqjo0oqia9kyDjcAoBrb08GgRri2EQ6sFB+xkjk+9kud3XNp53I/YEN+i5pQEBBEiD737PcZ72vTHhuvchhnJsVQblRp0E4M9leHLn/IpKpBcm+hXeodABzkjsnNI4bxQWqXYBiHTDcVts9JEeVmXoS+9tJrbEsMBiPy/I2RqoVcGNG5CMGhYEXE+QhXijnT1ogYm5h+M1QTCcKe6JoObTNcAUS+bzpyfe1dIKsAtOT6E0dsegidN4w0Yzax9W6wIde/MdWd3vdbFbzBACDlcEFAEIVuxoUwVvuSaZ/orPVOimADUaKVOmwoYDETMdactw6ABMK2o3SOTLK8QQAg6QETkvv2AEAik3YEhDq8xPtvEwCJwoYd5WvOKMcci+ltASCtAHOGv5c19UJERlbDJq2AYIsIxTUz34nI9GGTQ6TCvVgcpsk75yfKMSO7TVbYoFEAGgbNyVuaHkdc80uXlNikHOb2BDh5y7FDuX1M5LNWOrnaEOH4O+dMk/Nt9+2YgqpdE0x9IMHxdxXnm+7n0qbCPQRlwmRiGcwMO3/VCx+WPiyQCeEJIUOy3EVAzTcCtOD1db4tErh0e1SNAt0IWDHihRIZVef/RQIhS3nw/1b8xlcKUFm7YwhRqPmMkHnZkraMwz4AWJQ+FCRakVHKbhl+38fE/Qem35N06UFVNOm8G4yYUOf4fapbqGqsIHQ5UpHPOilA38YeArdWtkyIdQCiwK8Z2RY3+Y3QDOmwK5sNDYDlLUaETgrkwbCscAoAsrPjQJzfq345boIJVp6dr7wxQenFx8mT8yeqFXztB0yRjiaBmw8mz1iDct23xJPxj5N3biMAIwAjACMAd21/BRgAk6Xp4c7+81UAAAAASUVORK5CYII="
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50355,14 +50405,14 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(30);
+	var VideoCore = __webpack_require__(31);
 
-	var SightInteraction = __webpack_require__(60);
+	var SightInteraction = __webpack_require__(61);
 
-	var InfiniteControl = __webpack_require__(62);
-	var PathFollowerControl = __webpack_require__(64);
-	var MouseControl = __webpack_require__(65);
-	var VRControl = __webpack_require__(66);
+	var InfiniteControl = __webpack_require__(63);
+	var PathFollowerControl = __webpack_require__(65);
+	var MouseControl = __webpack_require__(66);
+	var VRControl = __webpack_require__(67);
 
 	/**
 	 * The ControlsCore singleton contains the
@@ -50651,7 +50701,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50676,9 +50726,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(30);
-	var TrackingCore = __webpack_require__(61);
-	var ThreeAPI = __webpack_require__(26);
+	var VideoCore = __webpack_require__(31);
+	var TrackingCore = __webpack_require__(62);
+	var ThreeAPI = __webpack_require__(27);
 
 	const CENTER = new THREE.Vector2(0,0);
 
@@ -50924,7 +50974,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -51006,6 +51056,7 @@ var Iconeezin =
 
 		// Event tracking
 		this.events = [];
+		this.supported = true;
 		this.tracking = false;
 
 	}
@@ -51017,24 +51068,37 @@ var Iconeezin =
 		if (trackingConfig.engine === 'GA') {
 
 			// Google analytics bootstrap
+			var script =
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m);
+			return a;})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 			// Start tracker
 			ga('create', trackingConfig.id, 'auto');
 		  ga('send', 'pageview');
 			this.tracking = true;
 
-			// Update tracking ID
-			console.info('Your tracking ID is ' + this.trackingID);
+			script.addEventListener('load', (function() {
 
-			// Feed pending events
-			this.events.forEach((event) => {
-				this.feedEvent(event);
-			});
-			this.events = [];
+				// Update tracking ID
+				console.info('Your tracking ID is ' + this.trackingID);
+
+				// Feed pending events
+				this.events.forEach((event) => {
+					this.feedEvent(event);
+				});
+				this.events = [];
+
+			}).bind(this));
+			script.addEventListener('error', (function() {
+
+				// Update tracking ID
+				console.warn('Tracking blocked or network unreachable');
+				this.supported = false;
+
+			}).bind(this));
+
 		}
 	}
 
@@ -51150,6 +51214,11 @@ var Iconeezin =
 			experiment: this.activeExperimentName,
 			task: this.activeTaskName
 		};
+
+		// Ignore if tracking is not supported
+		if (!this.supported) {
+			return;
+		}
 
 		// Keep/send tracking info
 		if (this.tracking) {
@@ -51467,7 +51536,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51492,8 +51561,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var BaseControl = __webpack_require__(63);
+	var THREE = __webpack_require__(2);
+	var BaseControl = __webpack_require__(64);
 
 	/**
 	 * This control locks the camera in a single location and does not move it.
@@ -51546,7 +51615,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -51655,7 +51724,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51680,8 +51749,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var BaseControl = __webpack_require__(63);
+	var THREE = __webpack_require__(2);
+	var BaseControl = __webpack_require__(64);
 
 	var zero = new THREE.Vector3(0,0,0);
 	var norm = new THREE.Vector3();
@@ -51800,7 +51869,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -51825,8 +51894,8 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(30);
-	var BaseControl = __webpack_require__(63);
+	var VideoCore = __webpack_require__(31);
+	var BaseControl = __webpack_require__(64);
 
 	const PI_2 = Math.PI / 2;
 	const RESET_NORMAL_SPEED = 0.01;
@@ -52019,7 +52088,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52044,9 +52113,9 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var BaseControl = __webpack_require__(63);
-	var Browser = __webpack_require__(32);
-	__webpack_require__(67);
+	var BaseControl = __webpack_require__(64);
+	var Browser = __webpack_require__(33);
+	__webpack_require__(68);
 
 	var vec = new THREE.Vector3();
 
@@ -52093,7 +52162,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -52101,7 +52170,7 @@ var Iconeezin =
 	 * @author mrdoob / http://mrdoob.com
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	THREE.VRControls = function ( object, vrInput ) {
 
@@ -52253,7 +52322,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52278,19 +52347,19 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(30);
-	var AudioCore = __webpack_require__(4);
-	var ControlsCore = __webpack_require__(59);
-	var TrackingCore = __webpack_require__(61);
+	var VideoCore = __webpack_require__(31);
+	var AudioCore = __webpack_require__(5);
+	var ControlsCore = __webpack_require__(60);
+	var TrackingCore = __webpack_require__(62);
 
-	var ResultsRoom = __webpack_require__(69);
-	var Experiments = __webpack_require__(72);
+	var ResultsRoom = __webpack_require__(70);
+	var Experiments = __webpack_require__(73);
 
-	var Config = __webpack_require__(29);
-	var Loaders = __webpack_require__(73);
+	var Config = __webpack_require__(30);
+	var Loaders = __webpack_require__(74);
 
-	var StopableTimers = __webpack_require__(84);
-	var SequencerUtil = __webpack_require__(85);
+	var StopableTimers = __webpack_require__(85);
+	var SequencerUtil = __webpack_require__(86);
 
 	/**
 	 * Kernel core is the main logic that steers the runtime
@@ -52365,6 +52434,17 @@ var Iconeezin =
 
 		}).bind(this));
 
+	}
+
+	/**
+	 * Set a particular hash to use for unhashing bundle requests
+	 */
+	ExperimentsCore.setCacheHash = function( hash ) {
+		if (hash) {
+			Loaders.requestSuffix = '?_=' + hash;
+		} else {
+			Loaders.requestSuffix = '';
+		}
 	}
 
 	/**
@@ -52545,8 +52625,10 @@ var Iconeezin =
 			}).bind(this), function( progress ) {
 				if (progress === 0) {
 					VideoCore.cursor.showLoading();
+					VideoCore.showInteractionLabel('Φόρτωση πειράματος')
 				} else if (progress === 1) {
 					VideoCore.cursor.hideLoading();
+					VideoCore.hideInteractionLabel();
 				} else {
 					VideoCore.cursor.setLoadingProgress( progress );
 				}
@@ -52584,7 +52666,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52609,11 +52691,11 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
-	var ExperimentsAPI = __webpack_require__(25);
-	var InteractionCore = __webpack_require__(27);
+	var THREE = __webpack_require__(2);
+	var ExperimentsAPI = __webpack_require__(26);
+	var InteractionCore = __webpack_require__(28);
 
-	var Label = __webpack_require__(70);
+	var Label = __webpack_require__(71);
 
 	/**
 	 * Paint function for block
@@ -52729,7 +52811,7 @@ var Iconeezin =
 
 		// Create a spinner sprite
 		var loader = new THREE.TextureLoader();
-		loader.load( __webpack_require__(71), (function( texture ) {
+		loader.load( __webpack_require__(72), (function( texture ) {
 
 			// Set material map
 			mat.map = texture;
@@ -52937,7 +53019,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -52962,7 +53044,7 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	/**
 	 * Sprite label
@@ -53174,13 +53256,13 @@ var Iconeezin =
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "img/results.jpg";
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -53400,24 +53482,24 @@ var Iconeezin =
 
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/**
 	 * Iconeez.in - A Web VR Platform for social experiments
 	 * Copyright (C) 2015 Ioannis Charalampidis <ioannis.charalampidis@cern.ch>
-	 * 
+	 *
 	 * This program is free software; you can redistribute it and/or modify
 	 * it under the terms of the GNU General Public License as published by
 	 * the Free Software Foundation; either version 2 of the License, or
 	 * (at your option) any later version.
-	 * 
+	 *
 	 * This program is distributed in the hope that it will be useful,
 	 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 	 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	 * GNU General Public License for more details.
-	 * 
+	 *
 	 * You should have received a copy of the GNU General Public License along
 	 * with this program; if not, write to the Free Software Foundation, Inc.,
 	 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -53425,11 +53507,11 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var Config = __webpack_require__(29);
+	var Config = __webpack_require__(30);
 
-	var JBBLoader = __webpack_require__(74);
-	var JBBProfileThreeLoader = __webpack_require__(81);
-	var JBBProfileIconeezinLoader = __webpack_require__(83);
+	var JBBLoader = __webpack_require__(75);
+	var JBBProfileThreeLoader = __webpack_require__(82);
+	var JBBProfileIconeezinLoader = __webpack_require__(84);
 
 	/**
 	 * Loaders namespace contains all the different loading
@@ -53445,11 +53527,14 @@ var Iconeezin =
 		// Database singleton
 		this.database = {};
 
+		// Arbitrary suffix to append on the url requests (ex. to drop caches)
+		this.requestSuffix = '';
+
 		// Create jbb singleton to the shared database in order
 		// to shared graphics and other shared resources
 		this.jbbLoader = new JBBLoader( Config.path.experiments, this.database );
 
-		// Add jbb profiles 
+		// Add jbb profiles
 		this.jbbLoader.addProfile( JBBProfileThreeLoader );
 		this.jbbLoader.addProfile( JBBProfileIconeezinLoader );
 
@@ -53466,7 +53551,7 @@ var Iconeezin =
 
 		// Start loading the source bundle
 		console.time("bundle["+bundle+"]");
-		this.jbbLoader.add( bundle + ".jbb" );
+		this.jbbLoader.add( bundle + ".jbb" + this.requestSuffix );
 		this.jbbLoader.addProgressHandler(progress);
 		this.jbbLoader.load(function( err, db ) {
 			console.timeEnd("bundle["+bundle+"]");
@@ -53479,8 +53564,8 @@ var Iconeezin =
 			}
 
 			// We have the bundle loaded, now load experiment's main class
-			var experiment = Loaders.loadExperimentClass( 
-				db[ bundle +'/main' ], 
+			var experiment = Loaders.loadExperimentClass(
+				db[ bundle +'/main' ],
 				function( err, experimentClass ) {
 
 					// Callback error first
@@ -53539,7 +53624,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {"use strict";
@@ -53563,10 +53648,10 @@ var Iconeezin =
 	 */
 
 	/* Imports */
-	var BinaryBundle = __webpack_require__(76);
-	var DecodeProfile = __webpack_require__(77);
-	var ProgressManager = __webpack_require__(78);
-	var Errors = __webpack_require__(79);
+	var BinaryBundle = __webpack_require__(77);
+	var DecodeProfile = __webpack_require__(78);
+	var ProgressManager = __webpack_require__(79);
+	var Errors = __webpack_require__(80);
 
 	/* Production optimisations and debug metadata flags */
 	if (typeof GULP_BUILD === "undefined") var GULP_BUILD = false;
@@ -53576,7 +53661,7 @@ var Iconeezin =
 
 	/* Additional includes on node builds */
 	if (IS_NODE) {
-		var fs = __webpack_require__(80);
+		var fs = __webpack_require__(81);
 	}
 
 	/* Size constants */
@@ -54870,10 +54955,10 @@ var Iconeezin =
 	// Export the binary loader
 	module.exports = BinaryLoader;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(75)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(76)))
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -54973,7 +55058,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55333,7 +55418,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55450,7 +55535,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55625,7 +55710,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -55724,13 +55809,13 @@ var Iconeezin =
 	};
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -55756,8 +55841,8 @@ var Iconeezin =
 
 	/* Generated source follows */
 
-	var THREE = __webpack_require__(1);
-	var MD2Character = __webpack_require__(82);
+	var THREE = __webpack_require__(2);
+	var MD2Character = __webpack_require__(83);
 
 	/**
 	 * Factory & Initializer of THREE.ColorKeyframeTrack
@@ -57583,13 +57668,13 @@ var Iconeezin =
 
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @author alteredq / http://alteredqualia.com/
 	 */
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 	THREE.MD2Character = function () {
 
 		var scope = this;
@@ -57847,10 +57932,10 @@ var Iconeezin =
 
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(2);
+	var Iconeezin = Iconeezin || {}; Iconeezin["API"] = __webpack_require__(3);
 
 	/**
 	 * Factory & Initializer of Iconeezin.API.AudioFile
@@ -57902,7 +57987,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 84 */
+/* 85 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -58084,10 +58169,10 @@ var Iconeezin =
 	module.exports = StopableTimers;
 
 /***/ },
-/* 85 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var THREE = __webpack_require__(1);
+	var THREE = __webpack_require__(2);
 
 	var activeSequences = [ ];
 
@@ -58314,7 +58399,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 86 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -58339,7 +58424,7 @@ var Iconeezin =
 	 * @author Ioannis Charalampidis / https://github.com/wavesoft
 	 */
 
-	var VideoCore = __webpack_require__(30);
+	var VideoCore = __webpack_require__(31);
 
 	var ShadowShader = {
 
@@ -58444,7 +58529,7 @@ var Iconeezin =
 
 
 /***/ },
-/* 87 */
+/* 88 */
 /***/ function(module, exports) {
 
 	"use strict";

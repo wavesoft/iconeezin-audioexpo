@@ -72,7 +72,8 @@ gulp.task('js/website', function() {
 						query: {
 							presets: ['react', 'es2015']
 						}
-					}
+					},
+					{ test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192&name=img/[name].[ext]' },
 				],
 			},
 			node: {
