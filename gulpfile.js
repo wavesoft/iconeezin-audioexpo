@@ -6,6 +6,7 @@ var jbb 	= require('gulp-jbb');
 var merge 	= require('merge-stream');
 var webpack = require('webpack-stream');
 var notify = require('gulp-notify');
+var PROD = (process.env.NODE_ENV || "production") == "production";
 
 /**
  * List of experiments to compile
@@ -83,7 +84,7 @@ gulp.task('js/website', function() {
 				filename: 'iconeezin-web.js',
 			},
 			externals: IconeezinExternals,
-			plugins: [
+			plugins: PROD ? [
 				new webpack.webpack.optimize.DedupePlugin(),
 				new webpack.webpack.optimize.UglifyJsPlugin({
 					minimize: true
@@ -93,7 +94,7 @@ gulp.task('js/website', function() {
 			      'NODE_ENV': JSON.stringify('production')
 			    }
 			  })
-			],
+			] : [],
 			resolve: {
 				extensions: ['', '.js', '.jsx'],
 			}
@@ -161,7 +162,7 @@ experiments.forEach(function(experiment) {
 					library: [ 'Iconeezin', 'Experiments', experiment ]
 				},
 				externals: IconeezinExternals,
-				plugins: [
+				plugins: PROD ? [
 					new webpack.webpack.optimize.DedupePlugin(),
 					new webpack.webpack.optimize.UglifyJsPlugin({
 						minimize: true
@@ -171,7 +172,7 @@ experiments.forEach(function(experiment) {
 				      'NODE_ENV': JSON.stringify('production')
 				    }
 				  })
-				],
+				] : [],
 				resolve: {
 				}
 			}))

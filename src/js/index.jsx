@@ -245,7 +245,7 @@ var IconeezinRoot = React.createClass({
 			  	hmd={this.state.hmd} />
 			  <MessagePanel
 			  	title="Έκθεση Ακουστικών Πειραμάτων"
-			  	version={`Έκδοση ${metadata.version}`}
+			  	version={`Έκδοση ${metadata.version} - Iconeezin ${Iconeezin.Version}`}
 			  	visible={this.state.paused && !this.state.loading}>
 			  	{this.state.error ? this.getErrorMessage() : this.getStartMessage()}
 			  </MessagePanel>
