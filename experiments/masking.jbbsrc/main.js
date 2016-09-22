@@ -36,7 +36,10 @@ Experiment.prototype = Object.create( Iconeezin.API.Experiment.prototype );
  */
 Experiment.prototype.onLoad = function(db) {
 
-  this.add(this.infiniteGround = new InfiniteGround({objects: this.objects, db: db}));
+  // Create infinite ground at constructor
+  this.infiniteGround = new InfiniteGround({objects: this.objects, db: db})
+
+  this.add(this.infiniteGround);
   this.infiniteGround.position.set(0, 0, -2);
 
   this.direction = new THREE.Vector3(0, 0, 0);
