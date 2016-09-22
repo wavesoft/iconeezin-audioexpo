@@ -95,6 +95,7 @@
 		getInitialState: function getInitialState() {
 			return {
 				hasvr: false,
+				mockvr: false,
 				hmd: false,
 				paused: true,
 				experiment: null,
@@ -102,6 +103,22 @@
 				loading: true,
 				version: metadata.version
 			};
+		},
+
+		/**
+	  * If we are from a mobile client, enable mockvr support
+	  */
+		initializeWebVRPolyfill: function initializeWebVRPolyfill() {
+			if (Iconeezin.Runtime.Browser.isMobile() && !Iconeezin.Runtime.Browser.hasVR()) {
+
+				// Initialize polyfill
+				window.InitializeWebVRPolyfill();
+
+				// Enable mocked VR support
+				this.setState({
+					mockvr: true
+				});
+			}
 		},
 
 		/**
@@ -117,6 +134,9 @@
 
 			// Remove loading class from body
 			document.body.className = "";
+
+			// Enable optional VR polyfill support
+			this.initializeWebVRPolyfill();
 
 			// Bind on iconeezin callbacks
 			Iconeezin.Runtime.Browser.onVRSupportChange(this.handleVRChange);
@@ -163,11 +183,9 @@
 			this.setState({ 'hasvr': isSupported });
 		},
 		handleStartDesktop: function handleStartDesktop() {
-			if (this.state.error) return;
 			this.setState({ 'paused': false, 'hmd': false, 'error': null });
 		},
 		handleStartHMD: function handleStartHMD() {
-			if (this.state.error) return;
 			this.setState({ 'paused': false, 'hmd': true });
 		},
 		handlePause: function handlePause() {
@@ -182,6 +200,9 @@
 				}
 		},
 
+		/**
+	  * Return the contents of an error panel
+	  */
 		getErrorMessage: function getErrorMessage() {
 			return React.createElement(
 				"div",
@@ -208,18 +229,48 @@
 			);
 		},
 
+		/**
+	  * Return the contents of the start message
+	  */
 		getStartMessage: function getStartMessage() {
-			var buttons = [React.createElement(
-				"button",
-				{ key: "desktop", className: "icnz-button" },
-				React.createElement(IconDesktop, null),
-				" Οθόνη Υπολογιστή"
-			), React.createElement(
-				"button",
-				{ key: "vr", className: "icnz-button" },
-				React.createElement(IconVR, null),
-				" Συσκευή VR"
-			)];
+			var buttons = [];
+
+			if (this.state.mockvr) {
+				buttons.push(React.createElement(
+					"button",
+					{ key: "desktop",
+						className: "icnz-button",
+						onClick: this.handleStartDesktop },
+					React.createElement(IconDesktop, null),
+					" Οθόνη υπολογιστή"
+				));
+				buttons.push(React.createElement(
+					"button",
+					{ key: "vr",
+						className: "icnz-button",
+						onClick: this.handleStartHMD },
+					React.createElement(IconVR, null),
+					" Συσκευή VR"
+				));
+			} else if (this.state.hasvr) {
+				buttons.push(React.createElement(
+					"button",
+					{ key: "vr",
+						className: "icnz-button",
+						onClick: this.handleStartHMD },
+					React.createElement(IconVR, null),
+					" Εναρξη σε συσκευή VR"
+				));
+			} else {
+				buttons.push(React.createElement(
+					"button",
+					{ key: "desktop",
+						className: "icnz-button",
+						onClick: this.handleStartDesktop },
+					React.createElement(IconDesktop, null),
+					" Έναρξη σε οθόνη υπολογιστή"
+				));
+			}
 
 			return React.createElement(
 				"div",
@@ -231,7 +282,7 @@
 				),
 				React.createElement(
 					"div",
-					{ className: "icnz-buttongroup icnz-buttons-2" },
+					{ className: "icnz-buttongroup icnz-buttons-" + buttons.length },
 					buttons
 				)
 			);

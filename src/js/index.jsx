@@ -47,6 +47,7 @@ var IconeezinRoot = React.createClass({
 	getInitialState: function() {
 		return {
 			hasvr: false,
+			mockvr: false,
 			hmd: false,
 			paused: true,
 			experiment: null,
@@ -54,6 +55,23 @@ var IconeezinRoot = React.createClass({
 			loading: true,
 			version: metadata.version
 		};
+	},
+
+	/**
+	 * If we are from a mobile client, enable mockvr support
+	 */
+	initializeWebVRPolyfill: function() {
+		if (Iconeezin.Runtime.Browser.isMobile() && !Iconeezin.Runtime.Browser.hasVR()) {
+
+			// Initialize polyfill
+			window.InitializeWebVRPolyfill();
+
+			// Enable mocked VR support
+			this.setState({
+				mockvr: true
+			});
+
+		}
 	},
 
 	/**
@@ -69,6 +87,9 @@ var IconeezinRoot = React.createClass({
 
 		// Remove loading class from body
 		document.body.className = "";
+
+		// Enable optional VR polyfill support
+		this.initializeWebVRPolyfill();
 
 		// Bind on iconeezin callbacks
 		Iconeezin.Runtime.Browser.onVRSupportChange( this.handleVRChange );
@@ -118,11 +139,9 @@ var IconeezinRoot = React.createClass({
 		this.setState({ 'hasvr': isSupported });
 	},
 	handleStartDesktop: function() {
-		if (this.state.error) return;
 		this.setState({ 'paused': false, 'hmd': false, 'error': null });
 	},
 	handleStartHMD: function() {
-		if (this.state.error) return;
 		this.setState({ 'paused': false, 'hmd': true });
 	},
 	handlePause: function() {
@@ -142,6 +161,9 @@ var IconeezinRoot = React.createClass({
 		}
 	},
 
+	/**
+	 * Return the contents of an error panel
+	 */
 	getErrorMessage: function() {
 		return (
 				<div className="icnz-error-frame">
@@ -156,15 +178,47 @@ var IconeezinRoot = React.createClass({
 			);
 	},
 
+	/**
+	 * Return the contents of the start message
+	 */
 	getStartMessage: function() {
-		let buttons = [
-			<button key="desktop" className="icnz-button">
-				<IconDesktop /> Οθόνη Υπολογιστή
-			</button>,
-			<button key="vr" className="icnz-button">
-				<IconVR /> Συσκευή VR
-			</button>
-		];
+		let buttons = [];
+
+		if (this.state.mockvr) {
+			buttons.push(
+				<button key="desktop"
+					className="icnz-button"
+					onClick={this.handleStartDesktop}>
+					<IconDesktop /> Οθόνη υπολογιστή
+				</button>
+			);
+			buttons.push(
+				<button key="vr"
+					className="icnz-button"
+					onClick={this.handleStartHMD}>
+					<IconVR /> Συσκευή VR
+				</button>
+			);
+
+		} else if (this.state.hasvr) {
+			buttons.push(
+				<button key="vr"
+					className="icnz-button"
+					onClick={this.handleStartHMD}>
+					<IconVR /> Εναρξη σε συσκευή VR
+				</button>
+			);
+
+		} else {
+			buttons.push(
+				<button key="desktop"
+					className="icnz-button"
+					onClick={this.handleStartDesktop}>
+					<IconDesktop /> Έναρξη σε οθόνη υπολογιστή
+				</button>
+			);
+
+		}
 
 		return (
 			<div>
@@ -172,7 +226,7 @@ var IconeezinRoot = React.createClass({
 					Καλωσήρθατε στην έκθεση ακουστικών πειραμάτων.
 					Για τη βέλτιστη εμπειρία σας, προτείνεται να χρησιμοποιήσετε τον πλοηγό Google Chrome.
 				</div>
-				<div className="icnz-buttongroup icnz-buttons-2">
+				<div className={"icnz-buttongroup icnz-buttons-" + buttons.length}>
 					{buttons}
 				</div>
 			</div>
