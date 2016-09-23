@@ -56,7 +56,7 @@ BirdSongs.prototype = {
     this.active = true;
   },
 
-  playSequence: function(interval) {
+  playSequence: function(interval, cb_completed) {
     this.active = false;
     var birds = this.birds.slice();
 
@@ -65,6 +65,7 @@ BirdSongs.prototype = {
       var bird = birds.shift();
       if (!bird) {
         clearInterval(timer);
+        if (cb_completed) cb_completed();
         return;
       }
       bird.song.play();

@@ -47,6 +47,14 @@ gulp.task('img/depends', function() {
 });
 
 /**
+ * Compile and pack iconeezin resources
+ */
+gulp.task('audio/depends', function() {
+	return gulp.src(['node_modules/iconeezin/dist/audio/*.ogg'])
+		.pipe(gulp.dest('dist/audio'));
+});
+
+/**
  * Copy libraries
  */
 gulp.task('js/lib', function() {
@@ -232,6 +240,7 @@ gulp.task('exp/live', experiments.map(function(experiment) {
 gulp.task('live', ['default', 'exp/live'], function() {
 	gulp.watch('node_modules/iconeezin/dist/**/*.js', ['js/depends'], function(event) { })
 	gulp.watch('node_modules/iconeezin/dist/**/*.jpg', ['img/depends'], function(event) { })
+	gulp.watch('node_modules/iconeezin/dist/**/*.ogg', ['audio/depends'], function(event) { })
 	gulp.watch('src/js/**', ['js/website'], function(event) { })
 	gulp.watch('src/css/**', ['css/website'], function(event) { })
 	gulp.watch('src/html/**', ['html/website'], function(event) { })
@@ -242,5 +251,5 @@ gulp.task('live', ['default', 'exp/live'], function() {
 /**
  * Entry point
  */
-gulp.task('default', [ 'js/depends', 'img/depends', 'js/lib', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundles', 'exp/meta' ], function() {
+gulp.task('default', [ 'js/depends', 'img/depends', 'audio/depends', 'js/lib', 'js/website', 'css/website', 'html/website', 'static/website', 'exp/bundles', 'exp/meta' ], function() {
 });

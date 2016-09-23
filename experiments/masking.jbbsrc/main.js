@@ -93,7 +93,11 @@ Experiment.prototype.onShown = function() {
 
   // Play introduction
   this.database['masking/sounds/introduction'].play();
-  setTimeout(runNextTask, 16000);
+  Iconeezin.Runtime.setTimeout(runNextTask, 16000);
+
+  // Ground blacking fix
+  this.infiniteGround.groundMap.needsUpdate = true;
+  this.infiniteGround.groundNormalMap.needsUpdate = true;
 
 }
 
@@ -127,7 +131,7 @@ Experiment.prototype.onOrientationChange = function( quaternion ) {
  * Wait till user reaches an empty space
  */
 Experiment.prototype.waitOutpost = function( callback ) {
-  setTimeout(callback, Math.random()*2000 + 4000);
+  Iconeezin.Runtime.setTimeout(callback, Math.random()*3000 + 7000);
 }
 
 /**
@@ -135,6 +139,7 @@ Experiment.prototype.waitOutpost = function( callback ) {
  */
 Experiment.prototype.runSequence = function(config, callback) {
   var db = this.database;
+  var userChoice = 0;
 
   // Add as many birds as song objects
   this.removeBirds();
@@ -149,90 +154,120 @@ Experiment.prototype.runSequence = function(config, callback) {
   // Start random chirping
   this.birdSong.playRandom();
 
-  // Wait for the user to reach an outpost
-  this.waitOutpost((function() {
+  Iconeezin.Util.createSequence()
 
-    // State the question
-    this.birdSong.stop();
-    this.database['masking/sounds/ask/how-many'].play();
+    //////////////////////////////////////////
+    // Play for the user to reach an outpost
+    //////////////////////////////////////////
+    .waitFor((function(callback) {
+      this.waitOutpost(callback);
+    }).bind(this))
 
-    // Wait for answer
-    setTimeout((function() {
+    //////////////////////////////////////////
+    // Stop sounds
+    //////////////////////////////////////////
+    .do((function() {
+
+      // Stop all bird songs in order to state the question
+      this.birdSong.stop();
+
+    }).bind(this))
+    .playAudio( db['masking/sounds/ask/how-many'] )
+
+    //////////////////////////////////////////
+    // Wait for user input
+    //////////////////////////////////////////
+    .waitFor((function(callback) {
+
+      // Wait for user input
       this.getUserInput((function(numSaid) {
-
-        // Before saying anything, bring the birds close to the user
-        this.birdSong.playRandom();
-        this.birdPaths.forEach(function(path) {
-          path.enter();
-        });
-
-        // Wait 4 seconds for the birds to appear
-        setTimeout((function() {
-          var numMasked = config.masked;
-          var numCorrect = config.sounds.length;
-          var result = ANSWER.WRONG;
-          var delay = 0;
-
-          // Stop bird song
-          this.birdSong.stop();
-
-          // Check for correct answer
-          if (numSaid === numCorrect) {
-            this.database['masking/sounds/ack/correct'].play();
-            result = ANSWER.CORRECT;
-            delay = 1000;
-
-          // Check for masked answer
-          } else if (numSaid === numMasked) {
-            this.database['masking/sounds/ack/mask/' + numCorrect].play();
-            result = ANSWER.MASKED;
-            delay = 3600;
-
-          // That's a wrong answer
-          } else {
-            this.database['masking/sounds/ack/wrong/' + numCorrect].play();
-            result = ANSWER.WRONG;
-            delay = 2600;
-
-          }
-
-          // Wait for audio to complete and play sounds sequentially
-          setTimeout((function() {
-
-            // Play bird song in squence
-            this.birdSong.playSequence();
-
-            // Wait for a second and fly them away
-            setTimeout((function() {
-
-              // Birds take their leave
-              this.birdPaths.forEach(function(path) {
-                path.leave();
-              });
-
-              // Callback with the result when they are not visible
-              setTimeout((function() {
-
-                // Remove birds
-                this.removeBirds();
-
-                // Trigger callback
-                if (callback) callback(result);
-
-              }).bind(this), 3000);
-
-            }).bind(this), 1000);
-
-          }).bind(this), delay);
-
-
-        }).bind(this), 4000);
-
+        userChoice = numSaid;
+        callback();
       }).bind(this));
 
-    }).bind(this), 2100);
+    }).bind(this))
 
-  }).bind(this));
+    //////////////////////////////////////////
+    // Bring birds into view
+    //////////////////////////////////////////
+    .do((function() {
+
+      // Brind the birds close to the user
+      this.birdSong.playRandom();
+      this.birdPaths.forEach(function(path) {
+        path.enter();
+      });
+
+    }).bind(this))
+    .sleep(4000)
+
+    //////////////////////////////////////////
+    // Play correct answer
+    //////////////////////////////////////////
+    .select((function(sequencer) {
+      var numMasked = config.masked;
+      var numCorrect = config.sounds.length;
+
+      // Stop bird song
+      this.birdSong.stop();
+
+      // Use a child sequencer to play the correct sound
+      if (numSaid === numCorrect) {
+        console.debug('- Correct');
+        sequencer.playAudio( db['masking/sounds/ack/correct'] );
+        result = ANSWER.CORRECT;
+
+      // Check for masked answer
+      } else if (numSaid === numMasked) {
+        console.debug('- Mask-' + numCorrect);
+        sequencer.playAudio( db['masking/sounds/ack/mask/' + numCorrect] );
+        result = ANSWER.MASKED;
+
+      // That's a wrong answer
+      } else {
+        console.debug('- Wrong-' + numCorrect);
+        sequencer.playAudio( db['masking/sounds/ack/wrong/' + numCorrect] );
+        result = ANSWER.WRONG;
+
+      }
+
+    }).bind(this))
+    .waitFor((function(callback) {
+
+      // Play birds in sequence
+      console.debug('- Play sequence');
+      this.birdSong.playSequence(callback);
+
+    }).bind(this))
+
+    //////////////////////////////////////////
+    // Fly birds away
+    //////////////////////////////////////////
+    .do((function() {
+
+      // Birds take their leave
+      this.birdPaths.forEach(function(path) {
+        path.leave();
+      });
+
+    }).bind(this))
+    .sleep(4000)
+
+    //////////////////////////////////////////
+    // Reset birds and callback
+    //////////////////////////////////////////
+    .do((function() {
+
+      // Remove birds
+      this.removeBirds();
+
+      // Trigger callback
+      if (callback) callback(result);
+
+    }).bind(this))
+
+    ///////////////////////////////////////
+    .start();
 
 }
 
@@ -301,11 +336,11 @@ Experiment.prototype.getUserInput = function(callback) {
       if (error != null) {
         // Engine error
         db['masking/sounds/reco/error'].play();
-        setTimeout(waitInput, 2500);
+        Iconeezin.Runtime.setTimeout(waitInput, 2500);
       } else {
         // No command matched
         db['masking/sounds/reco/invalid'].play();
-        setTimeout(waitInput, 4500);
+        Iconeezin.Runtime.setTimeout(waitInput, 4500);
       }
     }, 'Πείτε έναν αριθμό');
 

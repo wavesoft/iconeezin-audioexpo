@@ -267,7 +267,7 @@ Experiment.prototype.onShown = function() {
 		///////////////////////////////////////
 		.playAudio( db['introduction/sounds/intro/4'] )
 		.do((function() {
-			db['introduction/sounds/intro/4b']
+			db['introduction/sounds/intro/4b'].play();
 		}).bind(this))
 		.waitFor((function(callback) {
 			Iconeezin.Runtime.Controls.followPath(
