@@ -74,9 +74,14 @@ Experiment.prototype.onShown = function() {
       hud.setDifference( meta.diff );
 
       // Run sequence
-      console.log('--Meta: ', meta);
-      this.runSequence(meta, (function (isCorrect) {
-        console.log('--Completed: ', isCorrect);
+      this.runSequence(meta, (function (isCorrect, isMasked, numSaid) {
+
+        // Complete task
+        Iconeezin.Runtime.Tracking.completeTask({
+          'correct': isCorrect ? 1 : 0,
+          'masked': isMasked ? 1 : 0,
+          'said': numSaid
+        });
 
         // Re-schedule or complete
         if (progress === 1) {
@@ -137,9 +142,11 @@ Experiment.prototype.waitOutpost = function( callback ) {
 /**
  * Run an experimental sequence
  */
-Experiment.prototype.runSequence = function(config, callback) {
+Experiment.prototype.runSequence = function(config, cb_complete) {
   var db = this.database;
   var userChoice = 0;
+  var isCorrect = false;
+  var isMasked = false;
 
   // Add as many birds as song objects
   this.removeBirds();
@@ -212,22 +219,18 @@ Experiment.prototype.runSequence = function(config, callback) {
       this.birdSong.stop();
 
       // Use a child sequencer to play the correct sound
-      if (numSaid === numCorrect) {
-        console.debug('- Correct');
+      if (userChoice === numCorrect) {
         sequencer.playAudio( db['masking/sounds/ack/correct'] );
-        result = ANSWER.CORRECT;
+        isCorrect = true;
 
       // Check for masked answer
-      } else if (numSaid === numMasked) {
-        console.debug('- Mask-' + numCorrect);
+      } else if (userChoice === numMasked) {
         sequencer.playAudio( db['masking/sounds/ack/mask/' + numCorrect] );
-        result = ANSWER.MASKED;
+        isMasked = true;
 
       // That's a wrong answer
       } else {
-        console.debug('- Wrong-' + numCorrect);
         sequencer.playAudio( db['masking/sounds/ack/wrong/' + numCorrect] );
-        result = ANSWER.WRONG;
 
       }
 
@@ -235,8 +238,7 @@ Experiment.prototype.runSequence = function(config, callback) {
     .waitFor((function(callback) {
 
       // Play birds in sequence
-      console.debug('- Play sequence');
-      this.birdSong.playSequence(callback);
+      this.birdSong.playSequence(1000, callback);
 
     }).bind(this))
 
@@ -262,7 +264,7 @@ Experiment.prototype.runSequence = function(config, callback) {
       this.removeBirds();
 
       // Trigger callback
-      if (callback) callback(result);
+      if (cb_complete) cb_complete(isCorrect, isMasked, userChoice);
 
     }).bind(this))
 
@@ -282,6 +284,7 @@ Experiment.prototype.removeBirds = function() {
   }).bind(this));
 
   // Remove bird paths
+  this.birds = [];
   this.birdPaths = [];
 
 }
@@ -328,7 +331,7 @@ Experiment.prototype.getUserInput = function(callback) {
       '(^|\s)[εέ]ναν?(\s|$)|^1$': applyCallback.bind(this, 1),
       '(^|\s)δ[υύ]ο(\s|$)|^2$': applyCallback.bind(this, 2),
       '(^|\s)τρε[ιί]ς(\s|$)|(^|\s)τρ[ιί]α(\s|$)|^3$|greece': applyCallback.bind(this, 3),
-      '(^|\s)τ[εέ]σσερεις(\s|$)|(^|\s)τ[εέ]σσερα(\s|$)|^4$': applyCallback.bind(this, 4),
+      '(^|\s)τ[εέ]σσερε?ις(\s|$)|(^|\s)τ[εέ]σσερα(\s|$)|^4$': applyCallback.bind(this, 4),
       '(^|\s)π[εέ]ντε(\s|$)|^5$': applyCallback.bind(this, 5)
 
     }, function(error, lastTranscript) {
