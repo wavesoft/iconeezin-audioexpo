@@ -281,13 +281,10 @@ Experiment.prototype.getUserInput = function(callback) {
   console.log('Waiting for use rinput');
 
   var applyCallback = function(number) {
-    Iconeezin.Runtime.Video.hideInteractionLabel();
     callback(number);
   }
 
   var waitInput = function() {
-
-    Iconeezin.Runtime.Video.showInteractionLabel('Πείτε έναν αριθμό');
 
     // Run voice command recognition
     Iconeezin.Runtime.Audio.voiceCommands.setLanguage( 'el-GR' );
@@ -300,7 +297,6 @@ Experiment.prototype.getUserInput = function(callback) {
       '(^|\s)π[εέ]ντε(\s|$)|^5$': applyCallback.bind(this, 5)
 
     }, function(error, lastTranscript) {
-      Iconeezin.Runtime.Video.hideInteractionLabel();
       Iconeezin.Runtime.Video.glitch(250);
       if (error != null) {
         // Engine error
@@ -311,7 +307,7 @@ Experiment.prototype.getUserInput = function(callback) {
         db['masking/sounds/reco/invalid'].play();
         setTimeout(waitInput, 4500);
       }
-    });
+    }, 'Πείτε έναν αριθμό');
 
   };
 

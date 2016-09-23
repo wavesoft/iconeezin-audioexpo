@@ -10,15 +10,11 @@
 			"desc": "Threshold experiment",
       "output": {
         "units": "dB",
-        "out_range": [ 0, 4 ],
+        "norm_range": [ 4, 0 ],
+        "metric": "attempts",
         "in_values": [
           -2.5, -7.9, -4.4, -80.0
-        ],
-        "plot": {
-          "title": "Ικανότητα αντίληψης για διαφορετικά επίπεδα θορύβου",
-          "x_label": "Διαφορά Θορύβου - Ηχου",
-          "y_label": "Ικανότητα αντίληψης"
-        }
+        ]
       },
 			"tasks": [
 		    {
@@ -48,15 +44,11 @@
 			"desc": "Delay in the speech",
       "output": {
         "units": "ms",
-        "out_range": [ 1.0, 0.0 ],
+        "metric": "score",
+        "norm_range": [ 0.0, 1.0 ],
         "in_values": [
           5, 20, 80, 120
-        ],
-        "plot": {
-          "title": "Όχληση από ακουστική ανάδραση",
-          "x_label": "Καθυστέρηση στην ανάδραση",
-          "y_label": "Επίπεδο όχλησης"
-        }
+        ]
       },
 		  "tasks": [
 		    {
@@ -110,18 +102,13 @@
 			"desc": "Audio Masking Example",
       "output": {
         "units": "hz",
-        "out_range": [ 0, 5 ],
+        "norm_range": [ 0, 5 ],
         "out_compare": [
           3, 3, 3, 2
         ],
         "in_values": [
           200, 100, 50, 20
-        ],
-        "plot": {
-          "title": "Ικανότητα αντίληψης για διαφορετικές συχνότητες",
-          "x_label": "Διαφορά συχνοτήτων",
-          "y_label": "Βαθμός αντίληψης"
-        }
+        ]
       },
 			"tasks": [
         {

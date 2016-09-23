@@ -287,8 +287,6 @@ Experiment.prototype.onShown = function() {
 		///////////////////////////////////////
 		.waitFor((function(callback) {
 
-	    Iconeezin.Runtime.Video.showInteractionLabel('Πείτε το κείμενο που βλέπετε');
-
     	var readInput = (function() {
 
 		    // Run voice command recognition
@@ -296,12 +294,10 @@ Experiment.prototype.onShown = function() {
 		    Iconeezin.Runtime.Audio.voiceCommands.expectCommands({
 
 		      'κατ[αά]λαβα πως πρ[εέ]πει να μιλ[αά]ω': function() {
-			      Iconeezin.Runtime.Video.hideInteractionLabel();
 		      	callback();
 		      }
 
 		    }, function(error, lastTranscript) {
-		      Iconeezin.Runtime.Video.hideInteractionLabel();
 		      Iconeezin.Runtime.Video.glitch(250);
 		      if (error != null) {
 		        // Engine error
@@ -312,7 +308,7 @@ Experiment.prototype.onShown = function() {
 		        db['introduction/sounds/reco/mismatch'].play();
 		        setTimeout(readInput, 3500);
 		      }
-		    });
+		    }, 'Πείτε το κείμενο που βλέπετε');
 
     	}).bind(this);
 

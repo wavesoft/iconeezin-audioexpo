@@ -209,7 +209,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 					// Check if completed
 					if (meta['completed']) {
-						if (meta['score'] < 0.8) {
+						if (meta['score'] < 0.5) {
 							Iconeezin.Runtime.Video.glitch(250);
 							setTimeout(tryDictation, 250);
 						} else {
@@ -222,7 +222,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 						}
 					}
 
-				}).bind(this));
+				}).bind(this), 'Πείτε το κείμενο που βλέπετε');
 
 			}).bind(this);
 
