@@ -212,7 +212,12 @@ MonumentRoom.prototype = Object.assign(Object.create(THREE.Object3D.prototype), 
 			this.children[i].dispatchEvent( { type: 'removed' } );
 		}
 
-		// Clear
+		// Dispose all geometries
+		this.traverse(function(obj) {
+			if (obj instanceof THREE.Mesh) {
+				obj.geometry.dispose();
+			}
+		});
 		this.children = [];
 
 	},

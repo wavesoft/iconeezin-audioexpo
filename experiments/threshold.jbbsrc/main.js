@@ -138,9 +138,12 @@ Experiment.prototype.onWillShow = function( callback ) {
 
 		has_introduced: false,
 		has_announced: false,
+		has_task: false,
 		active_meta: null,
 
 		attempts: 0,
+
+		completed: false
 
 	};
 
@@ -288,9 +291,11 @@ Experiment.prototype.onWillShow = function( callback ) {
 				if (state.accept_task) {
 
 					// Compelte task
-					Iconeezin.Runtime.Tracking.completeTask({
-						attempts: state.attempts
-					});
+					if (state.has_task) {
+						Iconeezin.Runtime.Tracking.completeTask({
+							attempts: state.attempts
+						});
+					}
 
 					// Reset tracking variables
 					state.attempts = 0;
@@ -298,6 +303,7 @@ Experiment.prototype.onWillShow = function( callback ) {
 					// If the last task was at 100% progress, complete experiment
 					if (state.complete_experiment) {
 						console.log('>> Completing task');
+						state.completed = true;
 						Iconeezin.Runtime.Experiments.experimentCompleted();
 						return;
 					}
@@ -305,6 +311,9 @@ Experiment.prototype.onWillShow = function( callback ) {
 					// Get new experiment metadata
 					console.log('>> Loading new task');
 					Iconeezin.Runtime.Tracking.startNextTask({}, (function(meta, progress) {
+
+						// We now have a task
+						state.has_task = true;
 
 						// Keep experiment metadata
 						state.active_meta = meta;
@@ -338,7 +347,10 @@ Experiment.prototype.onWillShow = function( callback ) {
 				// Reset flags
 				state.has_announced = false;
 
-				// No new experiment? Repeat the current experiment
+				// Do not loop if this was the last experiment
+				if (state.completed) return;
+
+				// Loop over corridor pass
 				setTimeout(corridorPass, 1);
 
 			}).bind(this),
@@ -347,8 +359,8 @@ Experiment.prototype.onWillShow = function( callback ) {
 			(function(v) {
 
 				// If we don't have an experiment metadata or if we are still
-				// in the introduction, don't render any noise
-				if (!state.active_meta || !state.has_introduced) {
+				// in the introduction, or if we are completed don't render any noise
+				if (!state.active_meta || !state.has_introduced || state.completed) {
 					return;
 				}
 

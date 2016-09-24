@@ -225,7 +225,7 @@ Experiment.prototype.onShown = function() {
 		.select((function(sequencer) {
 
 			// Playback either VR navigation or PC navigation
-			if (Iconeezin.Runtime.Video.hasVR) {
+			if (!Iconeezin.Runtime.Video.hmd) {
 				sequencer.playAudio( db['introduction/sounds/intro/2a'] )
 			} else {
 				sequencer.playAudio( db['introduction/sounds/intro/2b'] )

@@ -293,8 +293,9 @@ Experiment.prototype.removeBirds = function() {
  * Add birds and return an array of their instances
  */
 Experiment.prototype.addBirds = function(count) {
-  var spacing = (Math.PI/2) / count;
-  var arc = Math.PI/4;
+  var arcSize = 4 * Math.PI/6;
+  var spacing = arcSize / (count - 1);
+  var arc = (Math.PI - arcSize) / 2;
   var birds = [];
 
   for (var i=0; i<count; i++) {
