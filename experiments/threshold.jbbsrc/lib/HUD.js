@@ -50,9 +50,11 @@ HUDStatus.prototype = Object.assign( Object.create( Iconeezin.API.HUDLayer.proto
     // var noisePercent = level * 100;
     var dB = 20 * Math.log10(level)
 
+    var lastText = this.text;
     this.text = "Θόρυβος στο "+dB.toFixed(0)+" dB";
     this.opacity = Math.min( level / 0.1, 1.0 );
-    this.redraw();
+
+    if (this.text !== lastText) this.redraw();
   },
 
   onPaint: function( ctx, width, height ) {

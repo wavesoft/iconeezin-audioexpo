@@ -47,9 +47,10 @@ HUDStatus.prototype = Object.assign( Object.create( Iconeezin.API.HUDLayer.proto
   },
 
   setDelay: function(delay) {
+    var lastText = this.text;
     this.text = "Καθυστέρηση "+delay.toFixed(0)+" ms";
     this.opacity = 1;
-    this.redraw();
+    if (this.text !== lastText) this.redraw();
   },
 
   onPaint: function( ctx, width, height ) {

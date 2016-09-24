@@ -47,9 +47,10 @@ HUDStatus.prototype = Object.assign( Object.create( Iconeezin.API.HUDLayer.proto
   },
 
   setDifference: function(diff) {
+    var lastText = this.text;
     this.text = "Διαφορά "+diff.toFixed(0)+" Hz";
     this.opacity = 1;
-    this.redraw();
+    if (this.text !== lastText) this.redraw();
   },
 
   onPaint: function( ctx, width, height ) {
